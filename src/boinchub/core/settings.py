@@ -1,0 +1,27 @@
+# SPDX-FileCopyrightText: 2025-present Jason Lynch <jason@aexoden.com>
+#
+# SPDX-License-Identifier: MIT
+"""Application settings module."""
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    """Application settings."""
+
+    # Server settings
+    host: str = "127.0.0.1"
+    port: int = 8500
+
+    # Account manager settings
+    account_manager_name: str = "BoincHub"
+    account_manager_url: str = "http://127.0.0.1:8500"
+    min_password_length: int = 16
+
+    # Signing key settings
+    public_key_path: str = "keys/public_key.pem"
+
+    model_config = SettingsConfigDict(env_prefix="BOINCHUB_", case_sensitive=False)
+
+
+settings = Settings()

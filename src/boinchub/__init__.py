@@ -3,5 +3,6 @@
 # SPDX-License-Identifier: MIT
 """Public API."""
 
+
 def main() -> None:
-    print("Hello from boinchub!")
+    """Run the application."""

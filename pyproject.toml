@@ -1,0 +1,21 @@
+[project]
+name = "boinchub"
+dynamic = ["version"]
+description = "A BOINC account manager intended for personal use."
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Jason Lynch", email = "jason@aexoden.com" }
+]
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+boinchub = "boinchub:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/boinchub/__about__.py"

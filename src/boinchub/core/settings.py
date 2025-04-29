@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     min_password_length: int = 16
 
     # Signing key settings
-    public_key_path: str = "keys/public_key.pem"
+    public_key: str = "INVALID SIGNING KEY"
 
     model_config = SettingsConfigDict(env_prefix="BOINCHUB_", case_sensitive=False)
 

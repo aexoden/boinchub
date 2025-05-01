@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     host: str = "127.0.0.1"
     port: int = 8500
 
+    # Database settings
+    database_url: str = "sqlite:///./boinchub.db"
+
     # Account manager settings
     account_manager_name: str = "BoincHub"
     account_manager_url: str = "http://127.0.0.1:8500"

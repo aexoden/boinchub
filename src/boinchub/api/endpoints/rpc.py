@@ -5,9 +5,13 @@
 
 import logging
 
-from fastapi import APIRouter, HTTPException, Request, Response
-from pydantic import ValidationError
+from typing import Annotated
 
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from pydantic import ValidationError
+from sqlalchemy.orm import Session
+
+from boinchub.core.database import get_db
 from boinchub.core.xmlrpc import AccountManagerRequest
 from boinchub.services.account_service import AccountService
 
@@ -16,8 +20,8 @@ router = APIRouter(
 )
 
 
-@router.post("/rpc.php", response_class=Response)
-async def rpc(request: Request) -> Response:
+@router.post("/rpc.php")
+async def rpc(request: Request, db: Annotated[Session, Depends(get_db)]) -> Response:
     """RPC endpoint for the BOINC account manager.
 
     Args:
@@ -35,7 +39,7 @@ async def rpc(request: Request) -> Response:
     try:
         request_data = AccountManagerRequest.from_xml(body)
 
-        account_service = AccountService()
+        account_service = AccountService(db)
         reply = await account_service.process_request(request_data)
 
         xml_content = reply.to_xml(encoding="utf-8", xml_declaration=True, pretty_print=True, exclude_none=True)

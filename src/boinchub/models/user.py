@@ -19,6 +19,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True, init=False)
     username: Mapped[str] = mapped_column(unique=True)
     password_hash: Mapped[str]
+    boinc_password_hash: Mapped[str]
     email: Mapped[str]
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), init=False

@@ -40,8 +40,8 @@ class AccountService:
                 error_msg="Invalid username",
             )
 
-        # Authenticate the user
-        authenticated_user = UserService.authenticate_user(self.db, request.name, request.password_hash)
+        # Authenticate the user with BOINC-specific method
+        authenticated_user = UserService.authenticate_boinc_client(self.db, request.name, request.password_hash)
 
         if not authenticated_user:
             return AccountManagerReply(

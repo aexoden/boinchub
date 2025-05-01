@@ -16,6 +16,14 @@ BoolAsInt = Annotated[bool, PlainSerializer(lambda x: 1 if x else 0, return_type
 Fraction = Annotated[fractions.Fraction, PlainSerializer(lambda x: f"{x:.6f}", return_type=str)]
 
 
+class BoincError:
+    """BOINC error codes."""
+
+    ERR_XML_PARSE = -112
+    ERR_BAD_USER_NAME = -188
+    ERR_BAD_PASSWD = -206
+
+
 class Account(BaseXmlModel, tag="account", search_mode="unordered"):
     """Account XML model."""
 

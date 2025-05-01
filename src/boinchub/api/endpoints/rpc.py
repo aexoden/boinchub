@@ -7,12 +7,12 @@ import logging
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, Request, Response
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from boinchub.core.database import get_db
-from boinchub.core.xmlrpc import AccountManagerRequest
+from boinchub.core.xmlrpc import AccountManagerReply, AccountManagerRequest, BoincError
 from boinchub.services.account_service import AccountService
 
 router = APIRouter(
@@ -29,27 +29,29 @@ async def rpc(request: Request, db: Annotated[Session, Depends(get_db)]) -> Resp
 
     Returns:
         XML response with the account manager reply.
-
-    Raises:
-        HTTPException: If the request is invalid or if an internal error occurs.
-
     """
+    status_code = 200
     body = await request.body()
+    logger = logging.getLogger(__name__)
 
     try:
         request_data = AccountManagerRequest.from_xml(body)
-
         account_service = AccountService(db)
         reply = await account_service.process_request(request_data)
-
-        xml_content = reply.to_xml(encoding="utf-8", xml_declaration=True, pretty_print=True, exclude_none=True)
-
-        return Response(content=xml_content, media_type="application/xml")
-    except ValidationError as e:
-        logger = logging.getLogger(__name__)
-        logger.exception("Validation error")
-        raise HTTPException(status_code=400, detail="Invalid request") from e
-    except Exception as e:
-        logger = logging.getLogger(__name__)
+    except ValidationError as _e:
+        logger.exception("XML parsing/validation error")
+        status_code = 400
+        reply = AccountManagerReply(
+            error_num=BoincError.ERR_XML_PARSE,
+            error_msg="Invalid request format",
+        )
+    except Exception as _e:
         logger.exception("Unexpected error")
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        status_code = 500
+        reply = AccountManagerReply(
+            error_num=-1,
+            error_msg="Internal server error",
+        )
+
+    xml_content = reply.to_xml(encoding="utf-8", xml_declaration=True, pretty_print=True, exclude_none=True)
+    return Response(status_code=status_code, content=xml_content, media_type="application/xml")

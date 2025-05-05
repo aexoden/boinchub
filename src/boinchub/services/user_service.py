@@ -90,7 +90,6 @@ class UserService:
 
         db.add(db_user)
         db.commit()
-        db.refresh(db_user)
 
         return db_user
 

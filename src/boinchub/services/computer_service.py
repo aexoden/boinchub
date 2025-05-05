@@ -66,7 +66,6 @@ class ComputerService:
 
         db.add(computer)
         db.commit()
-        db.refresh(computer)
 
         return computer
 
@@ -99,7 +98,6 @@ class ComputerService:
                 computer.domain_name = request.domain_name
 
                 db.commit()
-                db.refresh(computer)
 
                 return computer
 
@@ -109,7 +107,6 @@ class ComputerService:
         if computer:
             computer.domain_name = request.domain_name
             db.commit()
-            db.refresh(computer)
             return computer
 
         # Check if there's a previous CPID and to find by that value
@@ -124,7 +121,6 @@ class ComputerService:
                 computer.cpid = request.host_cpid
                 computer.domain_name = request.domain_name
                 db.commit()
-                db.refresh(computer)
                 return computer
 
         # Create a new computer

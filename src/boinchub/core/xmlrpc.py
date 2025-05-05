@@ -6,6 +6,7 @@
 import fractions
 
 from typing import Annotated
+from uuid import UUID
 
 from pydantic import PlainSerializer
 from pydantic_xml import BaseXmlModel, element, wrapped
@@ -188,6 +189,7 @@ class AccountManagerReply(BaseXmlModel, tag="acct_mgr_reply", search_mode="unord
     host_venue: str | None = element(default=None)
     accounts: list[Account] = element(default_factory=list)
     global_preferences: GlobalPreferences | None = element(default=None)
+    uuid: UUID | None = wrapped("opaque", element(default=None), default=None)
 
 
 class AccountManagerRequest(BaseXmlModel, tag="acct_mgr_request", search_mode="unordered"):
@@ -200,10 +202,11 @@ class AccountManagerRequest(BaseXmlModel, tag="acct_mgr_request", search_mode="u
     client_version: str = element()
     run_mode: str = element()
     platform_name: str = element()
-    previous_host_cpid: str = element()
+    previous_host_cpid: str | None = element(default=None)
+    uuid: UUID | None = wrapped("opaque", element(default=None))
     projects: list[Project] = element(default_factory=list)
     working_global_preferences: GlobalPreferences = wrapped("working_global_preferences", element())
-    global_preferences: GlobalPreferences = element()
+    global_preferences: GlobalPreferences | None = element(default=None)
     host_info: HostInfo = element()
     time_stats: TimeStats = element()
     net_stats: NetStats = element()

@@ -119,7 +119,7 @@ class UserService:
             The MD5 hashed password required by BOINC protocol.
         """
         # The use of MD5 is mandated by the BOINC protocol.
-        return hashlib.md5(f"{password}_{username.lower()}".encode()).hexdigest()  # noqa: S324
+        return hashlib.md5(f"{password}{username.lower()}".encode()).hexdigest()  # noqa: S324
 
     @staticmethod
     def hash_password(password: str) -> str:

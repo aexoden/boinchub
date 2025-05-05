@@ -5,10 +5,15 @@
 
 import datetime
 
+from typing import TYPE_CHECKING
+
 from sqlalchemy import DateTime, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from boinchub.core.database import Base
+
+if TYPE_CHECKING:
+    from boinchub.models.computer import Computer
 
 
 class User(Base):
@@ -23,4 +28,8 @@ class User(Base):
     email: Mapped[str]
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), init=False
+    )
+
+    computers: Mapped[list["Computer"]] = relationship(
+        default_factory=list, back_populates="user", cascade="all, delete-orphan"
     )

@@ -5,7 +5,8 @@
 
 from sqlalchemy.orm import Session
 
-from boinchub.core.xmlrpc import Account, AccountManagerReply, AccountManagerRequest, BoincError, GlobalPreferences
+from boinchub.core.xmlrpc import AccountManagerReply, AccountManagerRequest, BoincError, GlobalPreferences
+from boinchub.services.computer_service import ComputerService
 from boinchub.services.user_service import UserService
 
 
@@ -49,17 +50,17 @@ class AccountService:
                 error_msg="Invalid password",
             )
 
+        # Create or update computer record.
+        computer = ComputerService.update_or_create_computer(
+            self.db,
+            authenticated_user,
+            request,
+        )
+
         # Return successful response with placeholder data
         return AccountManagerReply(
             repeat_sec=3600,
-            global_preferences=GlobalPreferences(
-                run_if_user_active=True,
-            ),
-            accounts=[
-                Account(
-                    url="https://example.com/boinc",
-                    url_signature="invalid signature",
-                    authenticator="invalid authenticator",
-                )
-            ],
+            global_preferences=GlobalPreferences(),
+            accounts=[],
+            uuid=computer.uuid,
         )

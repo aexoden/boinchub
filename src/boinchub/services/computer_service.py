@@ -60,7 +60,6 @@ class ComputerService:
         computer = Computer(
             cpid=cpid,
             domain_name=domain_name,
-            user_id=user.id,
             user=user,
         )
 

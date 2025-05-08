@@ -26,6 +26,8 @@ class User(Base):
     password_hash: Mapped[str]
     boinc_password_hash: Mapped[str]
     email: Mapped[str]
+    role: Mapped[str] = mapped_column(default="user")
+    is_active: Mapped[bool] = mapped_column(default=True)
 
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now(), init=False)
     updated_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now(), onupdate=func.now(), init=False)

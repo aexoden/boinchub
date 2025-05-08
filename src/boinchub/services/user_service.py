@@ -19,6 +19,17 @@ class UserCreate(BaseModel):
     username: str
     password: str
     email: str
+    role: str = "user"
+    is_active: bool = True
+
+
+class UserUpdate(BaseModel):
+    """Model for updating a user."""
+
+    email: str | None = None
+    password: str | None = None
+    role: str | None = None
+    is_active: bool | None = None
 
 
 class UserService:
@@ -38,7 +49,7 @@ class UserService:
         """
         user = db.query(User).filter(User.username == username).first()
 
-        if user and user.boinc_password_hash == boinc_password_hash:
+        if user and user.boinc_password_hash == boinc_password_hash and user.is_active:
             return user
 
         return None
@@ -57,15 +68,17 @@ class UserService:
         """
         user = db.query(User).filter(User.username == username).first()
 
-        if user:
+        if user and user.is_active:
             ph = PasswordHasher()
 
             try:
                 ph.verify(user.password_hash, password)
             except VerifyMismatchError:
                 return None
+            else:
+                return user
 
-        return user
+        return None
 
     @staticmethod
     def create_user(db: Session, user_data: UserCreate) -> User:
@@ -86,12 +99,27 @@ class UserService:
             password_hash=password_hash,
             boinc_password_hash=boinc_password_hash,
             email=user_data.email,
+            role=user_data.role,
+            is_active=user_data.is_active,
         )
 
         db.add(db_user)
         db.commit()
 
         return db_user
+
+    @staticmethod
+    def get_user_by_id(db: Session, user_id: int) -> User | None:
+        """Get a user by ID.
+
+        Args:
+            db (Session): The database session.
+            user_id (int): The ID of the user.
+
+        Returns:
+            The user object or None if not found.
+        """
+        return db.query(User).filter(User.id == user_id).first()
 
     @staticmethod
     def get_user_by_username(db: Session, username: str) -> User | None:
@@ -105,6 +133,71 @@ class UserService:
             The user object or None if not found.
         """
         return db.query(User).filter(User.username == username).first()
+
+    @staticmethod
+    def get_users(db: Session, skip: int = 0, limit: int = 100) -> list[User]:
+        """Get a list of users.
+
+        Args:
+            db (Session): The database session.
+            skip (int): The number of users to skip.
+            limit (int): The maximum number of users to return.
+
+        Returns:
+            A list of user objects.
+        """
+        return db.query(User).offset(skip).limit(limit).all()
+
+    @staticmethod
+    def update_user(db: Session, user_id: int, user_data: UserUpdate) -> User | None:
+        """Update a user.
+
+        Args:
+            db (Session): The database session.
+            user_id (int): The ID of the user to update.
+            user_data (UserUpdate): The data to update.
+
+        Returns:
+            The updated user object or None if not found.
+        """
+        user = UserService.get_user_by_id(db, user_id)
+
+        if not user:
+            return None
+
+        update_data = user_data.model_dump(exclude_unset=True)
+
+        if update_data.get("password"):
+            update_data["password_hash"] = UserService.hash_password(update_data.pop("password"))
+            update_data["boinc_password_hash"] = UserService.hash_boinc_password(user.username, update_data["password"])
+
+        for key, value in update_data.items():
+            setattr(user, key, value)
+
+        db.commit()
+
+        return user
+
+    @staticmethod
+    def delete_user(db: Session, user_id: int) -> bool:
+        """Delete a user.
+
+        Args:
+            db (Session): The database session.
+            user_id (int): The ID of the user to delete.
+
+        Returns:
+            bool: True if the user was deleted, False if not found.
+        """
+        user = UserService.get_user_by_id(db, user_id)
+
+        if not user:
+            return False
+
+        db.delete(user)
+        db.commit()
+
+        return True
 
     @staticmethod
     def hash_boinc_password(username: str, password: str) -> str:

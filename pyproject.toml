@@ -13,12 +13,14 @@ dependencies = [
     "pydantic>=2.11.3",
     "pydantic-settings>=2.9.1",
     "pydantic-xml>=2.16.0",
+    "python-jose[cryptography]>=3.4.0",
     "sqlalchemy>=2.0.40",
     "types-lxml>=2025.3.30",
 ]
 
 [project.scripts]
 boinchub = "boinchub:main"
+boinchub-admin = "boinchub.cli.admin:main"
 
 [build-system]
 requires = ["hatchling"]

@@ -7,7 +7,7 @@ import logging
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request, Response
+from fastapi import APIRouter, Depends, Request, Response, status
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
@@ -30,7 +30,7 @@ async def rpc(request: Request, db: Annotated[Session, Depends(get_db)]) -> Resp
     Returns:
         XML response with the account manager reply.
     """
-    status_code = 200
+    status_code = status.HTTP_200_OK
     body = await request.body()
     logger = logging.getLogger(__name__)
 
@@ -40,14 +40,14 @@ async def rpc(request: Request, db: Annotated[Session, Depends(get_db)]) -> Resp
         reply = await account_service.process_request(request_data)
     except ValidationError as _e:
         logger.exception("XML parsing/validation error")
-        status_code = 400
+        status_code = status.HTTP_400_BAD_REQUEST
         reply = AccountManagerReply(
             error_num=BoincError.ERR_XML_PARSE,
             error_msg="Invalid request format",
         )
     except Exception as _e:
         logger.exception("Unexpected error")
-        status_code = 500
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         reply = AccountManagerReply(
             error_num=-1,
             error_msg="Internal server error",

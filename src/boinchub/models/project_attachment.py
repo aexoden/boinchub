@@ -22,7 +22,7 @@ class ProjectAttachment(Base):
     """Project attachment model for BoincHub."""
 
     __tablename__ = "project_attachments"
-    __table_args_ = (UniqueConstraint("computer_id", "project_id"),)
+    __table_args__ = (UniqueConstraint("computer_id", "project_id"),)
 
     id: Mapped[int] = mapped_column(primary_key=True, init=False)
 

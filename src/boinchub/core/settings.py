@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     # Signing key settings
     public_key: str = "INVALID SIGNING KEY"
 
+    # JWT settings
+    secret_key: str = ""
+    access_token_expire_minutes: int = 30
+
     model_config = SettingsConfigDict(env_prefix="BOINCHUB_", case_sensitive=False)
 
 

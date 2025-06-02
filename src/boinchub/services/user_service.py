@@ -168,11 +168,12 @@ class UserService:
         update_data = user_data.model_dump(exclude_unset=True)
 
         if update_data.get("password"):
-            update_data["password_hash"] = UserService.hash_password(update_data.pop("password"))
             update_data["boinc_password_hash"] = UserService.hash_boinc_password(user.username, update_data["password"])
+            update_data["password_hash"] = UserService.hash_password(update_data.pop("password"))
 
         for key, value in update_data.items():
-            setattr(user, key, value)
+            if value is not None:
+                setattr(user, key, value)
 
         db.commit()
 

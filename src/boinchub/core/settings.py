@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     """Application settings."""
 
     # Server settings
-    host: str = "127.0.0.1"
+    host: str = "localhost"
     port: int = 8500
 
     # Database settings
@@ -18,7 +18,7 @@ class Settings(BaseSettings):
 
     # Account manager settings
     account_manager_name: str = "BoincHub"
-    account_manager_url: str = "http://127.0.0.1:8500"
+    account_manager_url: str = "http://localhost:8500"
     min_password_length: int = 16
 
     # Signing key settings

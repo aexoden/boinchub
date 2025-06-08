@@ -9,6 +9,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Application settings."""
 
+    # Configuration
+    model_config = SettingsConfigDict(env_file="../.env", env_ignore_empty=True, env_prefix="BOINCHUB_", extra="ignore")
+
     # Server settings
     host: str = "localhost"
     port: int = 8500
@@ -27,8 +30,6 @@ class Settings(BaseSettings):
     # JWT settings
     secret_key: str = ""
     access_token_expire_minutes: int = 30
-
-    model_config = SettingsConfigDict(env_prefix="BOINCHUB_", case_sensitive=False)
 
 
 settings = Settings()

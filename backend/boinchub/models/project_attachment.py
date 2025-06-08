@@ -3,52 +3,82 @@
 # SPDX-License-Identifier: MIT
 """Project attachment model for BoincHub."""
 
-import datetime
-
-from fractions import Fraction
+from decimal import Decimal
 from typing import TYPE_CHECKING
+from uuid import UUID, uuid4
 
-from sqlalchemy import ForeignKey, UniqueConstraint, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlmodel import Field, Relationship, SQLModel, UniqueConstraint
 
-from boinchub.core.database import Base
+from boinchub.models import Timestamps
 
 if TYPE_CHECKING:
     from boinchub.models.computer import Computer
     from boinchub.models.project import Project
 
 
-class ProjectAttachment(Base):
-    """Project attachment model for BoincHub."""
-
-    __tablename__ = "project_attachments"
-    __table_args__ = (UniqueConstraint("computer_id", "project_id"),)
-
-    id: Mapped[int] = mapped_column(primary_key=True, init=False)
+class ProjectAttachmentBase(SQLModel, Timestamps):
+    """Project attachment base model."""
 
     # Foreign keys
-    computer_id: Mapped[int] = mapped_column(ForeignKey("computers.id"), init=False)
-    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), init=False)
-
-    # Relationships
-    computer: Mapped["Computer"] = relationship(back_populates="project_attachments")
-    project: Mapped["Project"] = relationship(back_populates="attachments")
+    computer_id: UUID = Field(foreign_key="computers.id", ondelete="CASCADE")
+    project_id: UUID = Field(foreign_key="projects.id", ondelete="CASCADE")
 
     # Project-specific settings
-    resource_share: Mapped[Fraction] = mapped_column(default=Fraction(100))
-    suspended: Mapped[bool] = mapped_column(default=False)
-    dont_request_more_work: Mapped[bool] = mapped_column(default=False)
-    detach_when_done: Mapped[bool] = mapped_column(default=False)
+    resource_share: Decimal = Field(default=100, max_digits=18, decimal_places=6)
+    suspended: bool = Field(default=False)
+    dont_request_more_work: bool = Field(default=False)
+    detach_when_done: bool = Field(default=False)
 
     # Resource allocation settings
-    no_cpu: Mapped[bool] = mapped_column(default=False)
-    no_gpu_nvidia: Mapped[bool] = mapped_column(default=False)
-    no_gpu_amd: Mapped[bool] = mapped_column(default=False)
-    no_gpu_intel: Mapped[bool] = mapped_column(default=False)
+    no_cpu: bool = Field(default=False)
+    no_gpu_nvidia: bool = Field(default=False)
+    no_gpu_amd: bool = Field(default=False)
+    no_gpu_intel: bool = Field(default=False)
 
     # Authentication
-    authenticator: Mapped[str] = mapped_column(default="")
+    account_key: str = Field(default="")
 
-    # Timestamps
-    created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now(), init=False)
-    updated_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now(), onupdate=func.now(), init=False)
+
+class ProjectAttachment(ProjectAttachmentBase, table=True):
+    """Project attachment model."""
+
+    # SQLAlchemy table name and constraints
+    __tablename__: str = "project_attachments"  # type: ignore[attr-defined]
+    __table_args__ = (UniqueConstraint("computer_id", "project_id"),)
+
+    # Primary key
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    # Relationships
+    computer: "Computer" = Relationship(back_populates="project_attachments")
+    project: "Project" = Relationship(back_populates="attachments")
+
+
+class ProjectAttachmentPublic(ProjectAttachmentBase):
+    """Public model for project attachment in API responses."""
+
+    # Primary key
+    id: UUID
+
+
+class ProjectAttachmentCreate(ProjectAttachmentBase):
+    """Model for creating a new project attachment."""
+
+
+class ProjectAttachmentUpdate(SQLModel):
+    """Model for updating a project attachment."""
+
+    # Project-specific settings
+    resource_share: Decimal | None = None
+    suspended: bool | None = None
+    dont_request_more_work: bool | None = None
+    detach_when_done: bool | None = None
+
+    # Resource allocation settings
+    no_cpu: bool | None = None
+    no_gpu_nvidia: bool | None = None
+    no_gpu_amd: bool | None = None
+    no_gpu_intel: bool | None = None
+
+    # Authentication
+    account_key: str | None = None

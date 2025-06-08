@@ -1,44 +1,82 @@
 # SPDX-FileCopyrightText: 2025-present Jason Lynch <jason@aexoden.com>
 #
 # SPDX-License-Identifier: MIT
-"""Authentication module for BoincHub."""
+"""Security and authentication module."""
 
 import datetime
+import hashlib
 
 from typing import Annotated, Any
 
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from pydantic import BaseModel
-from sqlalchemy.orm import Session
+from sqlmodel import Session, SQLModel
 
 from boinchub.core.database import get_db
 from boinchub.core.settings import settings
-from boinchub.models.computer import Computer
 from boinchub.models.user import User
-from boinchub.services.user_service import UserService
 
-# JWT token settings
+# Configuration
 SECRET_KEY = settings.secret_key
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 
-# OAuth2 scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+_password_hasher = PasswordHasher()
 
 
-class Token(BaseModel):
-    """Model for token response."""
+class Token(SQLModel):
+    """Model for JWT token response."""
 
     access_token: str
     token_type: str
 
 
-class TokenData(BaseModel):
-    """Model for token data."""
+def hash_password(password: str) -> str:
+    """Hash a password using Argon2.
 
-    username: str | None = None
+    Args:
+        password (str): The password to hash.
+
+    Returns:
+        The hashed password.
+
+    """
+    return _password_hasher.hash(password)
+
+
+def hash_boinc_password(username: str, password: str) -> str:
+    """Hash a password for BOINC protocol compatibility.
+
+    Args:
+        username (str): The username of the user.
+        password (str): The password to hash.
+
+    Returns:
+        The MD5 hashed password required by the BOINC protocol.
+
+    """
+    return hashlib.md5(f"{password}{username.lower()}".encode()).hexdigest()  # noqa: S324
+
+
+def verify_password(password: str, password_hash: str) -> bool:
+    """Verify a password against a hashed password.
+
+    Args:
+        password (str): The password to verify.
+        password_hash (str): The hashed password to verify against.
+
+    Returns:
+        bool: True if the password matches the hash, False otherwise.
+
+    """
+    try:
+        return _password_hasher.verify(password_hash, password)
+    except VerifyMismatchError:
+        return False
 
 
 def create_access_token(data: dict[str, Any], expires_delta: datetime.timedelta | None = None) -> str:
@@ -46,7 +84,7 @@ def create_access_token(data: dict[str, Any], expires_delta: datetime.timedelta 
 
     Args:
         data (dict[str, str]): The data to include in the token.
-        expires_delta (datetime.timedelta | None): The expiration time delta.
+        expires_delta: datetime.timedelta | None: The expiration time delta.
 
     Returns:
         str: The generated JWT access token.
@@ -60,18 +98,19 @@ def create_access_token(data: dict[str, Any], expires_delta: datetime.timedelta 
         expire = datetime.datetime.now(tz=datetime.UTC) + datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
     to_encode.update({"exp": expire})
+
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
 def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Annotated[Session, Depends(get_db)]) -> User:
-    """Get the current user from the token.
+    """Get the current user from a token.
 
     Args:
         token (str): The JWT access token.
         db (Session): The database session.
 
     Returns:
-        User: The authenticated user.
+        user: The authenticated user.
 
     Raises:
         HTTPException: If the token is invalid or the user does not exist.
@@ -89,12 +128,14 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Annotate
 
         if not isinstance(username, str):
             raise credentials_exception
-
-        token_data = TokenData(username=username)
     except JWTError as e:
         raise credentials_exception from e
 
-    user = UserService.get_user_by_username(db, token_data.username) if token_data.username else None
+    # Import here to avoid circular dependency
+    from boinchub.services.user_service import UserService  # noqa: PLC0415
+
+    user_service = UserService(db)
+    user = user_service.get_user_by_username(username)
 
     if user is None:
         raise credentials_exception
@@ -102,69 +143,20 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Annotate
     return user
 
 
-def authenticate_user(db: Session, username: str, password: str) -> User | None:
-    """Authenticate a user.
-
-    Args:
-        db (Session): The database session.
-        username (str): The username of the user.
-        password (str): The password of the user.
-
-    Returns:
-        User | None: The authenticated user or None if authentication fails.
-
-    """
-    return UserService.authenticate_user(db, username, password)
-
-
-def is_admin(user: User) -> bool:
-    """Check if the user is an admin.
-
-    Args:
-        user (User): The user to check.
-
-    Returns:
-        bool: True if the user is an admin, False otherwise.
-
-    """
-    return user.role == "admin"
-
-
-def get_current_active_user(current_user: Annotated[User, Depends(get_current_user)]) -> User:
-    """Get the current active user.
+def get_current_user_if_active(current_user: Annotated[User, Depends(get_current_user)]) -> User:
+    """Get the current user if they are active.
 
     Args:
         current_user (User): The current user.
 
     Returns:
-        User: The active user.
+        User: The user object if the user is active.
 
     Raises:
         HTTPException: If the user is inactive.
+
     """
     if not current_user.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
+
     return current_user
-
-
-def user_has_access_to_computer(db: Session, user: User, computer_id: int) -> bool:
-    """Check if the user has access to the computer.
-
-    Args:
-        db (Session): The database session.
-        user (User): The user to check.
-        computer_id (int): The ID of the computer.
-
-    Returns:
-        bool: True if the user has access, False otherwise.
-
-    """
-    if is_admin(user):
-        return True
-
-    computer = db.query(Computer).filter(Computer.id == computer_id).first()
-
-    if not computer:
-        return False
-
-    return computer.user_id == user.id

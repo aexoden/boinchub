@@ -94,7 +94,7 @@ export default function ProjectsPage() {
     };
 
     // Handle project deletion
-    const handleDeleteProject = async (projectId: number) => {
+    const handleDeleteProject = async (projectId: string) => {
         if (!window.confirm("Are you sure you want to delete this project?")) {
             return;
         }

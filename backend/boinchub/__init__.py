@@ -9,11 +9,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from boinchub.__about__ import __version__
-from boinchub.api.endpoints import auth, computers, project_attachments, project_config, projects, rpc, users
-from boinchub.core.database import Base, engine
+from boinchub.api.endpoints import auth, boinc, computers, project_attachments, projects, users
 from boinchub.core.settings import settings
-
-Base.metadata.create_all(bind=engine)
 
 
 def _create_app() -> FastAPI:
@@ -23,13 +20,12 @@ def _create_app() -> FastAPI:
         version=__version__,
     )
 
-    app.include_router(project_config.router)
-    app.include_router(rpc.router)
     app.include_router(computers.router)
-    app.include_router(users.router)
-    app.include_router(projects.router)
-    app.include_router(project_attachments.router)
     app.include_router(auth.router)
+    app.include_router(boinc.router)
+    app.include_router(project_attachments.router)
+    app.include_router(projects.router)
+    app.include_router(users.router)
 
     # Add CORS middleware
     origins = [

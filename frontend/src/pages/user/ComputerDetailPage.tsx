@@ -18,8 +18,8 @@ export default function ComputerDetailPage() {
 
     // Modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedProject, setSelectedProject] = useState<number | "">("");
-    const [authenticator, setAuthenticator] = useState("");
+    const [selectedProject, setSelectedProject] = useState<string>("");
+    const [account_key, setAccountKey] = useState("");
     const [resourceShare, setResourceShare] = useState("100");
 
     useEffect(() => {
@@ -29,14 +29,12 @@ export default function ComputerDetailPage() {
             }
 
             try {
-                const compId = parseInt(computerId);
-
                 // Fetch computer details
-                const computerData = await computerService.getComputerById(compId);
+                const computerData = await computerService.getComputerById(computerId);
                 setComputer(computerData);
 
                 // Fetch computer's attachments
-                const attachmentsData = await attachmentService.getComputerAttachments(compId);
+                const attachmentsData = await attachmentService.getComputerAttachments(computerId);
                 setAttachments(attachmentsData);
 
                 // Fetch all available projects
@@ -59,22 +57,32 @@ export default function ComputerDetailPage() {
 
     const handleAddAttachment = () => {
         setSelectedProject("");
-        setAuthenticator("");
+        setAccountKey("");
         setResourceShare("100");
         setIsModalOpen(true);
     };
 
     const handleCreateAttachment = async () => {
-        if (!selectedProject || !authenticator || !computer) {
-            setError("Please fill in all required fields.");
+        if (!selectedProject) {
+            setError("Please select a project to attach.");
+            return;
+        }
+
+        if (!account_key) {
+            setError("Please enter a valid account key.");
+            return;
+        }
+
+        if (!computer) {
+            setError("Computer not found.");
             return;
         }
 
         try {
             const attachmentData: ProjectAttachmentCreate = {
                 computer_id: computer.id,
-                project_id: Number(selectedProject),
-                authenticator,
+                project_id: selectedProject,
+                account_key,
                 resource_share: Number(resourceShare),
             };
             const newAttachment = await attachmentService.createAttachment(attachmentData);
@@ -83,7 +91,7 @@ export default function ComputerDetailPage() {
             setAttachments([...attachments, newAttachment]);
 
             // Remove the project from available projects
-            setAvailableProjects(availableProjects.filter((p) => p.id !== Number(selectedProject)));
+            setAvailableProjects(availableProjects.filter((p) => p.id !== selectedProject));
 
             // Close the modal
             setIsModalOpen(false);
@@ -92,7 +100,7 @@ export default function ComputerDetailPage() {
         }
     };
 
-    const handleDeleteAttachment = async (attachmentId: number) => {
+    const handleDeleteAttachment = async (attachmentId: string) => {
         if (!window.confirm("Are you sure you want to detach this project?")) {
             return;
         }
@@ -169,7 +177,7 @@ export default function ComputerDetailPage() {
         <div>
             <div className="mb-8 flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">{computer.domain_name}</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">{computer.hostname}</h1>
                     <p className="mt-1 text-gray-600">Computer details and attached projects</p>
                 </div>
                 <button
@@ -186,10 +194,10 @@ export default function ComputerDetailPage() {
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
                         <h3 className="text-sm font-medium text-gray-500">Domain Name</h3>
-                        <p className="mt-1 text-gray-900">{computer.domain_name}</p>
+                        <p className="mt-1 text-gray-900">{computer.hostname}</p>
                     </div>
                     <div>
-                        <h3 className="text-sm font-medium text-gray-500">CPID</h3>
+                        <h3 className="text-sm font-medium text-gray-500">BOINC CPID</h3>
                         <p className="mt-1 font-mono text-gray-900">{computer.cpid}</p>
                     </div>
                     <div>
@@ -201,8 +209,8 @@ export default function ComputerDetailPage() {
                         <p className="mt-1 text-gray-900">{formatDate(computer.updated_at)}</p>
                     </div>
                     <div>
-                        <h3 className="text-sm font-medium text-gray-500">BoincHub UUID</h3>
-                        <p className="mt-1 font-mono text-gray-900">{computer.uuid}</p>
+                        <h3 className="text-sm font-medium text-gray-500">BoincHub ID</h3>
+                        <p className="mt-1 font-mono text-gray-900">{computer.id}</p>
                     </div>
                 </div>
             </div>
@@ -329,7 +337,7 @@ export default function ComputerDetailPage() {
                                     id="project"
                                     value={selectedProject}
                                     onChange={(e) => {
-                                        setSelectedProject(parseInt(e.target.value));
+                                        setSelectedProject(e.target.value);
                                     }}
                                     className="required mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                 >
@@ -349,9 +357,9 @@ export default function ComputerDetailPage() {
                                 <input
                                     type="text"
                                     id="authenticator"
-                                    value={authenticator}
+                                    value={account_key}
                                     onChange={(e) => {
-                                        setAuthenticator(e.target.value);
+                                        setAccountKey(e.target.value);
                                     }}
                                     className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                     required

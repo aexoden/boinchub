@@ -3,188 +3,136 @@
 # SPDX-License-Identifier: MIT
 """Service for project attachment-related operations."""
 
-from fractions import Fraction
+from typing import Annotated
+from uuid import UUID
 
-from pydantic import BaseModel
-from sqlalchemy.orm import Session
+from fastapi import Depends
+from sqlmodel import Session, select
 
-from boinchub.models.computer import Computer
-from boinchub.models.project import Project
-from boinchub.models.project_attachment import ProjectAttachment
-
-
-class ProjectAttachmentCreate(BaseModel):
-    """Model for creating a new project attachment."""
-
-    computer_id: int
-    project_id: int
-    resource_share: Fraction = Fraction(100)
-    suspended: bool = False
-    dont_request_more_work: bool = False
-    detach_when_done: bool = False
-    no_cpu: bool = False
-    no_gpu_nvidia: bool = False
-    no_gpu_amd: bool = False
-    no_gpu_intel: bool = False
-    authenticator: str
-
-
-class ProjectAttachmentUpdate(BaseModel):
-    """Model for updating a project attachment."""
-
-    resource_share: Fraction | None = None
-    suspended: bool | None = None
-    dont_request_more_work: bool | None = None
-    detach_when_done: bool | None = None
-    no_cpu: bool | None = None
-    no_gpu_nvidia: bool | None = None
-    no_gpu_amd: bool | None = None
-    no_gpu_intel: bool | None = None
-    authenticator: str | None = None
+from boinchub.core.database import get_db
+from boinchub.models.project_attachment import ProjectAttachment, ProjectAttachmentCreate, ProjectAttachmentUpdate
 
 
 class ProjectAttachmentService:
     """Service for project attachment-related operations."""
 
-    @staticmethod
-    def create_attachment(db: Session, attachment_data: ProjectAttachmentCreate) -> ProjectAttachment | None:
+    def __init__(self, db: Session) -> None:
+        """Initialize the ProjectAttachmentService with a database session.
+
+        Args:
+            db (Session): The database session to use.
+
+        """
+        self.db = db
+
+    def create_project_attachment(self, project_attachment_data: ProjectAttachmentCreate) -> ProjectAttachment:
         """Create a new project attachment.
 
         Args:
-            db (Session): The database session.
             attachment_data (ProjectAttachmentCreate): The data for the new project attachment.
 
         Returns:
-            The created project attachment object or None if computer or project not found.
+            ProjectAttachment: The created project attachment object.
+
         """
-        # Check if the computer and project exist
-        computer = db.query(Computer).filter(Computer.id == attachment_data.computer_id).first()
-        project = db.query(Project).filter(Project.id == attachment_data.project_id).first()
+        project_attachment = ProjectAttachment.model_validate(project_attachment_data)
 
-        if not computer or not project:
-            return None
+        self.db.add(project_attachment)
+        self.db.commit()
+        self.db.refresh(project_attachment)
 
-        existing = (
-            db.query(ProjectAttachment)
-            .filter(
-                ProjectAttachment.computer_id == attachment_data.computer_id,
-                ProjectAttachment.project_id == attachment_data.project_id,
-            )
-            .first()
-        )
+        return project_attachment
 
-        if existing:
-            return existing
+    def delete_project_attachment(self, project_attachment_id: UUID) -> bool:
+        """Delete a project attachment.
 
-        # Create the new project attachment
-        db_attachment = ProjectAttachment(
-            computer=computer,
-            project=project,
-            resource_share=attachment_data.resource_share,
-            suspended=attachment_data.suspended,
-            dont_request_more_work=attachment_data.dont_request_more_work,
-            detach_when_done=attachment_data.detach_when_done,
-            no_cpu=attachment_data.no_cpu,
-            no_gpu_nvidia=attachment_data.no_gpu_nvidia,
-            no_gpu_amd=attachment_data.no_gpu_amd,
-            no_gpu_intel=attachment_data.no_gpu_intel,
-            authenticator=attachment_data.authenticator,
-        )
+        Args:
+            project_attachment_id (UUID): The ID of the project attachment to delete.
 
-        db.add(db_attachment)
-        db.commit()
+        Returns:
+            bool: True if the project attachment exists and was deleted, False otherwise.
 
-        return db_attachment
+        """
+        project_attachment = self.get_project_attachment(project_attachment_id)
 
-    @staticmethod
-    def get_attachment(db: Session, attachment_id: int) -> ProjectAttachment | None:
+        if not project_attachment:
+            return False
+
+        self.db.delete(project_attachment)
+        self.db.commit()
+
+        return True
+
+    def get_project_attachment(self, project_attachment_id: UUID) -> ProjectAttachment | None:
         """Get a project attachment by ID.
 
         Args:
-            db (Session): The database session.
-            attachment_id (int): The ID of the project attachment.
+            project_attachment_id (UUID): The ID of the project attachment.
 
         Returns:
-            The project attachment object or None if not found.
+            ProjectAttachment | None: The project attachment object if it exists, None otherwise.
 
         """
-        return db.query(ProjectAttachment).filter(ProjectAttachment.id == attachment_id).first()
+        return self.db.get(ProjectAttachment, project_attachment_id)
 
-    @staticmethod
-    def get_computer_attachments(db: Session, computer_id: int) -> list[ProjectAttachment]:
+    def get_project_attachments_for_computer(self, computer_id: UUID) -> list[ProjectAttachment]:
         """Get all project attachments for a computer.
 
         Args:
-            db (Session): The database session.
-            computer_id (int): The ID of the computer.
+            computer_id (UUID): The ID of the computer.
 
         Returns:
-            A list of project attachment objects.
+            list[ProjectAttachment]: A list of project attachment objects for the specific computer.
 
         """
-        return db.query(ProjectAttachment).filter(ProjectAttachment.computer_id == computer_id).all()
+        return list(self.db.exec(select(ProjectAttachment).where(ProjectAttachment.computer_id == computer_id)).all())
 
-    @staticmethod
-    def get_project_attachments(db: Session, project_id: int) -> list[ProjectAttachment]:
+    def get_project_attachments_for_project(self, project_id: UUID) -> list[ProjectAttachment]:
         """Get all project attachments for a project.
 
         Args:
-            db (Session): The database session.
-            project_id (int): The ID of the project.
+            project_id (UUID): The ID of the project.
 
         Returns:
-            A list of project attachment objects.
+            list[ProjectAttachment]: A list of project attachment objects for the specific project.
 
         """
-        return db.query(ProjectAttachment).filter(ProjectAttachment.project_id == project_id).all()
+        return list(self.db.exec(select(ProjectAttachment).where(ProjectAttachment.project_id == project_id)).all())
 
-    @staticmethod
-    def update_attachment(
-        db: Session, attachment_id: int, attachment_data: ProjectAttachmentUpdate
+    def update_project_attachment(
+        self, project_attachment_id: UUID, project_attachment_data: ProjectAttachmentUpdate
     ) -> ProjectAttachment | None:
         """Update a project attachment.
 
         Args:
-            db (Session): The database session.
-            attachment_id (int): The ID of the project attachment.
-            attachment_data (ProjectAttachmentUpdate): The data for the updated project attachment.
+            project_attachment_id (UUID): The ID of the project attachment to update.
+            project_attachment_data (ProjectAttachmentUpdate): The data for the updated project attachment.
 
         Returns:
-            The updated project attachment object or None if not found.
+            ProjectAttachment | None: The updated project attachment object if it exists, None otherwise.
 
         """
-        attachment = ProjectAttachmentService.get_attachment(db, attachment_id)
+        project_attachment = self.get_project_attachment(project_attachment_id)
 
-        if not attachment:
-            return None
+        if project_attachment:
+            update_data = project_attachment_data.model_dump(exclude_none=True)
+            project_attachment.sqlmodel_update(update_data)
 
-        update_data = attachment_data.model_dump(exclude_unset=True)
+            self.db.add(project_attachment)
+            self.db.commit()
+            self.db.refresh(project_attachment)
 
-        for key, value in update_data.items():
-            setattr(attachment, key, value)
+        return project_attachment
 
-        db.commit()
 
-        return attachment
+def get_project_attachment_service(db: Annotated[Session, Depends(get_db)]) -> ProjectAttachmentService:
+    """Get the project attachment service.
 
-    @staticmethod
-    def delete_attachment(db: Session, attachment_id: int) -> bool:
-        """Delete a project attachment.
+    Args:
+        db (Session): The database session.
 
-        Args:
-            db (Session): The database session.
-            attachment_id (int): The ID of the project attachment to delete.
+    Returns:
+        ProjectAttachmentService: An instance of the project attachment service.
 
-        Returns:
-            True if the project attachment was deleted, False if not found.
-
-        """
-        attachment = ProjectAttachmentService.get_attachment(db, attachment_id)
-
-        if not attachment:
-            return False
-
-        db.delete(attachment)
-        db.commit()
-
-        return True
+    """
+    return ProjectAttachmentService(db)

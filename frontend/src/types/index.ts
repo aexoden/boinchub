@@ -1,6 +1,6 @@
 // User related types
 export interface User {
-    id: number;
+    id: string;
     username: string;
     email: string;
     role: string;
@@ -25,18 +25,17 @@ export interface UserUpdate {
 
 // Computer related types
 export interface Computer {
-    id: number;
-    uuid: string;
+    id: string;
     cpid: string;
-    domain_name: string;
-    user_id: number;
+    hostname: string;
+    user_id: string;
     created_at: string;
     updated_at: string;
 }
 
 // Project related types
 export interface Project {
-    id: number;
+    id: string;
     name: string;
     url: string;
     signed_url: string;
@@ -65,9 +64,9 @@ export interface ProjectUpdate {
 
 // Project Attachment related types
 export interface ProjectAttachment {
-    id: number;
-    computer_id: number;
-    project_id: number;
+    id: string;
+    computer_id: string;
+    project_id: string;
     resource_share: number;
     suspended: boolean;
     dont_request_more_work: boolean;
@@ -76,12 +75,12 @@ export interface ProjectAttachment {
     no_gpu_nvidia: boolean;
     no_gpu_amd: boolean;
     no_gpu_intel: boolean;
-    authenticator: string;
+    account_key: string;
 }
 
 export interface ProjectAttachmentCreate {
-    computer_id: number;
-    project_id: number;
+    computer_id: string;
+    project_id: string;
     resource_share?: number;
     suspended?: boolean;
     dont_request_more_work?: boolean;
@@ -90,7 +89,7 @@ export interface ProjectAttachmentCreate {
     no_gpu_nvidia?: boolean;
     no_gpu_amd?: boolean;
     no_gpu_intel?: boolean;
-    authenticator?: string;
+    account_key?: string;
 }
 
 export interface ProjectAttachmentUpdate {
@@ -102,7 +101,7 @@ export interface ProjectAttachmentUpdate {
     no_gpu_nvidia?: boolean;
     no_gpu_amd?: boolean;
     no_gpu_intel?: boolean;
-    authenticator?: string;
+    account_key?: string;
 }
 
 // Authentication related types

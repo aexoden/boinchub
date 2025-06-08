@@ -72,7 +72,7 @@ export default function DashboardPage() {
                                 <tbody className="divide-y divide-gray-200 bg-white">
                                     {computers.map((computer) => (
                                         <tr key={computer.id}>
-                                            <td className="px-6 py-4 whitespace-nowrap">{computer.domain_name}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap">{computer.hostname}</td>
                                             <td className="px-6 py-4 font-mono text-sm whitespace-nowrap">
                                                 {computer.cpid.substring(0, 8)}...
                                             </td>

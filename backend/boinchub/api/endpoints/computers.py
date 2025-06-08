@@ -3,65 +3,57 @@
 # SPDX-License-Identifier: MIT
 """API endpoints for computer management."""
 
-import datetime
-
 from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Path, status
-from pydantic import BaseModel, ConfigDict
-from sqlalchemy.orm import Session
 
-from boinchub.core.auth import get_current_active_user, user_has_access_to_computer
-from boinchub.core.database import get_db
-from boinchub.models.computer import Computer
+from boinchub.core.security import get_current_user_if_active
+from boinchub.models.computer import ComputerPublic
+from boinchub.models.project_attachment import ProjectAttachmentPublic
 from boinchub.models.user import User
+from boinchub.services.computer_service import ComputerService, get_computer_service
+from boinchub.services.project_attachment_service import ProjectAttachmentService, get_project_attachment_service
 
 router = APIRouter(prefix="/api/v1/computers", tags=["computers"])
 
 
-class ComputerResponse(BaseModel):
-    """Response model for computer data."""
-
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    uuid: UUID
-    cpid: str
-    domain_name: str
-    created_at: datetime.datetime
-    updated_at: datetime.datetime
-
-
-@router.get("")
-def get_user_computers(
-    db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_active_user)],
-) -> list[ComputerResponse]:
-    """Get all computers for the current user.
+@router.get("/")
+def get_computers(
+    computer_service: Annotated[ComputerService, Depends(get_computer_service)],
+    current_user: Annotated[User, Depends(get_current_user_if_active)],
+) -> list[ComputerPublic]:
+    """Get a list of computers.
 
     Args:
-        db (Session): The database session.
+        computer_service (ComputerService): The service for computer operations.
         current_user (User): The current authenticated user.
 
     Returns:
-        list[ComputerResponse]: List of computers associated with the user.
+        list[ComputerPublic]: A list of computers accessible to the user.
+
+    Raises:
+        HTTPException: If the user does not have access to any computers.
     """
-    computers = db.query(Computer).filter(Computer.user_id == current_user.id).all()
-    return [ComputerResponse.model_validate(computer) for computer in computers]
+    if current_user.role != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
+
+    computers = computer_service.get_computers(None)
+
+    return [ComputerPublic.model_validate(computer) for computer in computers]
 
 
 @router.get("/{computer_id}")
 def get_computer(
-    computer_id: Annotated[int, Path(ge=1)],
-    db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_active_user)],
-) -> ComputerResponse:
-    """Get a specific computer by ID.
+    computer_id: Annotated[UUID, Path()],
+    computer_service: Annotated[ComputerService, Depends(get_computer_service)],
+    current_user: Annotated[User, Depends(get_current_user_if_active)],
+) -> ComputerPublic:
+    """Get a computer by ID.
 
     Args:
-        computer_id (int): The ID of the computer to retrieve.
-        db (Session): The database session.
+        computer_id (UUID): The ID of the computer to retrieve.
+        computer_service (ComputerService): The service for computer operations.
         current_user (User): The current authenticated user.
 
     Returns:
@@ -70,12 +62,47 @@ def get_computer(
     Raises:
         HTTPException: If the computer does not exist or the user does not have access.
     """
-    if not user_has_access_to_computer(db, current_user, computer_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Computer not found")
-
-    computer = db.query(Computer).filter(Computer.id == computer_id).first()
+    computer = computer_service.get_computer(computer_id)
 
     if not computer:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Computer not found.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Computer not found")
 
-    return ComputerResponse.model_validate(computer)
+    if current_user.role != "admin" and computer.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Computer not found")
+
+    return ComputerPublic.model_validate(computer)
+
+
+@router.get("/{computer_id}/project_attachments")
+def get_project_attachments(
+    computer_id: Annotated[UUID, Path()],
+    computer_service: Annotated[ComputerService, Depends(get_computer_service)],
+    project_attachment_service: Annotated[ProjectAttachmentService, Depends(get_project_attachment_service)],
+    current_user: Annotated[User, Depends(get_current_user_if_active)],
+) -> list[ProjectAttachmentPublic]:
+    """Get all project attachments for a computer.
+
+    Args:
+        computer_id (int): The ID of the computer.
+        computer_service (ComputerService): The service for computer operations.
+        project_attachment_service (ProjectAttachmentService): The service for project attachment operations.
+        current_user (User): The current authenticated user.
+
+    Returns:
+        list[ProjectAttachmentPublic]: A list of attachments.
+
+    Raises:
+        HTTPException: If the user does not have access to the computer.
+
+    """
+    computer = computer_service.get_computer(computer_id)
+
+    if not computer:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Computer not found")
+
+    if current_user.role != "admin" and computer.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Computer not found")
+
+    project_attachments = project_attachment_service.get_project_attachments_for_computer(computer_id)
+
+    return [ProjectAttachmentPublic.model_validate(attachment) for attachment in project_attachments]

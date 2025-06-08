@@ -4,165 +4,154 @@
 """API endpoints for project management."""
 
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
-from pydantic import BaseModel, ConfigDict
-from sqlalchemy.orm import Session
 
-from boinchub.core.auth import get_current_active_user, is_admin
-from boinchub.core.database import get_db
+from boinchub.core.security import get_current_user_if_active
+from boinchub.models.project import ProjectCreate, ProjectPublic, ProjectUpdate
+from boinchub.models.project_attachment import ProjectAttachmentPublic
 from boinchub.models.user import User
-from boinchub.services.project_service import ProjectCreate, ProjectService, ProjectUpdate
+from boinchub.services.project_attachment_service import ProjectAttachmentService, get_project_attachment_service
+from boinchub.services.project_service import ProjectService, get_project_service
 
 router = APIRouter(prefix="/api/v1/projects", tags=["projects"])
-
-
-class ProjectResponse(BaseModel):
-    """Response model for project data."""
-
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    name: str
-    url: str
-    signed_url: str
-    description: str
-    admin_notes: str
-    enabled: bool
 
 
 @router.post("")
 def create_project(
     project_data: ProjectCreate,
-    db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_active_user)],
-) -> ProjectResponse:
+    project_service: Annotated[ProjectService, Depends(get_project_service)],
+    current_user: Annotated[User, Depends(get_current_user_if_active)],
+) -> ProjectPublic:
     """Create a new project.
 
     Args:
         project_data (ProjectCreate): The data for the new project.
-        db (Session): The database session.
+        project_service (ProjectService): The service for project operations.
         current_user (User): The current authenticated user.
 
     Returns:
-        ProjectResponse: The created project data.
+        ProjectPublic: The created project data.
 
     Raises:
         HTTPException: If a project with the same URL already exists or if the user is not an admin.
 
     """
-    if not is_admin(current_user):
+    if current_user.role != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
 
-    existing_project = ProjectService.get_project_by_url(db, project_data.url)
-    if existing_project:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Project with this URL already exists.")
+    if project_service.get_project_by_url(project_data.url) is not None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Project with this URL already exists.")
 
-    project = ProjectService.create_project(db, project_data)
-    return ProjectResponse.model_validate(project)
+    project = project_service.create_project(project_data)
+
+    return ProjectPublic.model_validate(project)
 
 
 @router.get("")
 def get_projects(
-    db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_active_user)],
-    skip: Annotated[int, Query(ge=0)] = 0,
-    limit: Annotated[int, Query(ge=1, le=100)] = 100,
     *,
+    project_service: Annotated[ProjectService, Depends(get_project_service)],
+    current_user: Annotated[User, Depends(get_current_user_if_active)],
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=100)] = 100,
     enabled_only: bool = False,
-) -> list[ProjectResponse]:
+) -> list[ProjectPublic]:
     """Get a list of projects.
 
     Args:
-        db (Session): The database session.
+        project_service (ProjectService): The project service for database operations.
         current_user (User): The current authenticated user.
-        skip (int): Number of projects to skip.
+        offset (int): Number of projects to skip.
         limit (int): Maximum number of projects to return.
         enabled_only (bool): If True, only return enabled projects.
 
     Returns:
-        list[ProjectResponse]: A list of projects.
+        list[ProjectPublic]: A list of projects.
 
     """
-    if not is_admin(current_user):
+    # Only admins can see disabled projects
+    if current_user.role != "admin":
         enabled_only = True
 
-    projects = ProjectService.get_projects(db, skip, limit, enabled_only=enabled_only)
-    return [ProjectResponse.model_validate(project) for project in projects]
+    projects = project_service.get_projects(offset, limit, enabled_only=enabled_only)
+
+    return [ProjectPublic.model_validate(project) for project in projects]
 
 
 @router.get("/{project_id}")
 def get_project(
-    project_id: Annotated[int, Path(ge=1)],
-    db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_active_user)],
-) -> ProjectResponse:
-    """Get a project by its ID.
+    project_id: Annotated[UUID, Path()],
+    project_service: Annotated[ProjectService, Depends(get_project_service)],
+    current_user: Annotated[User, Depends(get_current_user_if_active)],
+) -> ProjectPublic:
+    """Get a project by ID.
 
     Args:
-        project_id (int): The ID of the project.
-        db (Session): The database session.
+        project_id (UUID): The ID of the project to retrieve.
+        project_service (ProjectService): The project service for database operations.
         current_user (User): The current authenticated user.
 
     Returns:
-        ProjectResponse: The project data.
+        ProjectPublic: The project data.
 
     Raises:
-        HTTPException: If the project is not found or if the user is not an admin and the project is not enabled.
+        HTTPException: If the project is not found or if the user does not have access.
 
     """
-    project = ProjectService.get_project(db, project_id)
+    project = project_service.get_project(project_id)
 
-    if not project or (not project.enabled and not is_admin(current_user)):
+    if not project or (not project.enabled and current_user.role != "admin"):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
-    return ProjectResponse.model_validate(project)
+    return ProjectPublic.model_validate(project)
 
 
-@router.put("/{project_id}")
+@router.patch("/{project_id}")
 def update_project(
-    project_id: Annotated[int, Path(ge=1)],
+    project_id: Annotated[UUID, Path()],
     project_data: ProjectUpdate,
-    db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_active_user)],
-) -> ProjectResponse:
+    project_service: Annotated[ProjectService, Depends(get_project_service)],
+    current_user: Annotated[User, Depends(get_current_user_if_active)],
+) -> ProjectPublic:
     """Update a project.
 
     Args:
-        project_id (int): The ID of the project.
+        project_id (UUID): The ID of the project to update.
         project_data (ProjectUpdate): The data to update the project with.
-        db (Session): The database session.
+        project_service (ProjectService): The project service for database operations.
         current_user (User): The current authenticated user.
 
     Returns:
-        ProjectResponse: The updated project.
+        ProjectPublic: The updated project data.
 
     Raises:
         HTTPException: If the project is not found or if the user is not an admin.
 
     """
-    if not is_admin(current_user):
+    if current_user.role != "admin":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
-    project = ProjectService.update_project(db, project_id, project_data)
+    project = project_service.update_project(project_id, project_data)
 
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
-    return ProjectResponse.model_validate(project)
+    return ProjectPublic.model_validate(project)
 
 
 @router.delete("/{project_id}")
 def delete_project(
-    project_id: Annotated[int, Path(ge=1)],
-    db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_active_user)],
+    project_id: Annotated[UUID, Path()],
+    project_service: Annotated[ProjectService, Depends(get_project_service)],
+    current_user: Annotated[User, Depends(get_current_user_if_active)],
 ) -> dict[str, str]:
     """Delete a project.
 
     Args:
-        project_id (int): The ID of the project.
-        db (Session): The database session.
+        project_id (UUID): The ID of the project to delete.
+        project_service (ProjectService): The project service for database operations.
         current_user (User): The current authenticated user.
 
     Returns:
@@ -172,12 +161,46 @@ def delete_project(
         HTTPException: If the project is not found or if the user is not an admin.
 
     """
-    if not is_admin(current_user):
+    if current_user.role != "admin":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
-    success = ProjectService.delete_project(db, project_id)
+    success = project_service.delete_project(project_id)
 
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
     return {"message": "Project deleted successfully"}
+
+
+@router.get("/{project_id}/project_attachments")
+def get_project_attachments(
+    project_id: Annotated[UUID, Path()],
+    project_service: Annotated[ProjectService, Depends(get_project_service)],
+    project_attachment_service: Annotated[ProjectAttachmentService, Depends(get_project_attachment_service)],
+    current_user: Annotated[User, Depends(get_current_user_if_active)],
+) -> list[ProjectAttachmentPublic]:
+    """Get all project attachments for a project.
+
+    Args:
+        project_id (int): The ID of the project.
+        project_service (ProjectService): The service for project operations.
+        project_attachment_service (ProjectAttachmentService): The service for project attachment operations.
+        current_user (User): The current authenticated user.
+
+    Returns:
+        list[ProjectAttachmentPublic]: A list of project attachments.
+
+    Raises:
+        HTTPException: If the user is not an admin or if the project does not exist.
+
+    """
+    project = project_service.get_project(project_id)
+
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
+    if current_user.role != "admin":
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
+    project_attachments = project_attachment_service.get_project_attachments_for_project(project_id)
+    return [ProjectAttachmentPublic.model_validate(attachment) for attachment in project_attachments]

@@ -33,10 +33,8 @@ export default function AttachmentDetailPage() {
             }
 
             try {
-                const id = parseInt(attachmentId);
-
                 // Fetch attachment details
-                const attachmentData = await attachmentService.getAttachmentById(id);
+                const attachmentData = await attachmentService.getAttachmentById(attachmentId);
                 setAttachment(attachmentData);
 
                 // Set form state
@@ -160,7 +158,7 @@ export default function AttachmentDetailPage() {
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Project Attachment Settings</h1>
                     <p className="mt-1 text-gray-600">
-                        Manage settings for {project.name} on {computer.domain_name}
+                        Manage settings for {project.name} on {computer.hostname}
                     </p>
                 </div>
                 <button
@@ -206,12 +204,12 @@ export default function AttachmentDetailPage() {
                             </div>
                             <div>
                                 <h3 className="text-sm font-medium text-gray-500">Computer</h3>
-                                <p className="mt-1 text-gray-900">{computer.domain_name}</p>
+                                <p className="mt-1 text-gray-900">{computer.hostname}</p>
                             </div>
                             <div>
                                 <h3 className="text-sm font-medium text-gray-500">Authenticator</h3>
                                 <p className="mt-1 truncate font-mono text-sm text-gray-900">
-                                    {attachment.authenticator}
+                                    {attachment.account_key}
                                 </p>
                             </div>
                         </div>

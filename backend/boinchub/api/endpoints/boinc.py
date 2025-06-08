@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2025-present Jason Lynch <jason@aexoden.com>
 #
 # SPDX-License-Identifier: MIT
-"""RPC endpoint for BOINC account manager."""
+"""BOINC API endpoints."""
 
 import logging
 
@@ -9,19 +9,37 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response, status
 from pydantic import ValidationError
-from sqlalchemy.orm import Session
 
-from boinchub.core.database import get_db
+from boinchub.core.settings import settings
 from boinchub.core.xmlrpc import AccountManagerReply, AccountManagerRequest, BoincError
-from boinchub.services.account_service import AccountService
+from boinchub.services.boinc_service import BoincService, get_boinc_service
 
-router = APIRouter(
-    prefix="/boinc",
-)
+router = APIRouter(prefix="/boinc", tags=["boinc"])
+
+
+@router.get("/get_project_config.php", response_class=Response)
+async def get_project_config() -> Response:
+    """Get the BOINC project configuration.
+
+    Returns:
+        XML response with the account manager configuration.
+
+    """
+    xml_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<project_config>
+    <name>{settings.account_manager_name}</name>
+    <account_manager/>
+    <client_account_creation_disabled/>
+    <min_passwd_length>{settings.min_password_length}</min_passwd_length>
+    <uses_username/>
+</project_config>
+"""
+
+    return Response(content=xml_content, media_type="application/xml")
 
 
 @router.post("/rpc.php")
-async def rpc(request: Request, db: Annotated[Session, Depends(get_db)]) -> Response:
+async def rpc(request: Request, boinc_service: Annotated[BoincService, Depends(get_boinc_service)]) -> Response:
     """RPC endpoint for the BOINC account manager.
 
     Args:
@@ -36,8 +54,7 @@ async def rpc(request: Request, db: Annotated[Session, Depends(get_db)]) -> Resp
 
     try:
         request_data = AccountManagerRequest.from_xml(body)
-        account_service = AccountService(db)
-        reply = await account_service.process_request(request_data)
+        reply = await boinc_service.process_request(request_data)
     except ValidationError as _e:
         logger.exception("XML parsing/validation error")
         status_code = status.HTTP_400_BAD_REQUEST

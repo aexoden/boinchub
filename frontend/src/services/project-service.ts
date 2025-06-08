@@ -11,8 +11,8 @@ export const projectService = {
     },
 
     // Get a project by ID
-    getProjectById: async (projectId: number): Promise<Project> => {
-        const response = await apiClient.get<Project>(`/api/v1/projects/${projectId.toString()}`);
+    getProjectById: async (projectId: string): Promise<Project> => {
+        const response = await apiClient.get<Project>(`/api/v1/projects/${projectId}`);
         return response.data;
     },
 
@@ -23,14 +23,14 @@ export const projectService = {
     },
 
     // Admin: Update a project
-    updateProject: async (projectId: number, projectData: ProjectUpdate): Promise<Project> => {
-        const response = await apiClient.put<Project>(`/api/v1/projects/${projectId.toString()}`, projectData);
+    updateProject: async (projectId: string, projectData: ProjectUpdate): Promise<Project> => {
+        const response = await apiClient.patch<Project>(`/api/v1/projects/${projectId}`, projectData);
         return response.data;
     },
 
     // Admin: Delete a project
-    deleteProject: async (projectId: number): Promise<void> => {
-        await apiClient.delete(`/api/v1/projects/${projectId.toString()}`);
+    deleteProject: async (projectId: string): Promise<void> => {
+        await apiClient.delete(`/api/v1/projects/${projectId}`);
     },
 };
 

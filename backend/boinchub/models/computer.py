@@ -3,38 +3,61 @@
 # SPDX-License-Identifier: MIT
 """Computer model for BoincHub."""
 
-import datetime
-import uuid
-
 from typing import TYPE_CHECKING
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from sqlalchemy import ForeignKey, UniqueConstraint, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlmodel import Field, Relationship, SQLModel, UniqueConstraint
 
-from boinchub.core.database import Base
+from boinchub.models import Timestamps
+from boinchub.models.user import User
 
 if TYPE_CHECKING:
     from boinchub.models.project_attachment import ProjectAttachment
-    from boinchub.models.user import User
 
 
-class Computer(Base):
-    """Computer model for BoincHub."""
+class ComputerBase(SQLModel, Timestamps):
+    """Computer base model."""
 
-    __tablename__ = "computers"
+    # Computer properties
+    cpid: str
+    hostname: str
+
+    # Foreign keys
+    user_id: UUID = Field(foreign_key="users.id", ondelete="CASCADE")
+
+
+class Computer(ComputerBase, table=True):
+    """Computer model."""
+
+    # SQLAlchemy table name and constraints
+    __tablename__: str = "computers"  # type: ignore[attr-defined]
     __table_args__ = (UniqueConstraint("user_id", "cpid"),)
 
-    id: Mapped[int] = mapped_column(primary_key=True, init=False)
-    uuid: Mapped[UUID] = mapped_column(default=uuid.uuid4, unique=True, init=False)
-    cpid: Mapped[str]
-    domain_name: Mapped[str]
-    created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now(), init=False)
-    updated_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now(), onupdate=func.now(), init=False)
+    # Primary key
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), init=False)
-    user: Mapped["User"] = relationship(back_populates="computers")
+    # Relationships
+    project_attachments: list["ProjectAttachment"] = Relationship(back_populates="computer", cascade_delete=True)
+    user: User = Relationship(back_populates="computers")
 
-    project_attachments: Mapped[list["ProjectAttachment"]] = relationship(
-        default_factory=list, back_populates="computer", cascade="all, delete-orphan"
-    )
+
+class ComputerPublic(ComputerBase):
+    """Public computer model for API responses."""
+
+    # Primary key
+    id: UUID
+
+
+class ComputerCreate(ComputerBase):
+    """Model for creating a new computer."""
+
+
+class ComputerUpdate(SQLModel):
+    """Model for updating a computer."""
+
+    # Computer properties
+    cpid: str | None = None
+    hostname: str | None = None
+
+    # Relationships
+    user: User | None = None

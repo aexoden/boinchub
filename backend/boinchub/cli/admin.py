@@ -8,13 +8,10 @@ import argparse
 import getpass
 import sys
 
-from typing import TYPE_CHECKING
+from sqlmodel import Session
 
-from boinchub.core.database import SessionLocal
+from boinchub.core.database import engine
 from boinchub.services.user_service import UserCreate, UserService
-
-if TYPE_CHECKING:
-    from sqlalchemy.orm import Session
 
 
 def create_admin(username: str, email: str, password: str | None = None) -> bool:
@@ -36,31 +33,30 @@ def create_admin(username: str, email: str, password: str | None = None) -> bool
             print("Passwords do not match.")
             return False
 
-    db: Session = SessionLocal()
+    with Session(engine) as db:
+        user_service = UserService(db)
 
-    try:
-        existing_user = UserService.get_user_by_username(db, username)
+        try:
+            existing_user = user_service.get_user_by_username(username)
 
-        if existing_user:
-            print(f"User '{username}' already exists.")
+            if existing_user:
+                print(f"User '{username}' already exists.")
+                return False
+
+            user_data = UserCreate(
+                username=username,
+                password=password,
+                email=email,
+                role="admin",
+            )
+
+            user = user_service.create_user(user_data)
+            print(f"Admin user '{user.username}' created successfully.")
+        except Exception as e:  # noqa: BLE001
+            print(f"Error creating admin user: {e}")
             return False
-
-        user_data = UserCreate(
-            username=username,
-            password=password,
-            email=email,
-            role="admin",
-        )
-
-        user = UserService.create_user(db, user_data)
-        print(f"Admin user '{user.username}' created successfully.")
-    except Exception as e:  # noqa: BLE001
-        print(f"Error creating admin user: {e}")
-        return False
-    else:
-        return True
-    finally:
-        db.close()
+        else:
+            return True
 
 
 def main() -> None:

@@ -3,36 +3,60 @@
 # SPDX-License-Identifier: MIT
 """Project model for BoincHub."""
 
-import datetime
-
 from typing import TYPE_CHECKING
+from uuid import UUID, uuid4
 
-from sqlalchemy import func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlmodel import Field, Relationship, SQLModel
 
-from boinchub.core.database import Base
+from boinchub.models import Timestamps
 
 if TYPE_CHECKING:
     from boinchub.models.project_attachment import ProjectAttachment
 
 
-class Project(Base):
-    """Project model for Boinchub."""
+class ProjectBase(SQLModel, Timestamps):
+    """Project base model."""
 
-    __tablename__ = "projects"
+    # Project properties
+    name: str
+    url: str = Field(unique=True)
+    signed_url: str = Field(default="")
+    description: str = Field(default="")
+    admin_notes: str = Field(default="")
+    enabled: bool = Field(default=True)
 
-    id: Mapped[int] = mapped_column(primary_key=True, init=False)
-    name: Mapped[str]
-    url: Mapped[str] = mapped_column(unique=True)
-    signed_url: Mapped[str] = mapped_column(default="")
-    description: Mapped[str] = mapped_column(default="")
-    admin_notes: Mapped[str] = mapped_column(default="")
 
-    enabled: Mapped[bool] = mapped_column(default=True)
+class Project(ProjectBase, table=True):
+    """Project model."""
 
-    created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now(), init=False)
-    updated_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now(), onupdate=func.now(), init=False)
+    # SQLAlchemy table name
+    __tablename__: str = "projects"  # type: ignore[attr-defined]
 
-    attachments: Mapped[list["ProjectAttachment"]] = relationship(
-        default_factory=list, back_populates="project", cascade="all, delete-orphan"
-    )
+    # Primary key
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    # Relationships
+    attachments: list["ProjectAttachment"] = Relationship(back_populates="project", cascade_delete=True)
+
+
+class ProjectPublic(ProjectBase):
+    """Public project model for API responses."""
+
+    # Primary key
+    id: UUID
+
+
+class ProjectCreate(ProjectBase):
+    """Model for creating a new project."""
+
+
+class ProjectUpdate(SQLModel):
+    """Model for updating a project."""
+
+    # Project properties
+    name: str | None = None
+    url: str | None = None
+    signed_url: str | None = None
+    description: str | None = None
+    admin_notes: str | None = None
+    enabled: bool | None = None

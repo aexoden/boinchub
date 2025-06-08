@@ -4,47 +4,45 @@ import { ProjectAttachment, ProjectAttachmentCreate, ProjectAttachmentUpdate } f
 export const attachmentService = {
     // Create an attachment
     createAttachment: async (attachmentData: ProjectAttachmentCreate): Promise<ProjectAttachment> => {
-        const response = await apiClient.post<ProjectAttachment>("/api/v1/attachments", attachmentData);
+        const response = await apiClient.post<ProjectAttachment>("/api/v1/project_attachments", attachmentData);
         return response.data;
     },
 
     // Get attachments for a computer
-    getComputerAttachments: async (computerId: number): Promise<ProjectAttachment[]> => {
+    getComputerAttachments: async (computerId: string): Promise<ProjectAttachment[]> => {
         const response = await apiClient.get<ProjectAttachment[]>(
-            `/api/v1/attachments/computer/${computerId.toString()}`,
+            `/api/v1/computers/${computerId}/project_attachments`,
         );
         return response.data;
     },
 
     // Admin: Get attachments for a project
-    getProjectAttachments: async (projectId: number): Promise<ProjectAttachment[]> => {
-        const response = await apiClient.get<ProjectAttachment[]>(
-            `/api/v1/attachments/project/${projectId.toString()}`,
-        );
+    getProjectAttachments: async (projectId: string): Promise<ProjectAttachment[]> => {
+        const response = await apiClient.get<ProjectAttachment[]>(`/api/v1/projects/${projectId}/project_attachments`);
         return response.data;
     },
 
     // Get an attachment by ID
-    getAttachmentById: async (attachmentId: number): Promise<ProjectAttachment> => {
-        const response = await apiClient.get<ProjectAttachment>(`/api/v1/attachments/${attachmentId.toString()}`);
+    getAttachmentById: async (attachmentId: string): Promise<ProjectAttachment> => {
+        const response = await apiClient.get<ProjectAttachment>(`/api/v1/project_attachments/${attachmentId}`);
         return response.data;
     },
 
     // Update an attachment
     updateAttachment: async (
-        attachmentId: number,
+        attachmentId: string,
         attachmentData: ProjectAttachmentUpdate,
     ): Promise<ProjectAttachment> => {
-        const response = await apiClient.put<ProjectAttachment>(
-            `/api/v1/attachments/${attachmentId.toString()}`,
+        const response = await apiClient.patch<ProjectAttachment>(
+            `/api/v1/project_attachments/${attachmentId}`,
             attachmentData,
         );
         return response.data;
     },
 
     // Delete an attachment
-    deleteAttachment: async (attachmentId: number): Promise<void> => {
-        await apiClient.delete(`/api/v1/attachments/${attachmentId.toString()}`);
+    deleteAttachment: async (attachmentId: string): Promise<void> => {
+        await apiClient.delete(`/api/v1/project_attachments/${attachmentId}`);
     },
 };
 

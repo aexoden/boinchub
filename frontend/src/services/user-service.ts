@@ -27,20 +27,20 @@ export const userService = {
     },
 
     // Admin: Get user by ID
-    getUserById: async (userId: number): Promise<User> => {
-        const response = await apiClient.get<User>(`/api/v1/users/${userId.toString()}`);
+    getUserById: async (userId: string): Promise<User> => {
+        const response = await apiClient.get<User>(`/api/v1/users/${userId}`);
         return response.data;
     },
 
     // Admin: Update a user
-    updateUser: async (userId: number, userData: UserUpdate): Promise<User> => {
-        const response = await apiClient.patch<User>(`/api/v1/users/${userId.toString()}`, userData);
+    updateUser: async (userId: string, userData: UserUpdate): Promise<User> => {
+        const response = await apiClient.patch<User>(`/api/v1/users/${userId}`, userData);
         return response.data;
     },
 
     // Admin: Delete a user
-    deleteUser: async (userId: number): Promise<void> => {
-        await apiClient.delete(`/api/v1/users/${userId.toString()}`);
+    deleteUser: async (userId: string): Promise<void> => {
+        await apiClient.delete(`/api/v1/users/${userId}`);
     },
 };
 

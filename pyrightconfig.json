@@ -1,0 +1,4 @@
+{
+    "executionEnvironments": [{ "root": "backend" }],
+    "exclude": ["backend/.venv", "backend/alembic"]
+}

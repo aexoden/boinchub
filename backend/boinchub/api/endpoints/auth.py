@@ -9,26 +9,23 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
 
-from boinchub.core.auth import ACCESS_TOKEN_EXPIRE_MINUTES, Token, authenticate_user, create_access_token
-from boinchub.core.database import get_db
+from boinchub.core.security import ACCESS_TOKEN_EXPIRE_MINUTES, Token, create_access_token
+from boinchub.services.user_service import UserService, get_user_service
 
-router = APIRouter(
-    prefix="/api/v1/auth",
-    tags=["authentication"],
-)
+router = APIRouter(prefix="/api/v1/auth", tags=["authentication"])
 
 
 @router.post("/login")
 async def login_for_access_token(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Annotated[Session, Depends(get_db)]
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    user_service: Annotated[UserService, Depends(get_user_service)],
 ) -> Token:
     """Generate a token for a user.
 
     Args:
-        from_data (OAuth2PasswordRequestForm): The form data containing username and password.
-        db (Session): The database session.
+        form_data (OAuth2PasswordRequestForm): The form data containing username and password.
+        user_service (UserService): The user service for database operations.
 
     Returns:
         Token: The generated token.
@@ -37,7 +34,7 @@ async def login_for_access_token(
         HTTPException: If authentication fails.
 
     """
-    user = authenticate_user(db, form_data.username, form_data.password)
+    user = user_service.authenticate_user(form_data.username, form_data.password)
 
     if not user:
         raise HTTPException(

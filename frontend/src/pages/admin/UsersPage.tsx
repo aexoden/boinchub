@@ -78,7 +78,7 @@ export default function UsersPage() {
     };
 
     // Handle user deletion
-    const handleDeleteUser = async (userId: number) => {
+    const handleDeleteUser = async (userId: string) => {
         if (!window.confirm("Are you sure you want to delete this user?")) {
             return;
         }

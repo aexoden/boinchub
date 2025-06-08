@@ -4,13 +4,13 @@ import { Computer } from "../types";
 export const computerService = {
     // Get computers for the current user
     getUserComputers: async (): Promise<Computer[]> => {
-        const response = await apiClient.get<Computer[]>("/api/v1/computers");
+        const response = await apiClient.get<Computer[]>("/api/v1/users/me/computers");
         return response.data;
     },
 
     // Get a computer by ID
-    getComputerById: async (computerId: number): Promise<Computer> => {
-        const response = await apiClient.get<Computer>(`/api/v1/computers/${computerId.toString()}`);
+    getComputerById: async (computerId: string): Promise<Computer> => {
+        const response = await apiClient.get<Computer>(`/api/v1/computers/${computerId}`);
         return response.data;
     },
 };

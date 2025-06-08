@@ -3,8 +3,7 @@
 # SPDX-License-Identifier: MIT
 """BOINC XML RPC models."""
 
-import fractions
-
+from decimal import Decimal
 from typing import Annotated
 from uuid import UUID
 
@@ -14,7 +13,6 @@ from pydantic_xml import BaseXmlModel, element, wrapped
 from boinchub.core.settings import settings
 
 BoolAsInt = Annotated[bool, PlainSerializer(lambda x: 1 if x else 0, return_type=int)]
-Fraction = Annotated[fractions.Fraction, PlainSerializer(lambda x: f"{x:.6f}", return_type=str)]
 
 
 class BoincError:
@@ -41,7 +39,7 @@ class Account(BaseXmlModel, tag="account", search_mode="unordered"):
     no_rsc: list[str] = element(default_factory=list)
     abort_not_started: BoolAsInt | None = element(default=None)
     authenticator: str = element()
-    resource_share: Fraction | None = element(default=None)
+    resource_share: Decimal | None = element(default=None)
 
 
 class HostSpecific(BaseXmlModel, tag="host_specific"):
@@ -57,41 +55,41 @@ class GlobalPreferences(BaseXmlModel, tag="global_preferences", search_mode="uno
 
     host_specific: HostSpecific | None = element(default=None)
     source_project: str | None = element(default=None)
-    mod_time: Fraction | None = element(default=None)
-    battery_charge_min_pct: Fraction | None = element(default=None)
-    battery_max_temperature: Fraction | None = element(default=None)
+    mod_time: Decimal | None = element(default=None)
+    battery_charge_min_pct: Decimal | None = element(default=None)
+    battery_max_temperature: Decimal | None = element(default=None)
     run_on_batteries: BoolAsInt | None = element(default=None)
     run_if_user_active: BoolAsInt | None = element(default=None)
     run_gpu_if_user_active: BoolAsInt | None = element(default=None)
-    suspend_if_no_recent_input: Fraction | None = element(default=None)
-    suspend_cpu_usage: Fraction | None = element(default=None)
-    start_hour: Fraction | None = element(default=None)
-    end_hour: Fraction | None = element(default=None)
-    net_start_hour: Fraction | None = element(default=None)
-    net_end_hour: Fraction | None = element(default=None)
+    suspend_if_no_recent_input: Decimal | None = element(default=None)
+    suspend_cpu_usage: Decimal | None = element(default=None)
+    start_hour: Decimal | None = element(default=None)
+    end_hour: Decimal | None = element(default=None)
+    net_start_hour: Decimal | None = element(default=None)
+    net_end_hour: Decimal | None = element(default=None)
     leave_apps_in_memory: BoolAsInt | None = element(default=None)
     confirm_before_connecting: BoolAsInt | None = element(default=None)
     hangup_if_dialed: BoolAsInt | None = element(default=None)
     dont_verify_images: BoolAsInt | None = element(default=None)
-    work_buf_min_days: Fraction | None = element(default=None)
-    work_buf_additional_days: Fraction | None = element(default=None)
-    max_ncpus_pct: Fraction | None = element(default=None)
-    niu_max_ncpus_pct: Fraction | None = element(default=None)
-    niu_cpu_usage_limit: Fraction | None = element(default=None)
-    niu_suspend_cpu_usage: Fraction | None = element(default=None)
-    cpu_scheduling_period_minutes: Fraction | None = element(default=None)
-    disk_interval: Fraction | None = element(default=None)
-    disk_max_used_gb: Fraction | None = element(default=None)
-    disk_max_used_pct: Fraction | None = element(default=None)
-    disk_min_free_gb: Fraction | None = element(default=None)
-    vm_max_used_pct: Fraction | None = element(default=None)
-    ram_max_used_busy_pct: Fraction | None = element(default=None)
-    ram_max_used_idle_pct: Fraction | None = element(default=None)
-    idle_time_to_run: Fraction | None = element(default=None)
-    max_bytes_sec_up: Fraction | None = element(default=None)
-    max_bytes_sec_down: Fraction | None = element(default=None)
-    cpu_usage_limit: Fraction | None = element(default=None)
-    daily_xfer_limit_mb: Fraction | None = element(default=None)
+    work_buf_min_days: Decimal | None = element(default=None)
+    work_buf_additional_days: Decimal | None = element(default=None)
+    max_ncpus_pct: Decimal | None = element(default=None)
+    niu_max_ncpus_pct: Decimal | None = element(default=None)
+    niu_cpu_usage_limit: Decimal | None = element(default=None)
+    niu_suspend_cpu_usage: Decimal | None = element(default=None)
+    cpu_scheduling_period_minutes: Decimal | None = element(default=None)
+    disk_interval: Decimal | None = element(default=None)
+    disk_max_used_gb: Decimal | None = element(default=None)
+    disk_max_used_pct: Decimal | None = element(default=None)
+    disk_min_free_gb: Decimal | None = element(default=None)
+    vm_max_used_pct: Decimal | None = element(default=None)
+    ram_max_used_busy_pct: Decimal | None = element(default=None)
+    ram_max_used_idle_pct: Decimal | None = element(default=None)
+    idle_time_to_run: Decimal | None = element(default=None)
+    max_bytes_sec_up: Decimal | None = element(default=None)
+    max_bytes_sec_down: Decimal | None = element(default=None)
+    cpu_usage_limit: Decimal | None = element(default=None)
+    daily_xfer_limit_mb: Decimal | None = element(default=None)
     daily_xfer_period_days: int | None = element(default=None)
     override_file_present: BoolAsInt | None = element(default=None)
     network_wifi_only: BoolAsInt | None = element(default=None)
@@ -109,16 +107,16 @@ class HostInfo(BaseXmlModel, tag="host_info", search_mode="unordered"):
     p_vendor: str = element()
     p_model: str = element()
     p_features: str = element()
-    p_fpops: Fraction = element()
-    p_iops: Fraction = element()
-    p_membw: Fraction = element()
-    p_calculated: Fraction = element()
+    p_fpops: Decimal = element()
+    p_iops: Decimal = element()
+    p_membw: Decimal = element()
+    p_calculated: Decimal = element()
     p_vm_extensions_disabled: BoolAsInt = element()
-    m_nbytes: Fraction = element()
-    m_cache: Fraction = element()
-    m_swap: Fraction = element()
-    d_total: Fraction = element()
-    d_free: Fraction = element()
+    m_nbytes: Decimal = element()
+    m_cache: Decimal = element()
+    m_swap: Decimal = element()
+    d_total: Decimal = element()
+    d_free: Decimal = element()
     os_name: str = element()
     os_version: str = element()
     n_usable_coprocs: int = element()
@@ -133,46 +131,46 @@ class Project(BaseXmlModel, tag="project", search_mode="unordered"):
     project_name: str = element()
     suspended_via_gui: BoolAsInt = element()
     hostid: int = element()
-    not_started_dur: Fraction = element()
-    in_progress_dur: Fraction = element()
+    not_started_dur: Decimal = element()
+    in_progress_dur: Decimal = element()
     attached_via_acct_mgr: BoolAsInt = element()
     dont_request_more_work: BoolAsInt = element()
     detach_when_done: BoolAsInt = element()
     ended: BoolAsInt = element()
-    resource_share: Fraction = element()
-    disk_usage: Fraction = element()
-    disk_share: Fraction = element()
+    resource_share: Decimal = element()
+    disk_usage: Decimal = element()
+    disk_share: Decimal = element()
     account_key: str = element()
 
 
 class NetStats(BaseXmlModel, tag="net_stats", search_mode="unordered"):
     """Network statistics XML model."""
 
-    bwup: Fraction = element()
-    avg_up: Fraction = element()
-    avg_time_up: Fraction = element()
-    bwdown: Fraction = element()
-    avg_down: Fraction = element()
-    avg_time_down: Fraction = element()
+    bwup: Decimal = element()
+    avg_up: Decimal = element()
+    avg_time_up: Decimal = element()
+    bwdown: Decimal = element()
+    avg_down: Decimal = element()
+    avg_time_down: Decimal = element()
 
 
 class TimeStats(BaseXmlModel, tag="time_stats", search_mode="unordered"):
     """Time statistics XML model."""
 
-    on_frac: Fraction = element()
-    connected_frac: Fraction = element()
-    cpu_and_network_available_frac: Fraction = element()
-    active_frac: Fraction = element()
-    gpu_active_frac: Fraction = element()
-    client_start_time: Fraction = element()
-    total_start_time: Fraction = element()
-    total_duration: Fraction = element()
-    total_active_duration: Fraction = element()
-    total_gpu_active_duration: Fraction = element()
-    now: Fraction = element()
-    previous_uptime: Fraction = element()
-    session_active_duration: Fraction = element()
-    session_gpu_active_duration: Fraction = element()
+    on_frac: Decimal = element()
+    connected_frac: Decimal = element()
+    cpu_and_network_available_frac: Decimal = element()
+    active_frac: Decimal = element()
+    gpu_active_frac: Decimal = element()
+    client_start_time: Decimal = element()
+    total_start_time: Decimal = element()
+    total_duration: Decimal = element()
+    total_active_duration: Decimal = element()
+    total_gpu_active_duration: Decimal = element()
+    now: Decimal = element()
+    previous_uptime: Decimal = element()
+    session_active_duration: Decimal = element()
+    session_gpu_active_duration: Decimal = element()
 
 
 class AccountManagerReply(BaseXmlModel, tag="acct_mgr_reply", search_mode="unordered"):

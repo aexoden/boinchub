@@ -3,158 +3,136 @@
 # SPDX-License-Identifier: MIT
 """Service for project-related operations."""
 
-from pydantic import BaseModel
-from sqlalchemy import func
-from sqlalchemy.orm import Session
+from typing import Annotated
+from uuid import UUID
 
-from boinchub.models.project import Project
+from fastapi import Depends
+from sqlmodel import Session, select
 
-
-class ProjectCreate(BaseModel):
-    """Model for creating a new project."""
-
-    name: str
-    url: str
-    signed_url: str
-    description: str
-    admin_notes: str
-    enabled: bool
-
-
-class ProjectUpdate(BaseModel):
-    """Model for updating a project."""
-
-    name: str | None = None
-    url: str | None = None
-    signed_url: str | None = None
-    description: str | None = None
-    admin_notes: str | None = None
-    enabled: bool | None = None
+from boinchub.core.database import get_db
+from boinchub.models.project import Project, ProjectCreate, ProjectUpdate
 
 
 class ProjectService:
     """Service for project-related operations."""
 
-    @staticmethod
-    def create_project(db: Session, project_data: ProjectCreate) -> Project:
+    def __init__(self, db: Session) -> None:
+        """Initialize the ProjectService with a database session."""
+        self.db = db
+
+    def create_project(self, project_data: ProjectCreate) -> Project:
         """Create a new project.
 
         Args:
-            db (Session): The database session.
             project_data (ProjectCreate): The data for the new project.
 
         Returns:
-            The created project object.
+            Project: The created project object.
 
         """
-        db_project = Project(
-            name=project_data.name,
-            url=project_data.url,
-            signed_url=project_data.signed_url,
-            description=project_data.description,
-            admin_notes=project_data.admin_notes,
-            enabled=project_data.enabled,
-        )
+        project = Project.model_validate(project_data)
 
-        db.add(db_project)
-        db.commit()
+        self.db.add(project)
+        self.db.commit()
+        self.db.refresh(project)
 
-        return db_project
+        return project
 
-    @staticmethod
-    def get_project(db: Session, project_id: int) -> Project | None:
+    def delete_project(self, project_id: UUID) -> bool:
+        """Delete a project by ID.
+
+        Args:
+            project_id (UUID): The ID of the project to delete.
+
+        Returns:
+            bool: True if the project exists and was deleted, False otherwise.
+
+        """
+        project = self.get_project(project_id)
+
+        if not project:
+            return False
+
+        self.db.delete(project)
+        self.db.commit()
+
+        return True
+
+    def get_project(self, project_id: UUID) -> Project | None:
         """Get a project by ID.
 
         Args:
-            db (Session): The database session.
-            project_id (int): The ID of the project.
+            project_id (UUID): The ID of the project.
 
         Returns:
-            The project object or None if not found.
+            Project | None: The project object if found, None otherwise.
 
         """
-        return db.query(Project).filter(Project.id == project_id).first()
+        return self.db.get(Project, project_id)
 
-    @staticmethod
-    def get_project_by_url(db: Session, project_url: str) -> Project | None:
+    def get_project_by_url(self, project_url: str) -> Project | None:
         """Get a project by URL.
 
         Args:
-            db (Session): The database session.
             project_url (str): The URL of the project.
 
         Returns:
-            The project object or None if not found.
+            Project | None: The project object if found, None otherwise.
 
         """
-        return db.query(Project).filter(Project.url == project_url).first()
+        return self.db.exec(select(Project).where(Project.url == project_url)).first()
 
-    @staticmethod
-    def get_projects(db: Session, skip: int = 0, limit: int = 100, *, enabled_only: bool = False) -> list[Project]:
+    def get_projects(self, offset: int = 0, limit: int = 100, *, enabled_only: bool = False) -> list[Project]:
         """Get a list of projects.
 
         Args:
-            db (Session): The database session.
-            skip (int): The number of projects to skip.
-            limit (int): The maximum number of projects to return.
+            offset (int): The number of projects to skip.
+            limit (int: The maximum number of projects to return.
             enabled_only (bool): Whether to return only enabled projects.
 
         Returns:
-            A list of project objects.
+            list[Project]: A list of project objects.
 
         """
-        query = db.query(Project)
+        query = select(Project)
 
         if enabled_only:
-            query = query.filter(Project.enabled)
+            query = query.where(Project.enabled == True)  # noqa: E712
 
-        return query.order_by(func.lower(Project.name)).offset(skip).limit(limit).all()
+        return list(self.db.exec(query.order_by(Project.name).offset(offset).limit(limit)).all())
 
-    @staticmethod
-    def update_project(db: Session, project_id: int, project_data: ProjectUpdate) -> Project | None:
+    def update_project(self, project_id: UUID, project_data: ProjectUpdate) -> Project | None:
         """Update a project.
 
         Args:
-            db (Session): The database session.
-            project_id (int): The ID of the project to update.
+            project_id (UUID): The ID of the project to update.
             project_data (ProjectUpdate): The data to update the project with.
 
         Returns:
-            The updated project object or None if not found.
+            Project | None: The updated project object if found, None otherwise.
 
         """
-        db_project = ProjectService.get_project(db, project_id)
+        project = self.get_project(project_id)
 
-        if not db_project:
-            return None
+        if project:
+            update_data = project_data.model_dump(exclude_none=True)
+            project.sqlmodel_update(update_data)
 
-        update_data = project_data.model_dump(exclude_unset=True)
+            self.db.add(project)
+            self.db.commit()
+            self.db.refresh(project)
 
-        for key, value in update_data.items():
-            setattr(db_project, key, value)
+        return project
 
-        db.commit()
 
-        return db_project
+def get_project_service(db: Annotated[Session, Depends(get_db)]) -> ProjectService:
+    """Get an instance of the ProjectService.
 
-    @staticmethod
-    def delete_project(db: Session, project_id: int) -> bool:
-        """Delete a project.
+    Args:
+        db (Session): The database session to use.
 
-        Args:
-            db (Session): The database session.
-            project_id (int): The ID of the project to delete.
+    Returns:
+        ProjectService: An instance of the project service.
 
-        Returns:
-            True if the project was deleted, False otherwise.
-
-        """
-        db_project = ProjectService.get_project(db, project_id)
-
-        if not db_project:
-            return False
-
-        db.delete(db_project)
-        db.commit()
-
-        return True
+    """
+    return ProjectService(db)

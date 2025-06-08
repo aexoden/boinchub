@@ -7,8 +7,8 @@ import { projectService } from "../../services/project-service";
 
 export default function ComputersPage() {
     const [computers, setComputers] = useState<Computer[]>([]);
-    const [computerAttachments, setComputerAttachments] = useState<Record<number, ProjectAttachment[]>>({});
-    const [projectNames, setProjectNames] = useState<Record<number, string>>({});
+    const [computerAttachments, setComputerAttachments] = useState<Record<string, ProjectAttachment[]>>({});
+    const [projectNames, setProjectNames] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -21,14 +21,14 @@ export default function ComputersPage() {
 
                 // Get all projects for name mapping
                 const projectsData = await projectService.getAllProjects(true);
-                const projectNamesMap: Record<number, string> = {};
+                const projectNamesMap: Record<string, string> = {};
                 projectsData.forEach((project) => {
                     projectNamesMap[project.id] = project.name;
                 });
                 setProjectNames(projectNamesMap);
 
                 // Get attachments for each computer
-                const attachmentsMap: Record<number, ProjectAttachment[]> = {};
+                const attachmentsMap: Record<string, ProjectAttachment[]> = {};
                 for (const computer of computersData) {
                     const attachments = await attachmentService.getComputerAttachments(computer.id);
                     attachmentsMap[computer.id] = attachments;
@@ -78,7 +78,7 @@ export default function ComputersPage() {
                     {computers.map((computer) => (
                         <div key={computer.id} className="overflow-hidden rounded-lg bg-white shadow">
                             <div className="flex items-center justify-between bg-primary-700 px-6 py-4 text-white">
-                                <h2 className="text-xl font-semibold">{computer.domain_name}</h2>
+                                <h2 className="text-xl font-semibold">{computer.hostname}</h2>
                                 <Link
                                     to={`/computers/${computer.id.toString()}`}
                                     className="rounded-md bg-white px-4 py-2 text-sm font-medium text-primary-700 hover:bg-primary-50"

@@ -3,7 +3,12 @@
 # SPDX-License-Identifier: MIT
 """Application settings module."""
 
+import warnings
+
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+MINIMUM_SECRET_KEY_LENGTH = 32
 
 
 class Settings(BaseSettings):
@@ -17,7 +22,7 @@ class Settings(BaseSettings):
     port: int = 8500
 
     # Database settings
-    database_url: str = "sqlite:///./boinchub.db"
+    database_url: str = "postgresql+psycopg2://postgres:password@localhost/boinchub"
 
     # Account manager settings
     account_manager_name: str = "BoincHub"
@@ -25,11 +30,57 @@ class Settings(BaseSettings):
     min_password_length: int = 16
 
     # Signing key settings
-    public_key: str = "INVALID SIGNING KEY"
+    public_key: str = "INVALID PUBLIC KEY"
 
     # JWT settings
     secret_key: str = ""
     access_token_expire_minutes: int = 30
+
+    @field_validator("secret_key")
+    @classmethod
+    def validate_secret_key(cls, value: str) -> str:
+        """Validate that the secret key is set and sufficiently complex.
+
+        Args:
+            value (str): The secret key to validate.
+
+        Returns:
+            str: The validated secret key.
+
+        Raises:
+            ValueError: If the secret key is not set or is too short.
+
+        """
+        if not value:
+            msg = "SECRET_KEY must be set for security"
+            raise ValueError(msg)
+
+        if len(value) < MINIMUM_SECRET_KEY_LENGTH:
+            msg = f"SECRET_KEY must be at least {MINIMUM_SECRET_KEY_LENGTH} characters long"
+            raise ValueError(msg)
+
+        return value
+
+    @field_validator("database_url")
+    @classmethod
+    def validate_database_url(cls, value: str) -> str:
+        """Warn about databases other than PostgreSQL.
+
+        Args:
+            value (str): The database URL to validate.
+
+        Returns:
+            str: The validated database URL.
+
+        """
+        if not value.startswith("postgresql"):
+            warnings.warn(
+                "Using a non-PostgreSQL database is not recommended. BoincHub is optimized for PostgreSQL.",
+                UserWarning,
+                stacklevel=2,
+            )
+
+        return value
 
 
 settings = Settings()

@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from boinchub.models.project_attachment import ProjectAttachment
 
 
-class ComputerBase(SQLModel, Timestamps):
+class ComputerBase(SQLModel):
     """Computer base model."""
 
     # Computer properties
@@ -26,7 +26,7 @@ class ComputerBase(SQLModel, Timestamps):
     user_id: UUID = Field(foreign_key="users.id", ondelete="CASCADE", index=True)
 
 
-class Computer(ComputerBase, table=True):
+class Computer(ComputerBase, Timestamps, table=True):
     """Computer model."""
 
     # SQLAlchemy table name and constraints
@@ -41,7 +41,7 @@ class Computer(ComputerBase, table=True):
     user: User = Relationship(back_populates="computers")
 
 
-class ComputerPublic(ComputerBase):
+class ComputerPublic(ComputerBase, Timestamps):
     """Public computer model for API responses."""
 
     # Primary key

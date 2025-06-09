@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from boinchub.models.project import Project
 
 
-class ProjectAttachmentBase(SQLModel, Timestamps):
+class ProjectAttachmentBase(SQLModel):
     """Project attachment base model."""
 
     # Foreign keys
@@ -39,7 +39,7 @@ class ProjectAttachmentBase(SQLModel, Timestamps):
     account_key: str = Field(default="")
 
 
-class ProjectAttachment(ProjectAttachmentBase, table=True):
+class ProjectAttachment(ProjectAttachmentBase, Timestamps, table=True):
     """Project attachment model."""
 
     # SQLAlchemy table name and constraints
@@ -54,7 +54,7 @@ class ProjectAttachment(ProjectAttachmentBase, table=True):
     project: "Project" = Relationship(back_populates="attachments")
 
 
-class ProjectAttachmentPublic(ProjectAttachmentBase):
+class ProjectAttachmentPublic(ProjectAttachmentBase, Timestamps):
     """Public model for project attachment in API responses."""
 
     # Primary key

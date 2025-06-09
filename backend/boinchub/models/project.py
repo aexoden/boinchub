@@ -14,19 +14,19 @@ if TYPE_CHECKING:
     from boinchub.models.project_attachment import ProjectAttachment
 
 
-class ProjectBase(SQLModel, Timestamps):
+class ProjectBase(SQLModel):
     """Project base model."""
 
     # Project properties
-    name: str
+    name: str = Field(index=True)
     url: str = Field(unique=True)
     signed_url: str = Field(default="")
     description: str = Field(default="")
     admin_notes: str = Field(default="")
-    enabled: bool = Field(default=True)
+    enabled: bool = Field(default=True, index=True)
 
 
-class Project(ProjectBase, table=True):
+class Project(ProjectBase, Timestamps, table=True):
     """Project model."""
 
     # SQLAlchemy table name
@@ -39,7 +39,7 @@ class Project(ProjectBase, table=True):
     attachments: list["ProjectAttachment"] = Relationship(back_populates="project", cascade_delete=True)
 
 
-class ProjectPublic(ProjectBase):
+class ProjectPublic(ProjectBase, Timestamps):
     """Public project model for API responses."""
 
     # Primary key

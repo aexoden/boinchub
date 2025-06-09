@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from boinchub.models.computer import Computer
 
 
-class UserBase(SQLModel, Timestamps):
+class UserBase(SQLModel):
     """User base model."""
 
     # User properties
@@ -24,7 +24,7 @@ class UserBase(SQLModel, Timestamps):
     is_active: bool = Field(default=True)
 
 
-class User(UserBase, table=True):
+class User(UserBase, Timestamps, table=True):
     """User model."""
 
     # SQLAlchemy table name
@@ -41,7 +41,7 @@ class User(UserBase, table=True):
     boinc_password_hash: str
 
 
-class UserPublic(UserBase):
+class UserPublic(UserBase, Timestamps):
     """Public user model for API responses."""
 
     # Primary key

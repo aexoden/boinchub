@@ -38,7 +38,7 @@ def get_computers(
     if current_user.role != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
 
-    computers = computer_service.get_computers(None)
+    computers = computer_service.get_all()
 
     return [ComputerPublic.model_validate(computer) for computer in computers]
 
@@ -62,7 +62,7 @@ def get_computer(
     Raises:
         HTTPException: If the computer does not exist or the user does not have access.
     """
-    computer = computer_service.get_computer(computer_id)
+    computer = computer_service.get(computer_id)
 
     if not computer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Computer not found")
@@ -95,7 +95,7 @@ def get_project_attachments(
         HTTPException: If the user does not have access to the computer.
 
     """
-    computer = computer_service.get_computer(computer_id)
+    computer = computer_service.get(computer_id)
 
     if not computer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Computer not found")
@@ -103,6 +103,6 @@ def get_project_attachments(
     if current_user.role != "admin" and computer.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Computer not found")
 
-    project_attachments = project_attachment_service.get_project_attachments_for_computer(computer_id)
+    project_attachments = project_attachment_service.get_for_computer(computer_id)
 
     return [ProjectAttachmentPublic.model_validate(attachment) for attachment in project_attachments]

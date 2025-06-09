@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 """Service for user-related operations."""
 
-from typing import Annotated
+from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import Depends
@@ -12,14 +12,13 @@ from sqlmodel import Session, select
 from boinchub.core.database import get_db
 from boinchub.core.security import hash_boinc_password, hash_password, verify_password
 from boinchub.models.user import User, UserCreate, UserUpdate
+from boinchub.services.base_service import BaseService
 
 
-class UserService:
+class UserService(BaseService[User, UserCreate, UserUpdate]):
     """Service for user-related operations."""
 
-    def __init__(self, db: Session) -> None:
-        """Initialize the UserService with a database session."""
-        self.db = db
+    model = User
 
     def authenticate_boinc_client(self, username: str, boinc_password_hash: str) -> User | None:
         """Authenticate a BOINC client.
@@ -31,14 +30,14 @@ class UserService:
         Returns:
             User | None: The authenticated user object or None if authentication fails.
         """
-        user = self.get_user_by_username(username)
+        user = self.get_by_username(username)
 
         if user and user.is_active and user.boinc_password_hash == boinc_password_hash:
             return user
 
         return None
 
-    def authenticate_user(self, username: str, password: str) -> User | None:
+    def authenticate(self, username: str, password: str) -> User | None:
         """Authenticate a user.
 
         Args:
@@ -49,33 +48,33 @@ class UserService:
             User | None: The authenticated user object or None if authentication fails.
 
         """
-        user = self.get_user_by_username(username)
+        user = self.get_by_username(username)
 
         if user and user.is_active and verify_password(password, user.password_hash):
             return user
 
         return None
 
-    def create_user(self, user_data: UserCreate) -> User:
+    def create(self, object_data: UserCreate) -> User:
         """Create a new user.
 
         Args:
-            user_data (UserCreate): The data for the new user.
+            object_data (UserCreate): The data for the new user.
 
         Returns:
             User: The created user object.
 
         """
-        password_hash = hash_password(user_data.password)
-        boinc_password_hash = hash_boinc_password(user_data.username, user_data.password)
+        password_hash = hash_password(object_data.password)
+        boinc_password_hash = hash_boinc_password(object_data.username, object_data.password)
 
         user = User(
-            username=user_data.username,
+            username=object_data.username,
             password_hash=password_hash,
             boinc_password_hash=boinc_password_hash,
-            email=user_data.email,
-            role=user_data.role,
-            is_active=user_data.is_active,
+            email=object_data.email,
+            role=object_data.role,
+            is_active=object_data.is_active,
         )
 
         self.db.add(user)
@@ -84,39 +83,7 @@ class UserService:
 
         return user
 
-    def delete_user(self, user_id: UUID) -> bool:
-        """Delete a user by ID.
-
-        Args:
-            user_id (UUID): The ID of the user to delete.
-
-        Returns:
-            bool: True if the user exists and was deleted, False otherwise.
-
-        """
-        user = self.get_user(user_id)
-
-        if not user:
-            return False
-
-        self.db.delete(user)
-        self.db.commit()
-
-        return True
-
-    def get_user(self, user_id: UUID) -> User | None:
-        """Get a user by ID.
-
-        Args:
-            user_id (UUID): The ID of the user.
-
-        Returns:
-            User | None: The user object if the user exists, None otherwise.
-
-        """
-        return self.db.get(User, user_id)
-
-    def get_user_by_username(self, username: str) -> User | None:
+    def get_by_username(self, username: str) -> User | None:
         """Get a user by username.
 
         Args:
@@ -128,34 +95,36 @@ class UserService:
         """
         return self.db.exec(select(User).where(User.username == username)).first()
 
-    def get_users(self, offset: int = 0, limit: int = 100) -> list[User]:
+    def get_all(self, offset: int = 0, limit: int = 100, order_by: str | None = None, **filters: Any) -> list[User]:  # noqa: ANN401
         """Get a list of users.
 
         Args:
             offset (int): The number of users to skip.
             limit (int): The maximum number of users to return.
+            order_by (str | None): The field to order the results by. Defaults to "username".
+            **filters: Additional filters to apply to the query.
 
         Returns:
             list[User]: A list of user objects.
 
         """
-        return list(self.db.exec(select(User).order_by(User.username).offset(offset).limit(limit)).all())
+        return super().get_all(offset=offset, limit=limit, order_by=order_by or "username", **filters)
 
-    def update_user(self, user_id: UUID, user_data: UserUpdate) -> User | None:
+    def update(self, object_id: UUID, object_data: UserUpdate) -> User | None:
         """Update a user.
 
         Args:
-            user_id (UUID): The ID of the user to update.
-            user_data (UserUpdate): The data to update the user with.
+            object_id (UUID): The ID of the user to update.
+            object_data (UserUpdate): The data to update the user with.
 
         Returns:
             User | None: The updated user object if the user exists, None otherwise.
 
         """
-        user = self.get_user(user_id)
+        user = self.get(object_id)
 
         if user:
-            update_data = user_data.model_dump(exclude_none=True)
+            update_data = object_data.model_dump(exclude_none=True)
 
             if "password" in update_data:
                 password = update_data.pop("password")

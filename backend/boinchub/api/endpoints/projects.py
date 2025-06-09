@@ -41,10 +41,10 @@ def create_project(
     if current_user.role != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
 
-    if project_service.get_project_by_url(project_data.url) is not None:
+    if project_service.get_by_url(project_data.url) is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Project with this URL already exists.")
 
-    project = project_service.create_project(project_data)
+    project = project_service.create(project_data)
 
     return ProjectPublic.model_validate(project)
 
@@ -75,7 +75,10 @@ def get_projects(
     if current_user.role != "admin":
         enabled_only = True
 
-    projects = project_service.get_projects(offset, limit, enabled_only=enabled_only)
+    if enabled_only:
+        projects = project_service.get_enabled(offset, limit)
+    else:
+        projects = project_service.get_all(offset=offset, limit=limit)
 
     return [ProjectPublic.model_validate(project) for project in projects]
 
@@ -100,7 +103,7 @@ def get_project(
         HTTPException: If the project is not found or if the user does not have access.
 
     """
-    project = project_service.get_project(project_id)
+    project = project_service.get(project_id)
 
     if not project or (not project.enabled and current_user.role != "admin"):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
@@ -133,7 +136,7 @@ def update_project(
     if current_user.role != "admin":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
-    project = project_service.update_project(project_id, project_data)
+    project = project_service.update(project_id, project_data)
 
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
@@ -164,7 +167,7 @@ def delete_project(
     if current_user.role != "admin":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
-    success = project_service.delete_project(project_id)
+    success = project_service.delete(project_id)
 
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
@@ -194,7 +197,7 @@ def get_project_attachments(
         HTTPException: If the user is not an admin or if the project does not exist.
 
     """
-    project = project_service.get_project(project_id)
+    project = project_service.get(project_id)
 
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
@@ -202,5 +205,5 @@ def get_project_attachments(
     if current_user.role != "admin":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
-    project_attachments = project_attachment_service.get_project_attachments_for_project(project_id)
+    project_attachments = project_attachment_service.get_for_project(project_id)
     return [ProjectAttachmentPublic.model_validate(attachment) for attachment in project_attachments]

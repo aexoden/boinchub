@@ -135,7 +135,7 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Annotate
     from boinchub.services.user_service import UserService  # noqa: PLC0415
 
     user_service = UserService(db)
-    user = user_service.get_user_by_username(username)
+    user = user_service.get_by_username(username)
 
     if user is None:
         raise credentials_exception

@@ -37,7 +37,7 @@ def create_admin(username: str, email: str, password: str | None = None) -> bool
         user_service = UserService(db)
 
         try:
-            existing_user = user_service.get_user_by_username(username)
+            existing_user = user_service.get_by_username(username)
 
             if existing_user:
                 print(f"User '{username}' already exists.")
@@ -50,7 +50,7 @@ def create_admin(username: str, email: str, password: str | None = None) -> bool
                 role="admin",
             )
 
-            user = user_service.create_user(user_data)
+            user = user_service.create(user_data)
             print(f"Admin user '{user.username}' created successfully.")
         except Exception as e:  # noqa: BLE001
             print(f"Error creating admin user: {e}")

@@ -3,74 +3,37 @@
 # SPDX-License-Identifier: MIT
 """Service for project-related operations."""
 
-from typing import Annotated
-from uuid import UUID
+from typing import Annotated, Any
 
 from fastapi import Depends
 from sqlmodel import Session, select
 
 from boinchub.core.database import get_db
 from boinchub.models.project import Project, ProjectCreate, ProjectUpdate
+from boinchub.services.base_service import BaseService
 
 
-class ProjectService:
+class ProjectService(BaseService[Project, ProjectCreate, ProjectUpdate]):
     """Service for project-related operations."""
 
-    def __init__(self, db: Session) -> None:
-        """Initialize the ProjectService with a database session."""
-        self.db = db
+    model = Project
 
-    def create_project(self, project_data: ProjectCreate) -> Project:
-        """Create a new project.
+    def get_all(self, offset: int = 0, limit: int = 100, order_by: str | None = None, **filters: Any) -> list[Project]:  # noqa: ANN401
+        """Get a list of projects.
 
         Args:
-            project_data (ProjectCreate): The data for the new project.
+            offset (int): The number of projects to skip.
+            limit (int: The maximum number of projects to return.
+            order_by (str | None): The field to order the projects by.
+            **filters: Additional filters to apply to the query.
 
         Returns:
-            Project: The created project object.
+            list[Project]: A list of project objects.
 
         """
-        project = Project.model_validate(project_data)
+        return super().get_all(offset=offset, limit=limit, order_by=order_by or "name", **filters)
 
-        self.db.add(project)
-        self.db.commit()
-        self.db.refresh(project)
-
-        return project
-
-    def delete_project(self, project_id: UUID) -> bool:
-        """Delete a project by ID.
-
-        Args:
-            project_id (UUID): The ID of the project to delete.
-
-        Returns:
-            bool: True if the project exists and was deleted, False otherwise.
-
-        """
-        project = self.get_project(project_id)
-
-        if not project:
-            return False
-
-        self.db.delete(project)
-        self.db.commit()
-
-        return True
-
-    def get_project(self, project_id: UUID) -> Project | None:
-        """Get a project by ID.
-
-        Args:
-            project_id (UUID): The ID of the project.
-
-        Returns:
-            Project | None: The project object if found, None otherwise.
-
-        """
-        return self.db.get(Project, project_id)
-
-    def get_project_by_url(self, project_url: str) -> Project | None:
+    def get_by_url(self, project_url: str) -> Project | None:
         """Get a project by URL.
 
         Args:
@@ -82,47 +45,18 @@ class ProjectService:
         """
         return self.db.exec(select(Project).where(Project.url == project_url)).first()
 
-    def get_projects(self, offset: int = 0, limit: int = 100, *, enabled_only: bool = False) -> list[Project]:
-        """Get a list of projects.
+    def get_enabled(self, offset: int = 0, limit: int = 100) -> list[Project]:
+        """Get a list of enabled projects.
 
         Args:
             offset (int): The number of projects to skip.
-            limit (int: The maximum number of projects to return.
-            enabled_only (bool): Whether to return only enabled projects.
+            limit (int): The maximum number of projects to return.
 
         Returns:
-            list[Project]: A list of project objects.
+            list[Project]: A list of enabled project objects.
 
         """
-        query = select(Project)
-
-        if enabled_only:
-            query = query.where(Project.enabled == True)  # noqa: E712
-
-        return list(self.db.exec(query.order_by(Project.name).offset(offset).limit(limit)).all())
-
-    def update_project(self, project_id: UUID, project_data: ProjectUpdate) -> Project | None:
-        """Update a project.
-
-        Args:
-            project_id (UUID): The ID of the project to update.
-            project_data (ProjectUpdate): The data to update the project with.
-
-        Returns:
-            Project | None: The updated project object if found, None otherwise.
-
-        """
-        project = self.get_project(project_id)
-
-        if project:
-            update_data = project_data.model_dump(exclude_none=True)
-            project.sqlmodel_update(update_data)
-
-            self.db.add(project)
-            self.db.commit()
-            self.db.refresh(project)
-
-        return project
+        return self.get_all(offset=offset, limit=limit, enabled=True)
 
 
 def get_project_service(db: Annotated[Session, Depends(get_db)]) -> ProjectService:

@@ -31,13 +31,13 @@ def register_user(user_data: UserCreate, user_service: Annotated[UserService, De
     Raises:
         HTTPException: If the username already exists.
     """
-    if user_service.get_user_by_username(user_data.username) is not None:
+    if user_service.get_by_username(user_data.username) is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username is unavailable")
 
     # Always set the role to "user" for new registrations
     user_data.role = "user"
 
-    user = user_service.create_user(user_data)
+    user = user_service.create(user_data)
 
     return UserPublic.model_validate(user)
 
@@ -76,7 +76,7 @@ def update_current_user(
     # Don't allow users to set their own role
     user_data.role = None
 
-    updated_user = user_service.update_user(current_user.id, user_data)
+    updated_user = user_service.update(current_user.id, user_data)
 
     return UserPublic.model_validate(updated_user)
 
@@ -96,7 +96,7 @@ def get_computers_for_user(
         list[ComputerPublic]: List of computers associated with the user.
 
     """
-    computers = computer_service.get_computers(current_user.id)
+    computers = computer_service.get_all(user_id=current_user.id)
     return [ComputerPublic.model_validate(computer) for computer in computers]
 
 
@@ -122,7 +122,7 @@ def get_users(
     if current_user.role != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
 
-    users = user_service.get_users(offset, limit)
+    users = user_service.get_all(offset, limit)
 
     return [UserPublic.model_validate(user) for user in users]
 
@@ -150,7 +150,7 @@ def get_user(
     if current_user.role != "admin" and current_user.id != user_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    user = user_service.get_user(user_id)
+    user = user_service.get(user_id)
 
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -188,7 +188,7 @@ def update_user(
         # Don't allow non-admin users to set their own role
         user_data.role = None
 
-    updated_user = user_service.update_user(user_id, user_data)
+    updated_user = user_service.update(user_id, user_data)
 
     if not updated_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -219,7 +219,7 @@ def delete_user(
     if current_user.role != "admin":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    success = user_service.delete_user(user_id)
+    success = user_service.delete(user_id)
 
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")

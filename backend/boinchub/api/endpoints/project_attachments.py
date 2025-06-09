@@ -38,7 +38,7 @@ def create_project_attachment(
         HTTPException: If the computer or project is not found, or if the user does not have access to the computer.
 
     """
-    computer = computer_service.get_computer(project_attachment_data.computer_id)
+    computer = computer_service.get(project_attachment_data.computer_id)
 
     if not computer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Computer not found")
@@ -46,7 +46,7 @@ def create_project_attachment(
     if current_user.role != "admin" and computer.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Computer not found")
 
-    project_attachment = project_attachment_service.create_project_attachment(project_attachment_data)
+    project_attachment = project_attachment_service.create(project_attachment_data)
 
     if not project_attachment:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Project not found.")
@@ -74,7 +74,7 @@ def get_project_attachment(
         HTTPException: If the project attachment is not found or if the user does not have access to the computer.
 
     """
-    project_attachment = project_attachment_service.get_project_attachment(project_attachment_id)
+    project_attachment = project_attachment_service.get(project_attachment_id)
 
     if not project_attachment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project attachment not found")
@@ -107,7 +107,7 @@ def update_attachment(
         HTTPException: If the project attachment is not found or if the user does not have access to the computer.
 
     """
-    project_attachment = project_attachment_service.get_project_attachment(project_attachment_id)
+    project_attachment = project_attachment_service.get(project_attachment_id)
 
     if not project_attachment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project attachment not found")
@@ -115,9 +115,7 @@ def update_attachment(
     if current_user.role != "admin" and project_attachment.computer.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project attachment not found")
 
-    updated_attachment = project_attachment_service.update_project_attachment(
-        project_attachment_id, project_attachment_data
-    )
+    updated_attachment = project_attachment_service.update(project_attachment_id, project_attachment_data)
 
     if not updated_attachment:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Failed to update project attachment")
@@ -145,7 +143,7 @@ def delete_attachment(
         HTTPException: If the project attachment is not found or if the user does not have access to the computer.
 
     """
-    project_attachment = project_attachment_service.get_project_attachment(project_attachment_id)
+    project_attachment = project_attachment_service.get(project_attachment_id)
 
     if not project_attachment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project attachment not found")
@@ -153,7 +151,7 @@ def delete_attachment(
     if current_user.role != "admin" and project_attachment.computer.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project attachment not found")
 
-    success = project_attachment_service.delete_project_attachment(project_attachment_id)
+    success = project_attachment_service.delete(project_attachment_id)
 
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project attachment not found")

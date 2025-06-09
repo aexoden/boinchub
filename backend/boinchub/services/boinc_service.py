@@ -39,7 +39,7 @@ class BoincService:
         user_service = UserService(self.db)
 
         # Check if the user exists
-        if user_service.get_user_by_username(request.name) is None:
+        if user_service.get_by_username(request.name) is None:
             return AccountManagerReply(
                 error_num=BoincError.ERR_BAD_USER_NAME,
                 error_msg="Invalid username",
@@ -55,7 +55,7 @@ class BoincService:
             )
 
         # Create or update the computer record
-        computer = ComputerService(self.db).update_or_create_computer_from_request(user, request)
+        computer = ComputerService(self.db).update_or_create_from_request(user, request)
 
         # Return successful response with placeholder data
         return AccountManagerReply(

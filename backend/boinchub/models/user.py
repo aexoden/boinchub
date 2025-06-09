@@ -19,7 +19,7 @@ class UserBase(SQLModel, Timestamps):
 
     # User properties
     username: str = Field(unique=True)
-    email: str
+    email: str = Field(index=True)
     role: str = Field(default="user")
     is_active: bool = Field(default=True)
 

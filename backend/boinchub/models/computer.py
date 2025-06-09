@@ -19,11 +19,11 @@ class ComputerBase(SQLModel, Timestamps):
     """Computer base model."""
 
     # Computer properties
-    cpid: str
+    cpid: str = Field(index=True)
     hostname: str
 
     # Foreign keys
-    user_id: UUID = Field(foreign_key="users.id", ondelete="CASCADE")
+    user_id: UUID = Field(foreign_key="users.id", ondelete="CASCADE", index=True)
 
 
 class Computer(ComputerBase, table=True):

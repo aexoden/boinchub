@@ -20,8 +20,8 @@ class ProjectAttachmentBase(SQLModel, Timestamps):
     """Project attachment base model."""
 
     # Foreign keys
-    computer_id: UUID = Field(foreign_key="computers.id", ondelete="CASCADE")
-    project_id: UUID = Field(foreign_key="projects.id", ondelete="CASCADE")
+    computer_id: UUID = Field(foreign_key="computers.id", ondelete="CASCADE", index=True)
+    project_id: UUID = Field(foreign_key="projects.id", ondelete="CASCADE", index=True)
 
     # Project-specific settings
     resource_share: Decimal = Field(default=100, max_digits=18, decimal_places=6)

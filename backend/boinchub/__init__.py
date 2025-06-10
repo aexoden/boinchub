@@ -3,6 +3,12 @@
 # SPDX-License-Identifier: MIT
 """Public API."""
 
+import logging
+
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+from typing import Any
+
 import uvicorn
 
 from fastapi import FastAPI
@@ -12,6 +18,38 @@ from boinchub.__about__ import __version__
 from boinchub.api.endpoints import auth, boinc, computers, health, project_attachments, projects, users
 from boinchub.core.middleware import RateLimitMiddleware
 from boinchub.core.settings import settings
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None, Any]:  # noqa: RUF029
+    """Lifespan context manager for the FastAPI application.
+
+    Yields:
+        None: This context manager does not yield any value, but is used to perform startup tasks.
+
+    Raises:
+        ValueError: If configuration is invalid.
+
+    """
+    logger = logging.getLogger(__name__)
+    logger.info("Starting BoincHub v%s", __version__)
+    logger.info("Server: %s:%s", settings.host, settings.port)
+
+    # Validate critical settings
+    try:
+        if not settings.secret_key:
+            logger.error("SECRET_KEY not configured!")
+    except ValueError:
+        logger.exception("Configuration error")
+        raise
+
+    yield
 
 
 def _create_app() -> FastAPI:
@@ -25,6 +63,7 @@ def _create_app() -> FastAPI:
         title="BoincHub",
         summary="A BOINC account manager intended for personal use.",
         version=__version__,
+        lifespan=lifespan,
         docs_url="/api/docs",
         redoc_url="/api/redoc",
     )
@@ -42,10 +81,17 @@ def _create_app() -> FastAPI:
     )
 
     # Add CORS middleware
-    origins = [
-        f"http://{settings.host}:{settings.port}",
-        f"http://{settings.host}:{settings.port + 1}",
-    ]
+    if settings.host == "localhost":
+        # Development mode - allow common ports
+        origins = [
+            f"http://{settings.host}:{settings.port}",
+            f"http://{settings.host}:{settings.port + 1}",
+            "http://localhost:3000",  # React dev server
+            "http://localhost:5173",  # Vite dev server
+        ]
+    else:
+        # Production mode - use configured URL
+        origins = [settings.account_manager_url]
 
     app.add_middleware(
         CORSMiddleware,

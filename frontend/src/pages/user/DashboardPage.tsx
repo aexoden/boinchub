@@ -28,6 +28,24 @@ export default function DashboardPage() {
         void fetchComputers();
     }, []);
 
+    // Format computer registration date
+    const formatDate = (dateString: string) => {
+        const date = new Date(Date.parse(dateString));
+
+        // Format: YYYY-MM-DD HH:mm:ss
+        const formatted_date = date.toISOString().replace("T", " ").substring(0, 19);
+
+        // Get the timezone abbreviation
+        const timeZone =
+            Intl.DateTimeFormat("en", {
+                timeZoneName: "short",
+            })
+                .formatToParts(date)
+                .find((part) => part.type === "timeZoneName")?.value ?? "";
+
+        return `${formatted_date} ${timeZone}`;
+    };
+
     return (
         <div>
             <div>
@@ -83,7 +101,7 @@ export default function DashboardPage() {
                                                 {computer.cpid.substring(0, 8)}...
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                {new Date(Date.parse(computer.updated_at)).toLocaleString()}
+                                                {formatDate(computer.updated_at)}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <Link

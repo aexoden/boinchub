@@ -47,6 +47,24 @@ export default function ComputersPage() {
         void fetchData();
     }, []);
 
+    // Format computer registration date
+    const formatDate = (dateString: string) => {
+        const date = new Date(Date.parse(dateString));
+
+        // Format: YYYY-MM-DD HH:mm:ss
+        const formatted_date = date.toISOString().replace("T", " ").substring(0, 19);
+
+        // Get the timezone abbreviation
+        const timeZone =
+            Intl.DateTimeFormat("en", {
+                timeZoneName: "short",
+            })
+                .formatToParts(date)
+                .find((part) => part.type === "timeZoneName")?.value ?? "";
+
+        return `${formatted_date} ${timeZone}`;
+    };
+
     return (
         <div>
             <div className="mb-8">
@@ -97,9 +115,7 @@ export default function ComputersPage() {
                                     </div>
                                     <div>
                                         <h3 className="mb-1 text-sm font-medium text-gray-500">Last Connection</h3>
-                                        <p className="text-gray-900">
-                                            {new Date(Date.parse(computer.updated_at)).toLocaleString()}
-                                        </p>
+                                        <p className="text-gray-900">{formatDate(computer.updated_at)}</p>
                                     </div>
                                 </div>
 

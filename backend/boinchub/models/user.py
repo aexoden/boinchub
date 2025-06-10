@@ -6,8 +6,10 @@
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
+from pydantic import field_validator
 from sqlmodel import Field, Relationship, SQLModel
 
+from boinchub.core.settings import settings
 from boinchub.models import Timestamps
 
 if TYPE_CHECKING:
@@ -54,6 +56,27 @@ class UserCreate(UserBase):
     # User properties
     password: str
 
+    @field_validator("password")
+    @classmethod
+    def validate_password_length(cls, value: str) -> str:
+        """Validate that the password meets the minimum length requirement.
+
+        Args:
+            value (str): The password to validate.
+
+        Returns:
+            str: The validated password.
+
+        Raises:
+            ValueError: If the password is shorter than the minimum length.
+
+        """
+        if len(value) < settings.min_password_length:
+            msg = f"Password must be at least {settings.min_password_length} characters long"
+            raise ValueError(msg)
+
+        return value
+
 
 class UserUpdate(SQLModel):
     """Model for updating an existing user."""
@@ -63,3 +86,24 @@ class UserUpdate(SQLModel):
     email: str | None = None
     role: str | None = None
     is_active: bool | None = None
+
+    @field_validator("password")
+    @classmethod
+    def validate_password_length(cls, value: str | None) -> str | None:
+        """Validate that the password meets the minimum length requirement.
+
+        Args:
+            value (str | None): The password to validate.
+
+        Returns:
+            str | None: The validated password.
+
+        Raises:
+            ValueError: If the password is shorter than the minimum length.
+
+        """
+        if value is not None and len(value) < settings.min_password_length:
+            msg = f"Password must be at least {settings.min_password_length} characters long"
+            raise ValueError(msg)
+
+        return value

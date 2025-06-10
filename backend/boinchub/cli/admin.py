@@ -8,9 +8,11 @@ import argparse
 import getpass
 import sys
 
+from pydantic import ValidationError
 from sqlmodel import Session
 
 from boinchub.core.database import engine
+from boinchub.core.settings import settings
 from boinchub.services.user_service import UserCreate, UserService
 
 
@@ -33,6 +35,10 @@ def create_admin(username: str, email: str, password: str | None = None) -> bool
             print("Passwords do not match.")
             return False
 
+    if len(password) < settings.min_password_length:
+        print(f"Password must be at least {settings.min_password_length} characters long.")
+        return False
+
     with Session(engine) as db:
         user_service = UserService(db)
 
@@ -52,6 +58,9 @@ def create_admin(username: str, email: str, password: str | None = None) -> bool
 
             user = user_service.create(user_data)
             print(f"Admin user '{user.username}' created successfully.")
+        except ValidationError as e:
+            print(f"Validation error: {e}")
+            return False
         except Exception as e:  # noqa: BLE001
             print(f"Error creating admin user: {e}")
             return False

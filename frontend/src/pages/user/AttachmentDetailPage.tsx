@@ -102,7 +102,7 @@ export default function AttachmentDetailPage() {
 
         try {
             await attachmentService.deleteAttachment(attachment.id);
-            await navigate(`/computers/${computer.id.toString()}`);
+            await navigate(`/computers/${computer.id}`);
         } catch (err: unknown) {
             setMessage({ text: err instanceof Error ? err.message : "Failed to detach project", type: "error" });
         }
@@ -162,7 +162,7 @@ export default function AttachmentDetailPage() {
                     </p>
                 </div>
                 <button
-                    onClick={() => void navigate(`/computers/${computer.id.toString()}`)}
+                    onClick={() => void navigate(`/computers/${computer.id}`)}
                     className="rounded-md bg-gray-200 px-4 py-2 text-gray-800 hover:bg-gray-300"
                 >
                     Back to Computer

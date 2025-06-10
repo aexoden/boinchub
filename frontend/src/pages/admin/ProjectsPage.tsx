@@ -168,7 +168,9 @@ export default function ProjectsPage() {
                                         <div className="font-mediumt ext-gray-900">{project.name}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="font-mono text-sm text-gray-900">{project.url}</div>
+                                        <div className="font-mono text-sm text-gray-900">
+                                            <a href={project.url}>{project.url}</a>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         {project.enabled ? (

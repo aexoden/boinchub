@@ -100,7 +100,7 @@ export default function ComputersPage() {
                             <div className="flex items-center justify-between bg-primary-700 px-6 py-4 text-white">
                                 <h2 className="text-xl font-semibold">{computer.hostname}</h2>
                                 <Link
-                                    to={`/computers/${computer.id.toString()}`}
+                                    to={`/computers/${computer.id}`}
                                     className="rounded-md bg-white px-4 py-2 text-sm font-medium text-primary-700 hover:bg-primary-50"
                                 >
                                     View Details
@@ -168,7 +168,7 @@ export default function ComputersPage() {
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap">
                                                                 <Link
-                                                                    to={`/attachments/${attachment.id.toString()}`}
+                                                                    to={`/attachments/${attachment.id}`}
                                                                     className="hover:Text-primary-900 mr-4 text-primary-600"
                                                                 >
                                                                     Edit

@@ -105,7 +105,7 @@ export default function DashboardPage() {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <Link
-                                                    to={`/computers/${computer.id.toString()}`}
+                                                    to={`/computers/${computer.id}`}
                                                     className="text-primary-600 hover:text-primary-900"
                                                 >
                                                     View Details

@@ -261,12 +261,12 @@ export default function ProjectsPage() {
                                 <label htmlFor="signed_url" className="block text-sm font-medium text-gray-700">
                                     Signed URL
                                 </label>
-                                <input
-                                    type="text"
+                                <textarea
                                     name="signed_url"
                                     id="signed_url"
                                     value={formData.signed_url}
                                     onChange={handleInputChange}
+                                    rows={3}
                                     required
                                     className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                 />

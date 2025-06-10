@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Link, Navigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
+import { useConfig } from "../../contexts/ConfigContext";
 
 export default function LoginPage() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const { login, loading, error, user } = useAuth();
+    const { config } = useConfig();
 
     const handleSubmit = async () => {
         setErrorMessage("");
@@ -32,7 +34,9 @@ export default function LoginPage() {
         <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
             <div className="w-full max-w-md space-y-8">
                 <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to BoincHub</h2>
+                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                        Sign in to {config?.account_manager_name ?? "BoincHub"}
+                    </h2>
                     <p className="mt-2 text-center text-sm text-gray-600">
                         Or{" "}
                         <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500">

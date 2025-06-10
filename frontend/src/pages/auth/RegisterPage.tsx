@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
+import { useConfig } from "../../contexts/ConfigContext";
 
 export default function RegisterPage() {
     const [username, setUsername] = useState("");
@@ -9,6 +10,7 @@ export default function RegisterPage() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const { register, loading, error, user } = useAuth();
+    const { config } = useConfig();
 
     const handleSubmit = async () => {
         setErrorMessage("");
@@ -21,6 +23,10 @@ export default function RegisterPage() {
         if (password !== confirmPassword) {
             setErrorMessage("Passwords do not match");
             return;
+        }
+
+        if (config && password.length < config.min_password_length) {
+            setErrorMessage(`Password must be at least ${config.min_password_length.toString()} characters long`);
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -113,7 +119,7 @@ export default function RegisterPage() {
                                     setPassword(e.target.value);
                                 }}
                                 className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-primary-500 focus:ring-primary-500 focus:outline-none sm:text-sm"
-                                placeholder="Password"
+                                placeholder={`Password (min ${config?.min_password_length.toString() ?? "8"} characters)`}
                             />
                         </div>
                         <div>
@@ -142,7 +148,7 @@ export default function RegisterPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="group ronded-md relative flex w-full justify-center border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
+                            className="group relative flex w-full justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
                         >
                             {loading ? "Creating account..." : "Create account"}
                         </button>

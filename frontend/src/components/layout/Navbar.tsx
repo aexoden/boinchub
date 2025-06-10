@@ -1,8 +1,10 @@
 import { Link } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
+import { useConfig } from "../../contexts/ConfigContext";
 
 export default function Navbar() {
     const { user, logout } = useAuth();
+    const { config } = useConfig();
 
     return (
         <nav className="bg-primary-700 text-white shadow-md">
@@ -10,7 +12,7 @@ export default function Navbar() {
                 <div className="flex h-16 justify-between">
                     <div className="flex items-center">
                         <Link to="/" className="flex flex-shrink-0 items-center">
-                            <span className="text-xl font-bold">BoincHub</span>
+                            <span className="text-xl font-bold">{config?.account_manager_name ?? "BoincHub"}</span>
                         </Link>
                     </div>
 

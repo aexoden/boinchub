@@ -26,7 +26,8 @@ class Settings(BaseSettings):
 
     # Account manager settings
     account_manager_name: str = "BoincHub"
-    account_manager_url: str = "http://localhost:8500"
+    backend_url: str = "http://localhost:8500"
+    frontend_url: str = "http://localhost:8501"
     min_password_length: int = 16
 
     # Signing key settings

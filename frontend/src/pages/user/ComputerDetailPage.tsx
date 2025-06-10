@@ -5,10 +5,12 @@ import { computerService } from "../../services/computer-service";
 import { attachmentService } from "../../services/attachment-service";
 import { projectService } from "../../services/project-service";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { useConfig } from "../../contexts/ConfigContext";
 
 export default function ComputerDetailPage() {
     const { computerId } = useParams<{ computerId: string }>();
     const navigate = useNavigate();
+    const { config } = useConfig();
 
     const [computer, setComputer] = useState<Computer | null>(null);
     const [attachments, setAttachments] = useState<ProjectAttachment[]>([]);
@@ -193,7 +195,7 @@ export default function ComputerDetailPage() {
                 <h2 className="mb-4 text-lg font-medium text-gray-900">Computer Information</h2>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
-                        <h3 className="text-sm font-medium text-gray-500">Domain Name</h3>
+                        <h3 className="text-sm font-medium text-gray-500">Hostname</h3>
                         <p className="mt-1 text-gray-900">{computer.hostname}</p>
                     </div>
                     <div>
@@ -209,7 +211,9 @@ export default function ComputerDetailPage() {
                         <p className="mt-1 text-gray-900">{formatDate(computer.updated_at)}</p>
                     </div>
                     <div>
-                        <h3 className="text-sm font-medium text-gray-500">BoincHub ID</h3>
+                        <h3 className="text-sm font-medium text-gray-500">
+                            {config?.account_manager_name ?? "BoincHub"} ID
+                        </h3>
                         <p className="mt-1 font-mono text-gray-900">{computer.id}</p>
                     </div>
                 </div>

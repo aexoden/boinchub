@@ -15,7 +15,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from boinchub.__about__ import __version__
-from boinchub.api.endpoints import auth, boinc, computers, health, project_attachments, projects, users
+from boinchub.api.endpoints import auth, boinc, computers, config, health, project_attachments, projects, users
 from boinchub.core.middleware import RateLimitMiddleware
 from boinchub.core.settings import settings
 
@@ -81,21 +81,12 @@ def _create_app() -> FastAPI:
     )
 
     # Add CORS middleware
-    if settings.host == "localhost":
-        # Development mode - allow common ports
-        origins = [
-            f"http://{settings.host}:{settings.port}",
-            f"http://{settings.host}:{settings.port + 1}",
-            "http://localhost:3000",  # React dev server
-            "http://localhost:5173",  # Vite dev server
-        ]
-    else:
-        # Production mode - use configured URL
-        origins = [settings.account_manager_url]
-
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=origins,
+        allow_origins=[
+            settings.backend_url,
+            settings.frontend_url,
+        ],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -105,6 +96,7 @@ def _create_app() -> FastAPI:
     app.include_router(auth.router)
     app.include_router(boinc.router)
     app.include_router(computers.router)
+    app.include_router(config.router)
     app.include_router(health.router)
     app.include_router(project_attachments.router)
     app.include_router(projects.router)

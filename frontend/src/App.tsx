@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router";
 import AuthProvider from "./components/common/AuthProvider";
+import ConfigProvider from "./components/common/ConfigProvider";
 import { useAuth } from "./contexts/AuthContext";
+import { useConfig } from "./contexts/ConfigContext";
 
 // Layouts
 import AppLayout from "./components/layout/AppLayout";
@@ -47,6 +49,20 @@ function ProtectedRoute({ element, allowedRoles }: ProtectedRouteProps) {
 }
 
 function AppRoutes() {
+    const { config, loading } = useConfig();
+
+    // Show loading indicator while config is being loaded
+    if (loading || !config) {
+        return (
+            <div className="flex h-screen items-center justify-center">
+                <div className="text-center">
+                    <div className="mx-auto h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-primary-500"></div>
+                    <p className="mt-4 text-gray-600">Loading application...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <Routes>
             {/* Public Routes */}
@@ -86,9 +102,11 @@ function AppRoutes() {
 export default function App() {
     return (
         <Router>
-            <AuthProvider>
-                <AppRoutes />
-            </AuthProvider>
+            <ConfigProvider>
+                <AuthProvider>
+                    <AppRoutes />
+                </AuthProvider>
+            </ConfigProvider>
         </Router>
     );
 }

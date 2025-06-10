@@ -4,6 +4,7 @@ import { Computer, ProjectAttachment } from "../../types";
 import { computerService } from "../../services/computer-service";
 import { attachmentService } from "../../services/attachment-service";
 import { projectService } from "../../services/project-service";
+import { useConfig } from "../../contexts/ConfigContext";
 
 export default function ComputersPage() {
     const [computers, setComputers] = useState<Computer[]>([]);
@@ -11,6 +12,7 @@ export default function ComputersPage() {
     const [projectNames, setProjectNames] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { config } = useConfig();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -69,8 +71,8 @@ export default function ComputersPage() {
                 <div className="rounded-lg bg-white p-6 text-center shadow">
                     <p className="mb-4 text-gray-700">You don't have any computers registered yet.</p>
                     <p className="text-gray-600">
-                        To use BoincHub, set up the BOINC client on your computer and connect to this account manager
-                        using the provided URL.
+                        To use {config?.account_manager_name ?? "BoincHUb"} set up the BOINC client on your computer and
+                        connect to this account manager using the provided URL.
                     </p>
                 </div>
             ) : (

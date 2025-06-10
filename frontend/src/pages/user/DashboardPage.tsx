@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
+import { useConfig } from "../../contexts/ConfigContext";
 import { Computer } from "../../types";
 import { computerService } from "../../services/computer-service";
 
 export default function DashboardPage() {
     const { user } = useAuth();
+    const { config } = useConfig();
     const [computers, setComputers] = useState<Computer[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -31,7 +33,9 @@ export default function DashboardPage() {
             <div>
                 <div className="mb-8">
                     <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-                    <p className="mt-1 text-gray-600">Welcome to BoincHub, {user?.username}!</p>
+                    <p className="mt-1 text-gray-600">
+                        Welcome to {config?.account_manager_name ?? "BoincHub"}, {user?.username}!
+                    </p>
                 </div>
 
                 <div className="mb-6 rounded-lg bg-white p-6 shadow">
@@ -45,10 +49,12 @@ export default function DashboardPage() {
                         <div className="text-gray-500">
                             <p>You don't have any computers registered to your account.</p>
                             <p className="mt-2">
-                                To use BoincHub, set up the BOINC client on your computer and connect to this account
-                                manager using the following URL:
+                                To use {config?.account_manager_name ?? "BoincHub"}, set up the BOINC client on your
+                                computer and connect to this account manager using the following URL:
                             </p>
-                            <div className="mt-2 rounded-md bg-gray-100 p-3 font-mono">http://localhost:8501</div>
+                            <div className="mt-2 rounded-md bg-gray-100 p-3 font-mono">
+                                {config?.boinc_url ?? "Loading..."}
+                            </div>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
@@ -101,10 +107,12 @@ export default function DashboardPage() {
                         <div>
                             <p className="space-y-3">
                                 <p className="mt-2">
-                                    To use BoincHub, set up the BOINC client on your computer and connect to this
-                                    account manager using the following URL:
+                                    To use {config?.account_manager_name ?? "BoincHub"}, set up the BOINC client on your
+                                    computer and connect to this account manager using the following URL:
                                 </p>
-                                <div className="mt-2 rounded-md bg-gray-100 p-3 font-mono">http://localhost:8501</div>
+                                <div className="mt-2 rounded-md bg-gray-100 p-3 font-mono">
+                                    {config?.boinc_url ?? "Loading..."}
+                                </div>
                             </p>
                         </div>
                     </div>

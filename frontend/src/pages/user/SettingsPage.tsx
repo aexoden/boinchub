@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import userService from "../../services/user-service";
+import { useUpdateCurrentUserMutation } from "../../hooks/queries";
 
 export default function SettingsPage() {
     const { user } = useAuth();
+    const updateUserMutation = useUpdateCurrentUserMutation();
+
     const [email, setEmail] = useState(user?.email ?? "");
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
-    const [loading, setLoading] = useState(false);
 
     // Handle profile update
     const handleUpdateProfile = async () => {
@@ -18,17 +19,14 @@ export default function SettingsPage() {
             return;
         }
 
-        setLoading(true);
         setMessage(null);
 
         try {
-            await userService.updateCurrentUser({ email });
+            await updateUserMutation.mutateAsync({ email });
             setMessage({ text: "Profile updated successfully", type: "success" });
         } catch (err: unknown) {
             const errorMessage = err instanceof Error ? err.message : "Failed to update profile";
             setMessage({ text: errorMessage, type: "error" });
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -44,11 +42,10 @@ export default function SettingsPage() {
             return;
         }
 
-        setLoading(true);
         setMessage(null);
 
         try {
-            await userService.updateCurrentUser({ password: newPassword });
+            await updateUserMutation.mutateAsync({ password: newPassword });
             setCurrentPassword("");
             setNewPassword("");
             setConfirmPassword("");
@@ -56,10 +53,10 @@ export default function SettingsPage() {
         } catch (err: unknown) {
             const errorMessage = err instanceof Error ? err.message : "Failed to change password";
             setMessage({ text: errorMessage, type: "error" });
-        } finally {
-            setLoading(false);
         }
     };
+
+    const isLoading = updateUserMutation.isPending;
 
     return (
         <div>
@@ -110,10 +107,10 @@ export default function SettingsPage() {
 
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={isLoading}
                             className="mt-4 w-full rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
                         >
-                            {loading ? "Saving..." : "Save Changes"}
+                            {isLoading ? "Saving..." : "Save Changes"}
                         </button>
                     </form>
                 </div>
@@ -177,10 +174,10 @@ export default function SettingsPage() {
 
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={isLoading}
                             className="mt-4 w-full rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
                         >
-                            {loading ? "Changing..." : "Change Password"}
+                            {isLoading ? "Changing..." : "Change Password"}
                         </button>
                     </form>
                 </div>
@@ -200,5 +197,4 @@ export default function SettingsPage() {
             )}
         </div>
     );
-    return <div>FIXME</div>;
 }

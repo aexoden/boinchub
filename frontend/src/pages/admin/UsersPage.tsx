@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { User, UserUpdate } from "../../types";
-import { userService } from "../../services/user-service";
+import { useUsersQuery, useUpdateUserMutation, useDeleteUserMutation } from "../../hooks/queries";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 
 export default function UsersPage() {
-    const [users, setUsers] = useState<User[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { data: users = [], isLoading: loading, error } = useUsersQuery();
+
+    const updateUserMutation = useUpdateUserMutation();
+    const deleteUserMutation = useDeleteUserMutation();
 
     // Form state
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,23 +17,6 @@ export default function UsersPage() {
         password: "",
         is_active: true,
     });
-
-    // Fetch users
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const data = await userService.getAllUsers();
-                setUsers(data);
-            } catch (err: unknown) {
-                const errorMessage = err instanceof Error ? err.message : "Failed to load users";
-                setError(errorMessage);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        void fetchUsers();
-    }, []);
 
     // Open modal for editing user
     const handleEditUser = (user: User) => {
@@ -68,12 +52,10 @@ export default function UsersPage() {
         }
 
         try {
-            const updatedUser = await userService.updateUser(editingUser.id, payload);
-            setUsers(users.map((u) => (u.id === editingUser.id ? updatedUser : u)));
+            await updateUserMutation.mutateAsync({ userId: editingUser.id, userData: payload });
             setIsModalOpen(false);
         } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : "Failed to update user";
-            setError(errorMessage);
+            console.error("Failed to update user:", err);
         }
     };
 
@@ -84,13 +66,23 @@ export default function UsersPage() {
         }
 
         try {
-            await userService.deleteUser(userId);
-            setUsers(users.filter((u) => u.id !== userId));
+            await deleteUserMutation.mutateAsync(userId);
         } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : "Failed to delete user";
-            setError(errorMessage);
+            console.error("Failed to delete user:", err);
         }
     };
+
+    if (error) {
+        return (
+            <div className="mb-6 border-l-4 border-red-500 bg-red-50 p-4">
+                <div className="flex">
+                    <div className="ml-3">
+                        <p className="text-sm text-red-700">{error.message}</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div>
@@ -98,16 +90,6 @@ export default function UsersPage() {
                 <h1 className="text-2xl font-bold text-gray-900">Users</h1>
                 <p className="mt-1 text-gray-600">Manage user accounts in the system</p>
             </div>
-
-            {error && (
-                <div className="mb-6 border-l-4 border-red-500 bg-red-50 p-4">
-                    <div className="flex">
-                        <div className="ml-3">
-                            <p className="text-sm text-red-700">{error}</p>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {loading ? (
                 <div className="py-10 text-center">
@@ -179,12 +161,14 @@ export default function UsersPage() {
                                                 handleEditUser(user);
                                             }}
                                             className="mr-4 text-primary-600 hover:text-primary-900"
+                                            disabled={updateUserMutation.isPending}
                                         >
                                             Edit
                                         </button>
                                         <button
                                             onClick={() => void handleDeleteUser(user.id)}
                                             className="text-red-600 hover:text-red-900"
+                                            disabled={updateUserMutation.isPending}
                                         >
                                             Delete
                                         </button>
@@ -273,9 +257,10 @@ export default function UsersPage() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
+                                    disabled={updateUserMutation.isPending}
+                                    className="rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
                                 >
-                                    Update User
+                                    {updateUserMutation.isPending ? "Updating..." : "Update User"}
                                 </button>
                             </div>
                         </form>

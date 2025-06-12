@@ -1,19 +1,32 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
-import { ProjectAttachment, ProjectAttachmentUpdate, Project, Computer } from "../../types";
-import { attachmentService } from "../../services/attachment-service";
-import { projectService } from "../../services/project-service";
-import { computerService } from "../../services/computer-service";
+import { ProjectAttachmentUpdate } from "../../types";
+import {
+    useAttachmentQuery,
+    useProjectQuery,
+    useComputerQuery,
+    useUpdateAttachmentMutation,
+    useDeleteAttachmentMutation,
+} from "../../hooks/queries";
 
 export default function AttachmentDetailPage() {
     const { attachmentId } = useParams<{ attachmentId: string }>();
     const navigate = useNavigate();
 
-    const [attachment, setAttachment] = useState<ProjectAttachment | null>(null);
-    const [project, setProject] = useState<Project | null>(null);
-    const [computer, setComputer] = useState<Computer | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    // Queries
+    const {
+        data: attachment,
+        isLoading: attachmentLoading,
+        error: attachmentError,
+    } = useAttachmentQuery(attachmentId ?? "");
+
+    const { data: project, isLoading: projectLoading } = useProjectQuery(attachment?.project_id ?? "");
+    const { data: computer, isLoading: computerLoading } = useComputerQuery(attachment?.computer_id ?? "");
+
+    // Mutations
+    const updateAttachmentMutation = useUpdateAttachmentMutation();
+    const deleteAttachmentMutation = useDeleteAttachmentMutation();
+
     const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
     // Form state
@@ -27,41 +40,17 @@ export default function AttachmentDetailPage() {
     const [noGpuIntel, setNoGpuIntel] = useState(false);
 
     useEffect(() => {
-        const fetchData = async () => {
-            if (!attachmentId) {
-                return;
-            }
-
-            try {
-                // Fetch attachment details
-                const attachmentData = await attachmentService.getAttachmentById(attachmentId);
-                setAttachment(attachmentData);
-
-                // Set form state
-                setResourceShare(attachmentData.resource_share.toString());
-                setSuspended(attachmentData.suspended);
-                setDontRequestMoreWork(attachmentData.dont_request_more_work);
-                setDetachWhenDone(attachmentData.detach_when_done);
-                setNoCpu(attachmentData.no_cpu);
-                setNoGpuNvidia(attachmentData.no_gpu_nvidia);
-                setNoGpuAmd(attachmentData.no_gpu_amd);
-                setNoGpuIntel(attachmentData.no_gpu_intel);
-
-                // Fetch project and computer details
-                const projectData = await projectService.getProjectById(attachmentData.project_id);
-                const computerData = await computerService.getComputerById(attachmentData.computer_id);
-
-                setProject(projectData);
-                setComputer(computerData);
-            } catch (err: unknown) {
-                setError(err instanceof Error ? err.message : "Failed to load attachment details");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        void fetchData();
-    }, [attachmentId]);
+        if (attachment) {
+            setResourceShare(attachment.resource_share.toString());
+            setSuspended(attachment.suspended);
+            setDontRequestMoreWork(attachment.dont_request_more_work);
+            setDetachWhenDone(attachment.detach_when_done);
+            setNoCpu(attachment.no_cpu);
+            setNoGpuNvidia(attachment.no_gpu_nvidia);
+            setNoGpuAmd(attachment.no_gpu_amd);
+            setNoGpuIntel(attachment.no_gpu_intel);
+        }
+    }, [attachment]);
 
     const handleSubmit = async () => {
         if (!attachment) {
@@ -80,8 +69,10 @@ export default function AttachmentDetailPage() {
         };
 
         try {
-            const updatedAttachment = await attachmentService.updateAttachment(attachment.id, updateData);
-            setAttachment(updatedAttachment);
+            await updateAttachmentMutation.mutateAsync({
+                attachmentId: attachment.id,
+                attachmentData: updateData,
+            });
             setMessage({ text: "Attachment updated successfully", type: "success" });
 
             // Scroll to the top to show the message
@@ -101,14 +92,18 @@ export default function AttachmentDetailPage() {
         }
 
         try {
-            await attachmentService.deleteAttachment(attachment.id);
+            await deleteAttachmentMutation.mutateAsync(attachment.id);
             await navigate(`/computers/${computer.id}`);
         } catch (err: unknown) {
             setMessage({ text: err instanceof Error ? err.message : "Failed to detach project", type: "error" });
         }
     };
 
-    if (loading) {
+    // Loading state
+    const isLoading = attachmentLoading || projectLoading || computerLoading;
+    const isSubmitting = updateAttachmentMutation.isPending || deleteAttachmentMutation.isPending;
+
+    if (isLoading) {
         return (
             <div className="flex h-64 items-center justify-center">
                 <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-primary-500"></div>
@@ -116,12 +111,12 @@ export default function AttachmentDetailPage() {
         );
     }
 
-    if (error) {
+    if (attachmentError) {
         return (
             <div className="border-l-4 border-red-500 bg-red-50 p-4">
                 <div className="flex">
                     <div className="ml-3">
-                        <p className="text-sm text-red-700">{error}</p>
+                        <p className="text-sm text-red-700">{attachmentError.message}</p>
                         <button
                             onClick={() => void navigate("/computers")}
                             className="mt-2 text-sm font-medium text-red-700 hover:text-red-600"
@@ -141,7 +136,7 @@ export default function AttachmentDetailPage() {
                     <div className="ml-3">
                         <p className="text-sm text-yellow-700">Attachment, project, or computer not found</p>
                         <button
-                            onClick={() => void navigate("/Computers")}
+                            onClick={() => void navigate("/computers")}
                             className="mt-2 text-sm font-medium text-yellow-700 hover:text-yellow-600"
                         >
                             Go back to computers
@@ -218,7 +213,7 @@ export default function AttachmentDetailPage() {
 
                 {/* Attachment Settings Form */}
                 <div className="lg:col-span-2">
-                    <div className="shadow-rounded-lg bg-white p-6">
+                    <div className="rounded-lg bg-white p-6 shadow">
                         <h2 className="mb-4 text-lg font-medium text-gray-900">Attachment Settings</h2>
                         <form
                             onSubmit={(e) => {
@@ -236,12 +231,13 @@ export default function AttachmentDetailPage() {
                                         Resource Share
                                     </label>
                                     <input
-                                        type="text"
+                                        type="number"
                                         id="resourceShare"
                                         value={resourceShare}
                                         onChange={(e) => {
                                             setResourceShare(e.target.value);
                                         }}
+                                        min="0"
                                         className="block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                     />
                                     <p className="mt-1 text-xs text-gray-500">
@@ -376,15 +372,17 @@ export default function AttachmentDetailPage() {
                                     onClick={() => {
                                         void handleDetach();
                                     }}
-                                    className="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none"
+                                    disabled={isSubmitting}
+                                    className="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
                                 >
-                                    Detach Project
+                                    {deleteAttachmentMutation.isPending ? "Detaching..." : "Detach Project"}
                                 </button>
                                 <button
                                     type="submit"
+                                    disabled={isSubmitting}
                                     className="rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
                                 >
-                                    Save Changes
+                                    {updateAttachmentMutation.isPending ? "Saving..." : "Save Changes"}
                                 </button>
                             </div>
                         </form>

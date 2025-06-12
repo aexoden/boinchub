@@ -1,9 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router";
-import { Computer, Project, ProjectAttachment, ProjectAttachmentCreate } from "../../types";
-import { computerService } from "../../services/computer-service";
-import { attachmentService } from "../../services/attachment-service";
-import { projectService } from "../../services/project-service";
+import { ProjectAttachmentCreate } from "../../types";
+import {
+    useComputerQuery,
+    useComputerAttachmentsQuery,
+    useProjectsQuery,
+    useCreateAttachmentMutation,
+    useDeleteAttachmentMutation,
+} from "../../hooks/queries";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useConfig } from "../../contexts/ConfigContext";
 
@@ -12,55 +16,32 @@ export default function ComputerDetailPage() {
     const navigate = useNavigate();
     const { config } = useConfig();
 
-    const [computer, setComputer] = useState<Computer | null>(null);
-    const [attachments, setAttachments] = useState<ProjectAttachment[]>([]);
-    const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    // Queries
+    const { data: computer, isLoading: computerLoading, error: computerError } = useComputerQuery(computerId ?? "");
+
+    const { data: attachments = [], isLoading: attachmentsLoading } = useComputerAttachmentsQuery(computerId ?? "");
+
+    const { data: allProjects = [], isLoading: projectsLoading } = useProjectsQuery(true);
+
+    // Mutations
+    const createAttachmentMutation = useCreateAttachmentMutation();
+    const deleteAttachmentMutation = useDeleteAttachmentMutation();
 
     // Modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedProject, setSelectedProject] = useState<string>("");
-    const [account_key, setAccountKey] = useState("");
+    const [accountKey, setAccountKey] = useState("");
     const [resourceShare, setResourceShare] = useState("100");
+    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            if (!computerId) {
-                return;
-            }
-
-            try {
-                // Fetch computer details
-                const computerData = await computerService.getComputerById(computerId);
-                setComputer(computerData);
-
-                // Fetch computer's attachments
-                const attachmentsData = await attachmentService.getComputerAttachments(computerId);
-                setAttachments(attachmentsData);
-
-                // Fetch all available projects
-                const projectsData = await projectService.getAllProjects(true);
-
-                // Filter out projects that are already attached
-                const attachedProjectIds = attachmentsData.map((a) => a.project_id);
-                const availableProjectsData = projectsData.filter((p) => !attachedProjectIds.includes(p.id));
-
-                setAvailableProjects(availableProjectsData);
-            } catch (err: unknown) {
-                setError(err instanceof Error ? err.message : "Failed to load computer details");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        void fetchData();
-    }, [computerId]);
+    const attachedProjectIds = attachments.map((a) => a.project_id);
+    const availableProjects = allProjects.filter((p) => !attachedProjectIds.includes(p.id));
 
     const handleAddAttachment = () => {
         setSelectedProject("");
         setAccountKey("");
         setResourceShare("100");
+        setError(null);
         setIsModalOpen(true);
     };
 
@@ -70,7 +51,7 @@ export default function ComputerDetailPage() {
             return;
         }
 
-        if (!account_key) {
+        if (!accountKey) {
             setError("Please enter a valid account key.");
             return;
         }
@@ -84,19 +65,13 @@ export default function ComputerDetailPage() {
             const attachmentData: ProjectAttachmentCreate = {
                 computer_id: computer.id,
                 project_id: selectedProject,
-                account_key,
+                account_key: accountKey,
                 resource_share: Number(resourceShare),
             };
-            const newAttachment = await attachmentService.createAttachment(attachmentData);
 
-            // Update the attachments list
-            setAttachments([...attachments, newAttachment]);
-
-            // Remove the project from available projects
-            setAvailableProjects(availableProjects.filter((p) => p.id !== selectedProject));
-
-            // Close the modal
+            await createAttachmentMutation.mutateAsync(attachmentData);
             setIsModalOpen(false);
+            setError(null);
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : "Failed to create attachment");
         }
@@ -108,19 +83,7 @@ export default function ComputerDetailPage() {
         }
 
         try {
-            await attachmentService.deleteAttachment(attachmentId);
-
-            // Find the deleted attachment to get its project ID
-            const deletedAttachment = attachments.find((a) => a.id === attachmentId);
-
-            // Update attachments list
-            setAttachments(attachments.filter((a) => a.id !== attachmentId));
-
-            // If we deleted an attachment, add its project back to available projects
-            if (deletedAttachment) {
-                const project = await projectService.getProjectById(deletedAttachment.project_id);
-                setAvailableProjects([...availableProjects, project]);
-            }
+            await deleteAttachmentMutation.mutateAsync(attachmentId);
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : "Failed to detach project");
         }
@@ -144,7 +107,11 @@ export default function ComputerDetailPage() {
         return `${formatted_date} ${timeZone}`;
     };
 
-    if (loading) {
+    // Loading state
+    const isLoading = computerLoading || attachmentsLoading || projectsLoading;
+    const isSubmitting = createAttachmentMutation.isPending;
+
+    if (isLoading) {
         return (
             <div className="flex h-64 items-center justify-center">
                 <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-primary-500"></div>
@@ -152,12 +119,12 @@ export default function ComputerDetailPage() {
         );
     }
 
-    if (error) {
+    if (computerError) {
         return (
             <div className="border-l-4 border-red-500 bg-red-50 p-4">
                 <div className="flex">
                     <div className="ml-3">
-                        <p className="text-sm text-red-700">{error}</p>
+                        <p className="text-sm text-red-700">{computerError.message}</p>
                         <button
                             onClick={() => void navigate("/computers")}
                             className="mt-2 text-sm font-medium text-red-700 hover:text-red-600"
@@ -203,6 +170,17 @@ export default function ComputerDetailPage() {
                 </button>
             </div>
 
+            {/* Error Message */}
+            {error && (
+                <div className="mb-6 border-l-4 border-red-500 bg-red-50 p-4">
+                    <div className="flex">
+                        <div className="ml-3">
+                            <p className="text-sm text-red-700">{error}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Computer Details */}
             <div className="mb-8 rounded-lg bg-white p-6 shadow">
                 <h2 className="mb-4 text-lg font-medium text-gray-900">Computer Information</h2>
@@ -238,10 +216,10 @@ export default function ComputerDetailPage() {
                     <h2 className="text-lg font-medium text-gray-900">Attached Projects</h2>
                     <button
                         onClick={handleAddAttachment}
-                        disabled={availableProjects.length === 0}
+                        disabled={availableProjects.length === 0 || isSubmitting}
                         className={`rounded-md px-4 py-2 text-white ${
-                            availableProjects.length > 0
-                                ? "hover:bg-primary700 bg-primary-600"
+                            availableProjects.length > 0 && !isSubmitting
+                                ? "bg-primary-600 hover:bg-primary-700"
                                 : "cursor-not-allowed bg-gray-400"
                         }`}
                     >
@@ -277,7 +255,7 @@ export default function ComputerDetailPage() {
                             </thead>
                             <tbody className="divide-y divide-gray-200 bg-white">
                                 {attachments.map((attachment) => {
-                                    const project = availableProjects.find((p) => p.id === attachment.project_id);
+                                    const project = allProjects.find((p) => p.id === attachment.project_id);
 
                                     return (
                                         <tr key={attachment.id}>
@@ -310,8 +288,9 @@ export default function ComputerDetailPage() {
                                                         void handleDeleteAttachment(attachment.id);
                                                     }}
                                                     className="text-red-600 hover:text-red-900"
+                                                    disabled={deleteAttachmentMutation.isPending}
                                                 >
-                                                    Detach
+                                                    {deleteAttachmentMutation.isPending ? "Detaching..." : "Detach"}
                                                 </button>
                                             </td>
                                         </tr>
@@ -354,7 +333,8 @@ export default function ComputerDetailPage() {
                                     onChange={(e) => {
                                         setSelectedProject(e.target.value);
                                     }}
-                                    className="required mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                    required
+                                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                 >
                                     <option value="">Select a project</option>
                                     {availableProjects.map((project) => (
@@ -372,7 +352,7 @@ export default function ComputerDetailPage() {
                                 <input
                                     type="text"
                                     id="authenticator"
-                                    value={account_key}
+                                    value={accountKey}
                                     onChange={(e) => {
                                         setAccountKey(e.target.value);
                                     }}
@@ -414,9 +394,10 @@ export default function ComputerDetailPage() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
+                                    disabled={isSubmitting}
+                                    className="rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
                                 >
-                                    Attach Project
+                                    {isSubmitting ? "Attaching..." : "Attach Project"}
                                 </button>
                             </div>
                         </form>

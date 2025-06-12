@@ -1,86 +1,42 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { ApiError, User, UserCredentials, UserRegister } from "../../types";
-import { authService } from "../../services/api-client";
-import userService from "../../services/user-service";
+import { UserCredentials, UserRegister } from "../../types";
 import { AuthContext } from "../../contexts/AuthContext";
+import { useCurrentUserQuery, useLoginMutation, useRegisterMutation, useLogoutMutation } from "../../hooks/queries";
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
 
-    // Load user data on initial render if token exists
-    useEffect(() => {
-        const loadUser = async () => {
-            if (authService.isAuthenticated()) {
-                try {
-                    const userData = await userService.getCurrentUser();
-                    setUser(userData);
-                } catch (err) {
-                    console.error("Failed to load user data", err);
-                    authService.logout();
-                }
-            }
+    // Query for current user
+    const { data: user, isLoading: userLoading, error: userError } = useCurrentUserQuery();
 
-            setLoading(false);
-        };
+    // Mutations
+    const loginMutation = useLoginMutation();
+    const registerMutation = useRegisterMutation();
+    const logoutMutation = useLogoutMutation();
 
-        void loadUser();
-    }, []);
+    // Determine overall loading state
+    const loading = userLoading || loginMutation.isPending || registerMutation.isPending;
+
+    // Determine error state
+    const error = loginMutation.error?.message ?? registerMutation.error?.message ?? userError?.message ?? null;
 
     // Login function
     async function login(credentials: UserCredentials) {
-        setLoading(true);
-        setError(null);
-
-        try {
-            await authService.login(credentials.username, credentials.password);
-            const userData = await userService.getCurrentUser();
-            setUser(userData);
-            void navigate("/dashboard");
-        } catch (err) {
-            if (err instanceof ApiError) {
-                setError(err.detail ?? "Failed to login. Please check your credentials.");
-            } else {
-                setError("Failed to login. Please check your credentials.");
-            }
-            throw err;
-        } finally {
-            setLoading(false);
-        }
+        await loginMutation.mutateAsync(credentials);
+        await navigate("/dashboard");
     }
 
     // Register function
     async function register(userData: UserRegister) {
-        setLoading(true);
-        setError(null);
-
-        try {
-            await userService.register(userData);
-            await login({
-                username: userData.username,
-                password: userData.password,
-            });
-        } catch (err) {
-            if (err instanceof ApiError) {
-                setError(err.detail ?? "Failed to register. Please try again.");
-            } else {
-                setError("Failed to register. Please try again.");
-            }
-            throw err;
-        } finally {
-            setLoading(false);
-        }
+        await registerMutation.mutateAsync(userData);
+        await navigate("/dashboard");
     }
 
     // Logout function
-    const logout = () => {
-        authService.logout();
-        setUser(null);
-        void navigate("/login");
-    };
+    async function logout() {
+        logoutMutation.mutate();
+        await navigate("/login");
+    }
 
     // Check if user is admin
     const isAdmin = () => {
@@ -89,7 +45,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
     // Context value
     const value = {
-        user,
+        user: user ?? null,
         loading,
         error,
         login,

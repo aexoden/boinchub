@@ -1,32 +1,13 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useConfig } from "../../contexts/ConfigContext";
-import { Computer } from "../../types";
-import { computerService } from "../../services/computer-service";
+import { useCurrentUserComputersQuery } from "../../hooks/queries";
 
 export default function DashboardPage() {
     const { user } = useAuth();
     const { config } = useConfig();
-    const [computers, setComputers] = useState<Computer[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchComputers = async () => {
-            try {
-                const data = await computerService.getUserComputers();
-                setComputers(data);
-            } catch (err: unknown) {
-                const errorMessage = err instanceof Error ? err.message : "Failed to load computers";
-                setError(errorMessage);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        void fetchComputers();
-    }, []);
+    const { data: computers = [], isLoading: loading, error } = useCurrentUserComputersQuery();
 
     // Format computer registration date
     const formatDate = (dateString: string) => {
@@ -62,7 +43,7 @@ export default function DashboardPage() {
                     {loading ? (
                         <p>Loading computers...</p>
                     ) : error ? (
-                        <div className="text-red-500">{error}</div>
+                        <div className="text-red-500">{error.message}</div>
                     ) : computers.length === 0 ? (
                         <div className="text-gray-500">
                             <p>You don't have any computers registered to your account.</p>

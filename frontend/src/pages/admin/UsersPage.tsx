@@ -18,6 +18,9 @@ export default function UsersPage() {
         is_active: true,
     });
 
+    // Modal error state
+    const [modalError, setModalError] = useState<string | null>(null);
+
     // Open modal for editing user
     const handleEditUser = (user: User) => {
         setEditingUser(user);
@@ -28,12 +31,17 @@ export default function UsersPage() {
             password: "",
         });
 
+        setModalError(null);
         setIsModalOpen(true);
     };
 
     // Handle form input changes
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
+
+        if (modalError) {
+            setModalError(null);
+        }
 
         setFormData({
             ...formData,
@@ -45,6 +53,8 @@ export default function UsersPage() {
     const handleSubmit = async () => {
         if (!editingUser) return;
 
+        setModalError(null);
+
         // If password is empty, don't update it
         const payload: UserUpdate = { ...formData };
         if (!payload.password) {
@@ -55,7 +65,17 @@ export default function UsersPage() {
             await updateUserMutation.mutateAsync({ userId: editingUser.id, userData: payload });
             setIsModalOpen(false);
         } catch (err: unknown) {
-            console.error("Failed to update user:", err);
+            let errorMessage = "An unexpected error occurred";
+
+            if (err instanceof Error) {
+                errorMessage = err.message;
+            } else if (typeof err === "string") {
+                errorMessage = err;
+            } else if (err && typeof err === "object" && "detail" in err) {
+                errorMessage = String(err.detail);
+            }
+
+            setModalError(errorMessage);
         }
     };
 
@@ -194,6 +214,18 @@ export default function UsersPage() {
                         <DialogTitle as="h3" className="text-lg leading-6 font-medium text-gray-900">
                             Edit User: {editingUser?.username}
                         </DialogTitle>
+
+                        {/* Error Display */}
+                        {modalError && (
+                            <div className="mt-4 border-l-4 border-red-500 bg-red-50 p-4">
+                                <div className="flex">
+                                    <div className="ml-3">
+                                        <p className="text-sm text-red-700">{modalError}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         <form
                             onSubmit={(e) => {
                                 e.preventDefault();

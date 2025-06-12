@@ -32,7 +32,10 @@ export default function ComputerDetailPage() {
     const [selectedProject, setSelectedProject] = useState<string>("");
     const [accountKey, setAccountKey] = useState("");
     const [resourceShare, setResourceShare] = useState("100");
-    const [error, setError] = useState<string | null>(null);
+
+    // Error states
+    const [pageError, setPageError] = useState<string | null>(null);
+    const [modalError, setModalError] = useState<string | null>(null);
 
     const attachedProjectIds = attachments.map((a) => a.project_id);
     const availableProjects = allProjects.filter((p) => !attachedProjectIds.includes(p.id));
@@ -41,23 +44,49 @@ export default function ComputerDetailPage() {
         setSelectedProject("");
         setAccountKey("");
         setResourceShare("100");
-        setError(null);
+        setModalError(null);
         setIsModalOpen(true);
     };
 
+    const handleInputChange = (field: string, value: string) => {
+        if (modalError) {
+            setModalError(null);
+        }
+
+        switch (field) {
+            case "project":
+                setSelectedProject(value);
+                break;
+            case "accountKey":
+                setAccountKey(value);
+                break;
+            case "resourceShare":
+                setResourceShare(value);
+                break;
+        }
+    };
+
     const handleCreateAttachment = async () => {
+        setModalError(null);
+
         if (!selectedProject) {
-            setError("Please select a project to attach.");
+            setModalError("Please select a project to attach.");
             return;
         }
 
-        if (!accountKey) {
-            setError("Please enter a valid account key.");
+        if (!accountKey.trim()) {
+            setModalError("Please enter a valid account key.");
             return;
         }
 
         if (!computer) {
-            setError("Computer not found.");
+            setModalError("Computer not found.");
+            return;
+        }
+
+        const resourceShareNum = Number(resourceShare);
+        if (isNaN(resourceShareNum) || resourceShareNum < 0) {
+            setModalError("Resource share must be a valid number greater than or equal to 0.");
             return;
         }
 
@@ -65,15 +94,25 @@ export default function ComputerDetailPage() {
             const attachmentData: ProjectAttachmentCreate = {
                 computer_id: computer.id,
                 project_id: selectedProject,
-                account_key: accountKey,
-                resource_share: Number(resourceShare),
+                account_key: accountKey.trim(),
+                resource_share: resourceShareNum,
             };
 
             await createAttachmentMutation.mutateAsync(attachmentData);
             setIsModalOpen(false);
-            setError(null);
+            setPageError(null);
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : "Failed to create attachment");
+            let errorMessage = "Failed to create attachment";
+
+            if (err instanceof Error) {
+                errorMessage = err.message;
+            } else if (typeof err === "string") {
+                errorMessage = err;
+            } else if (err && typeof err === "object" && "detail" in err) {
+                errorMessage = String(err.detail);
+            }
+
+            setModalError(errorMessage);
         }
     };
 
@@ -84,8 +123,19 @@ export default function ComputerDetailPage() {
 
         try {
             await deleteAttachmentMutation.mutateAsync(attachmentId);
+            setPageError(null);
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : "Failed to detach project");
+            let errorMessage = "Failed to detach project";
+
+            if (err instanceof Error) {
+                errorMessage = err.message;
+            } else if (typeof err === "string") {
+                errorMessage = err;
+            } else if (err && typeof err === "object" && "detail" in err) {
+                errorMessage = String(err.detail);
+            }
+
+            setPageError(errorMessage);
         }
     };
 
@@ -171,11 +221,19 @@ export default function ComputerDetailPage() {
             </div>
 
             {/* Error Message */}
-            {error && (
+            {pageError && (
                 <div className="mb-6 border-l-4 border-red-500 bg-red-50 p-4">
                     <div className="flex">
                         <div className="ml-3">
-                            <p className="text-sm text-red-700">{error}</p>
+                            <p className="text-sm text-red-700">{pageError}</p>
+                            <button
+                                onClick={() => {
+                                    setPageError(null);
+                                }}
+                                className="mt-2 text-sm font-medium text-red-700 hover:text-red-600"
+                            >
+                                Dismiss
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -222,6 +280,7 @@ export default function ComputerDetailPage() {
                                 ? "bg-primary-600 hover:bg-primary-700"
                                 : "cursor-not-allowed bg-gray-400"
                         }`}
+                        title={availableProjects.length === 0 ? "No available projects to attach" : ""}
                     >
                         Attach Project
                     </button>
@@ -316,6 +375,18 @@ export default function ComputerDetailPage() {
                         <DialogTitle as="h3" className="text-lg leading-6 font-medium text-gray-900">
                             Attach New Project
                         </DialogTitle>
+
+                        {/* Modal Error Display */}
+                        {modalError && (
+                            <div className="mt-4 border-l-4 border-red-500 bg-red-50 p-4">
+                                <div className="flex">
+                                    <div className="ml-3">
+                                        <p className="text-sm text-red-700">{modalError}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         <form
                             onSubmit={(e) => {
                                 e.preventDefault();
@@ -331,7 +402,7 @@ export default function ComputerDetailPage() {
                                     id="project"
                                     value={selectedProject}
                                     onChange={(e) => {
-                                        setSelectedProject(e.target.value);
+                                        handleInputChange("project", e.target.value);
                                     }}
                                     required
                                     className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
@@ -354,7 +425,7 @@ export default function ComputerDetailPage() {
                                     id="authenticator"
                                     value={accountKey}
                                     onChange={(e) => {
-                                        setAccountKey(e.target.value);
+                                        handleInputChange("accountKey", e.target.value);
                                     }}
                                     className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                     required
@@ -376,10 +447,13 @@ export default function ComputerDetailPage() {
                                     min="0"
                                     value={resourceShare}
                                     onChange={(e) => {
-                                        setResourceShare(e.target.value);
+                                        handleInputChange("resourceShare", e.target.value);
                                     }}
                                     className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                 />
+                                <p className="mt-1 text-sm text-gray-500">
+                                    Determines how muich computing resource this project gets relative to others
+                                </p>
                             </div>
 
                             <div className="mt-6 flex justify-end space-x-3">

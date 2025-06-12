@@ -27,6 +27,9 @@ export default function ProjectsPage() {
         enabled: true,
     });
 
+    // Modal error state
+    const [modalError, setModalError] = useState<string | null>(null);
+
     // Open modal for creating a new project
     const handleAddProject = () => {
         setEditingProject(null);
@@ -39,6 +42,7 @@ export default function ProjectsPage() {
             enabled: true,
         } as ProjectCreate);
 
+        setModalError(null);
         setIsModalOpen(true);
     };
 
@@ -54,12 +58,18 @@ export default function ProjectsPage() {
             enabled: project.enabled,
         } as ProjectUpdate);
 
+        setModalError(null);
         setIsModalOpen(true);
     };
 
     // Handle form input changes
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
+
+        // Clear errors when user starts typing
+        if (modalError) {
+            setModalError(null);
+        }
 
         setFormData({
             ...formData,
@@ -69,6 +79,8 @@ export default function ProjectsPage() {
 
     // Handle form submission
     const handleSubmit = async () => {
+        setModalError(null);
+
         try {
             if (editingProject) {
                 await updateProjectMutation.mutateAsync({
@@ -81,7 +93,17 @@ export default function ProjectsPage() {
 
             setIsModalOpen(false);
         } catch (err: unknown) {
-            console.error("Failed to save project:", err);
+            let errorMessage = "An unexpected error occurred";
+
+            if (err instanceof Error) {
+                errorMessage = err.message;
+            } else if (typeof err === "string") {
+                errorMessage = err;
+            } else if (err && typeof err === "object" && "detail" in err) {
+                errorMessage = (err as { detail: string }).detail || "An unexpected error occurred";
+            }
+
+            setModalError(errorMessage);
         }
     };
 
@@ -219,6 +241,18 @@ export default function ProjectsPage() {
                         <DialogTitle as="h3" className="text-lg leading-6 font-medium text-gray-900">
                             {editingProject ? "Edit Project" : "Add New Project"}
                         </DialogTitle>
+
+                        {/* Error Display */}
+                        {modalError && (
+                            <div className="mt-4 border-l-4 border-red-500 bg-red-50 p-4">
+                                <div className="flex">
+                                    <div className="ml-3">
+                                        <p className="text-sm text-red-700">{modalError}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         <form
                             onSubmit={(e) => {
                                 e.preventDefault();

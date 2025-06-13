@@ -20,8 +20,13 @@ export default function AttachmentDetailPage() {
         error: attachmentError,
     } = useAttachmentQuery(attachmentId ?? "");
 
-    const { data: project, isLoading: projectLoading } = useProjectQuery(attachment?.project_id ?? "");
-    const { data: computer, isLoading: computerLoading } = useComputerQuery(attachment?.computer_id ?? "");
+    const { data: project, isLoading: projectLoading } = useProjectQuery(attachment?.project_id ?? "", {
+        enabled: !!attachment?.project_id,
+    });
+
+    const { data: computer, isLoading: computerLoading } = useComputerQuery(attachment?.computer_id ?? "", {
+        enabled: !!attachment?.computer_id,
+    });
 
     // Mutations
     const updateAttachmentMutation = useUpdateAttachmentMutation();
@@ -30,6 +35,7 @@ export default function AttachmentDetailPage() {
     const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
     // Form state
+    const [accountKey, setAccountKey] = useState("");
     const [resourceShare, setResourceShare] = useState("");
     const [suspended, setSuspended] = useState(false);
     const [dontRequestMoreWork, setDontRequestMoreWork] = useState(false);
@@ -41,6 +47,7 @@ export default function AttachmentDetailPage() {
 
     useEffect(() => {
         if (attachment) {
+            setAccountKey(attachment.account_key);
             setResourceShare(attachment.resource_share.toString());
             setSuspended(attachment.suspended);
             setDontRequestMoreWork(attachment.dont_request_more_work);
@@ -57,8 +64,22 @@ export default function AttachmentDetailPage() {
             return;
         }
 
+        setMessage(null);
+
+        if (!accountKey.trim()) {
+            setMessage({ text: "Account key cannot be empty", type: "error" });
+            return;
+        }
+
+        const resourceShareNum = parseInt(resourceShare);
+        if (isNaN(resourceShareNum) || resourceShareNum < 0) {
+            setMessage({ text: "Resource share must be a valid number greater than or equal to 0", type: "error" });
+            return;
+        }
+
         const updateData: ProjectAttachmentUpdate = {
-            resource_share: parseInt(resourceShare),
+            account_key: accountKey.trim(),
+            resource_share: resourceShareNum,
             suspended,
             dont_request_more_work: dontRequestMoreWork,
             detach_when_done: detachWhenDone,
@@ -78,7 +99,19 @@ export default function AttachmentDetailPage() {
             // Scroll to the top to show the message
             window.scrollTo(0, 0);
         } catch (err: unknown) {
-            setMessage({ text: err instanceof Error ? err.message : "Failed to update attachment", type: "error" });
+            let errorMessage = "Failed to update attachment";
+
+            if (err instanceof Error) {
+                errorMessage = err.message;
+            } else if (typeof err === "string") {
+                errorMessage = err;
+            } else if (err && typeof err === "object" && "detail" in err) {
+                errorMessage = String(err.detail);
+            }
+
+            setMessage({ text: errorMessage, type: "error" });
+            // Scroll to the top to show the error
+            window.scrollTo(0, 0);
         }
     };
 
@@ -87,7 +120,11 @@ export default function AttachmentDetailPage() {
             return;
         }
 
-        if (!window.confirm("Are you sure you want to detach this project?")) {
+        if (
+            !window.confirm(
+                "Are you sure you want to detach this project? This will remove all settings and stop receiving work from this project.",
+            )
+        ) {
             return;
         }
 
@@ -95,7 +132,19 @@ export default function AttachmentDetailPage() {
             await deleteAttachmentMutation.mutateAsync(attachment.id);
             await navigate(`/computers/${computer.id}`);
         } catch (err: unknown) {
-            setMessage({ text: err instanceof Error ? err.message : "Failed to detach project", type: "error" });
+            let errorMessage = "Failed to detach project";
+
+            if (err instanceof Error) {
+                errorMessage = err.message;
+            } else if (typeof err === "string") {
+                errorMessage = err;
+            } else if (err && typeof err === "object" && "detail" in err) {
+                errorMessage = String(err.detail);
+            }
+
+            setMessage({ text: errorMessage, type: "error" });
+            // Scroll to the top to show the error
+            window.scrollTo(0, 0);
         }
     };
 
@@ -201,12 +250,6 @@ export default function AttachmentDetailPage() {
                                 <h3 className="text-sm font-medium text-gray-500">Computer</h3>
                                 <p className="mt-1 text-gray-900">{computer.hostname}</p>
                             </div>
-                            <div>
-                                <h3 className="text-sm font-medium text-gray-500">Authenticator</h3>
-                                <p className="mt-1 truncate font-mono text-sm text-gray-900">
-                                    {attachment.account_key}
-                                </p>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -222,6 +265,35 @@ export default function AttachmentDetailPage() {
                             }}
                         >
                             <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+                                {/* Account Key */}
+                                <div className="md:col-span-2">
+                                    <label
+                                        htmlFor="accountKey"
+                                        className="mb-1 block text-sm font-medium text-gray-700"
+                                    >
+                                        Account Key
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="accountKey"
+                                        value={accountKey}
+                                        onChange={(e) => {
+                                            setAccountKey(e.target.value);
+
+                                            if (message?.type === "error") {
+                                                setMessage(null);
+                                            }
+                                        }}
+                                        className="block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                        placeholder="Enter project account key"
+                                        required
+                                    />
+                                    <p className="mt-1 text-xs text-gray-500">
+                                        You can obtain this from the project website. You should be able to use either
+                                        your account key or your weak account key.
+                                    </p>
+                                </div>
+
                                 {/* Resource Share */}
                                 <div>
                                     <label
@@ -236,6 +308,10 @@ export default function AttachmentDetailPage() {
                                         value={resourceShare}
                                         onChange={(e) => {
                                             setResourceShare(e.target.value);
+
+                                            if (message?.type === "error") {
+                                                setMessage(null);
+                                            }
                                         }}
                                         min="0"
                                         className="block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
@@ -380,7 +456,7 @@ export default function AttachmentDetailPage() {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
+                                    className="rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
                                 >
                                     {updateAttachmentMutation.isPending ? "Saving..." : "Save Changes"}
                                 </button>

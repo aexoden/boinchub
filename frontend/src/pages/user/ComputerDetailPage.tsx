@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, Link } from "react-router";
 import { ProjectAttachmentCreate } from "../../types";
 import {
     useComputerQuery,
@@ -36,6 +36,12 @@ export default function ComputerDetailPage() {
     // Error states
     const [pageError, setPageError] = useState<string | null>(null);
     const [modalError, setModalError] = useState<string | null>(null);
+
+    // Create a map for quick project lookup
+    const projectsMap = allProjects.reduce<Record<string, string>>((acc, project) => {
+        acc[project.id] = project.name;
+        return acc;
+    }, {});
 
     const attachedProjectIds = attachments.map((a) => a.project_id);
     const availableProjects = allProjects.filter((p) => !attachedProjectIds.includes(p.id));
@@ -314,14 +320,12 @@ export default function ComputerDetailPage() {
                             </thead>
                             <tbody className="divide-y divide-gray-200 bg-white">
                                 {attachments.map((attachment) => {
-                                    const project = allProjects.find((p) => p.id === attachment.project_id);
+                                    const projectName = projectsMap[attachment.project_id] || "Unknown Project";
 
                                     return (
                                         <tr key={attachment.id}>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-gray-900">
-                                                    {project ? project.name : `Project ID: ${attachment.project_id}`}
-                                                </div>
+                                                <div className="text-sm font-medium text-gray-900">{projectName}</div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm text-gray-900">{attachment.resource_share}</div>
@@ -342,6 +346,12 @@ export default function ComputerDetailPage() {
                                                 )}
                                             </td>
                                             <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+                                                <Link
+                                                    to={`/attachments/${attachment.id}`}
+                                                    className="mr-4 text-primary-600 hover:text-primary-900"
+                                                >
+                                                    Edit
+                                                </Link>
                                                 <button
                                                     onClick={() => {
                                                         void handleDeleteAttachment(attachment.id);
@@ -407,7 +417,9 @@ export default function ComputerDetailPage() {
                                     required
                                     className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                 >
-                                    <option value="">Select a project</option>
+                                    <option value="" disabled>
+                                        Select a project
+                                    </option>
                                     {availableProjects.map((project) => (
                                         <option key={project.id} value={project.id}>
                                             {project.name}
@@ -417,19 +429,19 @@ export default function ComputerDetailPage() {
                             </div>
 
                             <div className="mb-4">
-                                <label htmlFor="authenticator" className="block text-sm font-medium text-gray-700">
-                                    Authenticator Key
+                                <label htmlFor="accountKey" className="block text-sm font-medium text-gray-700">
+                                    Account Key
                                 </label>
                                 <input
                                     type="text"
-                                    id="authenticator"
+                                    id="accountKey"
                                     value={accountKey}
                                     onChange={(e) => {
                                         handleInputChange("accountKey", e.target.value);
                                     }}
                                     className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                     required
-                                    placeholder="Enter project authenticator key"
+                                    placeholder="Enter project account key"
                                 />
                                 <p className="mt-1 text-sm text-gray-500">
                                     You can obtain this from the project website. You should be able to use either your
@@ -452,7 +464,7 @@ export default function ComputerDetailPage() {
                                     className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                 />
                                 <p className="mt-1 text-sm text-gray-500">
-                                    Determines how muich computing resource this project gets relative to others
+                                    Determines how much computing resource this project gets relative to others
                                 </p>
                             </div>
 

@@ -11,7 +11,7 @@ export default function ComputersPage() {
 
     const { data: projects = [], isLoading: projectsLoading } = useProjectsQuery(true);
 
-    const projectNamesMap = projects.reduce<Record<string, string>>((acc, project) => {
+    const projectsMap = projects.reduce<Record<string, string>>((acc, project) => {
         acc[project.id] = project.name;
         return acc;
     }, {});
@@ -75,7 +75,7 @@ export default function ComputersPage() {
                         <ComputerCard
                             key={computer.id}
                             computer={computer}
-                            projectNamesMap={projectNamesMap}
+                            projectsMap={projectsMap}
                             formatDate={formatDate}
                         />
                     ))}
@@ -87,11 +87,11 @@ export default function ComputersPage() {
 
 interface ComputerCardProps {
     computer: Computer;
-    projectNamesMap: Record<string, string>;
+    projectsMap: Record<string, string>;
     formatDate: (dateString: string) => string;
 }
 
-function ComputerCard({ computer, projectNamesMap, formatDate }: ComputerCardProps) {
+function ComputerCard({ computer, projectsMap, formatDate }: ComputerCardProps) {
     const { data: attachments = [], isLoading: attachmentsLoading } = useComputerAttachmentsQuery(computer.id);
 
     return (
@@ -127,7 +127,15 @@ function ComputerCard({ computer, projectNamesMap, formatDate }: ComputerCardPro
                             <span className="ml-2 text-sm text-gray-600">Loading attachments...</span>
                         </div>
                     ) : attachments.length === 0 ? (
-                        <p className="text-gray-500">No projects attached to this computer.</p>
+                        <div className="py-4 text-center text-gray-500">
+                            <p>No projects attached to this computer.</p>
+                            <Link
+                                to={`/computers/${computer.id}`}
+                                className="mt-2 inline-block text-primary-600 hover:text-primary-900"
+                            >
+                                Attach a project
+                            </Link>
+                        </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200">
@@ -142,43 +150,53 @@ function ComputerCard({ computer, projectNamesMap, formatDate }: ComputerCardPro
                                         <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                                             Status
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                        <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-500 uppercase">
                                             Actions
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 bg-white">
-                                    {attachments.map((attachment) => (
-                                        <tr key={attachment.id}>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                {projectNamesMap[attachment.project_id] || "Unknown Project"}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{attachment.resource_share}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                {attachment.suspended ? (
-                                                    <span className="inline-flex rounded-full bg-yellow-100 px-2 text-xs leading-5 font-semibold text-yellow-800">
-                                                        Suspended
-                                                    </span>
-                                                ) : attachment.dont_request_more_work ? (
-                                                    <span className="inline-flex rounded-full bg-orange-100 px-2 text-xs leading-5 font-semibold text-orange-800">
-                                                        No New Work
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex rounded-full bg-green-100 px-2 text-xs leading-5 font-semibold text-green-800">
-                                                        Active
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <Link
-                                                    to={`/attachments/${attachment.id}`}
-                                                    className="mr-4 text-primary-600 hover:text-primary-900"
-                                                >
-                                                    Edit
-                                                </Link>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {attachments.map((attachment) => {
+                                        const projectName = projectsMap[attachment.project_id] || "Unknown Project";
+
+                                        return (
+                                            <tr key={attachment.id}>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="text-sm font-medium text-gray-900">
+                                                        {projectName}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="text-sm text-gray-900">
+                                                        {attachment.resource_share}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    {attachment.suspended ? (
+                                                        <span className="inline-flex rounded-full bg-yellow-100 px-2 text-xs leading-5 font-semibold text-yellow-800">
+                                                            Suspended
+                                                        </span>
+                                                    ) : attachment.dont_request_more_work ? (
+                                                        <span className="inline-flex rounded-full bg-orange-100 px-2 text-xs leading-5 font-semibold text-orange-800">
+                                                            No New Work
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex rounded-full bg-green-100 px-2 text-xs leading-5 font-semibold text-green-800">
+                                                            Active
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+                                                    <Link
+                                                        to={`/attachments/${attachment.id}`}
+                                                        className="text-primary-600 hover:text-primary-900"
+                                                    >
+                                                        Edit
+                                                    </Link>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>

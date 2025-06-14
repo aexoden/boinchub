@@ -35,7 +35,7 @@ def get_computers(
     Raises:
         HTTPException: If the user does not have access to any computers.
     """
-    if current_user.role != "admin":
+    if current_user.role not in {"admin", "super_admin"}:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
 
     computers = computer_service.get_all()
@@ -67,7 +67,7 @@ def get_computer(
     if not computer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Computer not found")
 
-    if current_user.role != "admin" and computer.user_id != current_user.id:
+    if current_user.role not in {"admin", "super_admin"} and computer.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Computer not found")
 
     return ComputerPublic.model_validate(computer)
@@ -100,7 +100,7 @@ def get_project_attachments(
     if not computer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Computer not found")
 
-    if current_user.role != "admin" and computer.user_id != current_user.id:
+    if current_user.role not in {"admin", "super_admin"} and computer.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Computer not found")
 
     project_attachments = project_attachment_service.get_by_computer(computer_id)

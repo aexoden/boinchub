@@ -38,7 +38,7 @@ def create_project(
         HTTPException: If a project with the same URL already exists or if the user is not an admin.
 
     """
-    if current_user.role != "admin":
+    if current_user.role not in {"admin", "super_admin"}:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
 
     if project_service.get_by_url(project_data.url) is not None:
@@ -72,7 +72,7 @@ def get_projects(
 
     """
     # Only admins can see disabled projects
-    if current_user.role != "admin":
+    if current_user.role not in {"admin", "super_admin"}:
         enabled_only = True
 
     if enabled_only:
@@ -105,7 +105,7 @@ def get_project(
     """
     project = project_service.get(project_id)
 
-    if not project or (not project.enabled and current_user.role != "admin"):
+    if not project or (not project.enabled and current_user.role not in {"admin", "super_admin"}):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
     return ProjectPublic.model_validate(project)
@@ -133,7 +133,7 @@ def update_project(
         HTTPException: If the project is not found or if the user is not an admin.
 
     """
-    if current_user.role != "admin":
+    if current_user.role not in {"admin", "super_admin"}:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
     project = project_service.update(project_id, project_data)
@@ -164,7 +164,7 @@ def delete_project(
         HTTPException: If the project is not found or if the user is not an admin.
 
     """
-    if current_user.role != "admin":
+    if current_user.role not in {"admin", "super_admin"}:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
     success = project_service.delete(project_id)
@@ -202,7 +202,7 @@ def get_project_attachments(
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
-    if current_user.role != "admin":
+    if current_user.role not in {"admin", "super_admin"}:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
     project_attachments = project_attachment_service.get_by_project(project_id)

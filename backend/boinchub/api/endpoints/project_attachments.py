@@ -52,7 +52,7 @@ def create_project_attachment(  # noqa: PLR0913
     if not computer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Computer not found")
 
-    if current_user.role != "admin" and computer.user_id != current_user.id:
+    if current_user.role not in {"admin", "super_admin"} and computer.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Computer not found")
 
     project = project_service.get(project_attachment_data.project_id)
@@ -101,7 +101,7 @@ def get_project_attachment(
     if not project_attachment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project attachment not found")
 
-    if current_user.role != "admin" and project_attachment.computer.user_id != current_user.id:
+    if current_user.role not in {"admin", "super_admin"} and project_attachment.computer.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project attachment not found")
 
     return ProjectAttachmentPublic.model_validate(project_attachment)
@@ -134,7 +134,7 @@ def update_attachment(
     if not project_attachment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project attachment not found")
 
-    if current_user.role != "admin" and project_attachment.computer.user_id != current_user.id:
+    if current_user.role not in {"admin", "super_admin"} and project_attachment.computer.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project attachment not found")
 
     updated_attachment = project_attachment_service.update(project_attachment_id, project_attachment_data)
@@ -170,7 +170,7 @@ def delete_attachment(
     if not project_attachment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project attachment not found")
 
-    if current_user.role != "admin" and project_attachment.computer.user_id != current_user.id:
+    if current_user.role not in {"admin", "super_admin"} and project_attachment.computer.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project attachment not found")
 
     success = project_attachment_service.delete(project_attachment_id)

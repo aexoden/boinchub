@@ -145,6 +145,16 @@ class UserService(BaseService[User, UserCreate, UserUpdate]):
         ):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
+        # Check if this is a self-update
+        is_self_update = current_user and current_user.id == user.id
+
+        # If user is changing their own password, require current password verification
+        if is_self_update and object_data.password and not object_data.current_password:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Current password is required to change your own password",
+            )
+
         # If the current password is provided, verify it
         password_verified = False
 

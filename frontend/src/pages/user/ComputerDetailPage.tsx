@@ -180,7 +180,7 @@ export default function ComputerDetailPage() {
                         <p className="text-sm text-red-700">{computerError.message}</p>
                         <button
                             onClick={() => void navigate("/computers")}
-                            className="mt-2 text-sm font-medium text-red-700 hover:text-red-600"
+                            className="mt-2 cursor-pointer text-sm font-medium text-red-700 hover:text-red-600"
                         >
                             Go back to computers list
                         </button>
@@ -198,7 +198,7 @@ export default function ComputerDetailPage() {
                         <p className="text-sm text-yellow-700">Computer not found</p>
                         <button
                             onClick={() => void navigate("/computers")}
-                            className="mt-2 text-sm font-medium text-yellow-700 hover:text-yellow-600"
+                            className="mt-2 cursor-pointer text-sm font-medium text-yellow-700 hover:text-yellow-600"
                         >
                             Go back to computers list
                         </button>
@@ -217,7 +217,7 @@ export default function ComputerDetailPage() {
                 </div>
                 <button
                     onClick={() => void navigate("/computers")}
-                    className="rounded-md bg-gray-200 px-4 py-2 text-gray-800 hover:bg-gray-300"
+                    className="cursor-pointer rounded-md bg-gray-200 px-4 py-2 text-gray-800 transition-colors hover:bg-gray-300"
                 >
                     Back to Computers
                 </button>
@@ -233,7 +233,7 @@ export default function ComputerDetailPage() {
                                 onClick={() => {
                                     setPageError(null);
                                 }}
-                                className="mt-2 text-sm font-medium text-red-700 hover:text-red-600"
+                                className="mt-2 cursor-pointer text-sm font-medium text-red-700 hover:text-red-600"
                             >
                                 Dismiss
                             </button>
@@ -278,9 +278,9 @@ export default function ComputerDetailPage() {
                     <button
                         onClick={handleAddAttachment}
                         disabled={availableProjects.length === 0 || isSubmitting}
-                        className={`rounded-md px-4 py-2 text-white ${
+                        className={`rounded-md px-4 py-2 text-white transition-colors ${
                             availableProjects.length > 0 && !isSubmitting
-                                ? "bg-primary-600 hover:bg-primary-700"
+                                ? "cursor-pointer bg-primary-600 hover:bg-primary-700"
                                 : "cursor-not-allowed bg-gray-400"
                         }`}
                         title={
@@ -304,7 +304,7 @@ export default function ComputerDetailPage() {
                                 </p>
                                 <Link
                                     to="/settings"
-                                    className="mt-2 text-sm font-medium text-yellow-700 hover:text-yellow-600"
+                                    className="mt-2 cursor-pointer text-sm font-medium text-yellow-700 hover:text-yellow-600"
                                 >
                                     Go to Settings to add project keys
                                 </Link>
@@ -373,7 +373,7 @@ export default function ComputerDetailPage() {
                                             <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
                                                 <Link
                                                     to={`/attachments/${attachment.id}`}
-                                                    className="mr-4 text-primary-600 hover:text-primary-900"
+                                                    className="mr-4 cursor-pointer text-primary-600 hover:text-primary-900"
                                                 >
                                                     Edit
                                                 </Link>
@@ -381,7 +381,7 @@ export default function ComputerDetailPage() {
                                                     onClick={() => {
                                                         void handleDeleteAttachment(attachment.id);
                                                     }}
-                                                    className="text-red-600 hover:text-red-900"
+                                                    className="cursor-pointer text-red-600 transition-colors hover:text-red-900 disabled:cursor-not-allowed disabled:opacity-50"
                                                     disabled={deleteAttachmentMutation.isPending}
                                                 >
                                                     {deleteAttachmentMutation.isPending ? "Detaching..." : "Detach"}
@@ -481,14 +481,14 @@ export default function ComputerDetailPage() {
                                     onClick={() => {
                                         setIsModalOpen(false);
                                     }}
-                                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
+                                    className="cursor-pointer rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
+                                    className="cursor-pointer rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     {isSubmitting ? "Attaching..." : "Attach Project"}
                                 </button>

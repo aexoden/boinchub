@@ -241,7 +241,7 @@ export default function UsersPage() {
                                                 onClick={() => {
                                                     handleEditUser(user);
                                                 }}
-                                                className="mr-4 text-primary-600 hover:text-primary-900"
+                                                className="mr-4 cursor-pointer text-primary-600 transition-colors hover:text-primary-900"
                                                 disabled={updateUserMutation.isPending}
                                             >
                                                 Edit
@@ -250,7 +250,7 @@ export default function UsersPage() {
                                         {canDeleteUser(user) && (
                                             <button
                                                 onClick={() => void handleDeleteUser(user.id, user)}
-                                                className="text-red-600 hover:text-red-900"
+                                                className="cursor-pointer text-red-600 transition-colors hover:text-red-900 disabled:cursor-not-allowed disabled:opacity-50"
                                                 disabled={deleteUserMutation.isPending}
                                             >
                                                 Delete
@@ -376,9 +376,12 @@ export default function UsersPage() {
                                     id="is_active"
                                     checked={formData.is_active}
                                     onChange={handleInputChange}
-                                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                    className="h-4 w-4 cursor-pointer rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                 />
-                                <label htmlFor="is_active" className="ml-2 block text-sm font-medium text-gray-700">
+                                <label
+                                    htmlFor="is_active"
+                                    className="ml-2 block cursor-pointer text-sm font-medium text-gray-700"
+                                >
                                     Active
                                 </label>
                             </div>
@@ -389,14 +392,14 @@ export default function UsersPage() {
                                     onClick={() => {
                                         setIsModalOpen(false);
                                     }}
-                                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
+                                    className="cursor-pointer rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={updateUserMutation.isPending}
-                                    className="rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
+                                    className="cursor-pointer rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     {updateUserMutation.isPending ? "Updating..." : "Update User"}
                                 </button>

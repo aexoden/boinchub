@@ -196,7 +196,7 @@ export default function SettingsPage() {
                             <button
                                 type="submit"
                                 disabled={isLoading || !hasProfileChanges}
-                                className="mt-4 w-full rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                className="mt-4 w-full cursor-pointer rounded-md bg-primary-600 px-4 py-2 text-white transition-colors hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {isLoading ? "Saving..." : "Save Changes"}
                             </button>
@@ -272,7 +272,7 @@ export default function SettingsPage() {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="mt-4 w-full rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
+                                className="mt-4 w-full cursor-pointer rounded-md bg-primary-600 px-4 py-2 text-white transition-colors hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {isLoading ? "Changing..." : "Change Password"}
                             </button>

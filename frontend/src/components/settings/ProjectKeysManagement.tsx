@@ -121,9 +121,9 @@ export default function ProjectKeysManagement() {
                 <button
                     onClick={handleAddKey}
                     disabled={availableProjects.length === 0 || isSubmitting}
-                    className={`rounded-md px-4 py-2 text-white ${
+                    className={`rounded-md px-4 py-2 text-white transition-colors ${
                         availableProjects.length > 0 && !isSubmitting
-                            ? "bg-primary-600 hover:bg-primary-700"
+                            ? "cursor-pointer bg-primary-600 hover:bg-primary-700"
                             : "cursor-not-allowed bg-gray-400"
                     }`}
                     title={availableProjects.length === 0 ? "No available projects to add keys for" : ""}
@@ -164,7 +164,14 @@ export default function ProjectKeysManagement() {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div>
                                             <div className="text-sm font-medium text-gray-900">{key.project_name}</div>
-                                            <div className="text-sm text-gray-500">{key.project_url}</div>
+                                            <div className="text-sm text-gray-500">
+                                                <a
+                                                    href={key.project_url}
+                                                    className="cursor-pointer text-primary-600 hover:text-primary-800 hover:underline"
+                                                >
+                                                    {key.project_url}
+                                                </a>
+                                            </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
@@ -177,7 +184,7 @@ export default function ProjectKeysManagement() {
                                             onClick={() => {
                                                 handleEditKey(key);
                                             }}
-                                            className="mr-4 text-primary-600 hover:text-primary-900"
+                                            className="mr-4 cursor-pointer text-primary-600 transition-colors hover:text-primary-900"
                                         >
                                             Edit
                                         </button>
@@ -185,7 +192,7 @@ export default function ProjectKeysManagement() {
                                             onClick={() => {
                                                 void handleDeleteKey(key.project_id);
                                             }}
-                                            className="text-red-600 hover:text-red-900"
+                                            className="cursor-pointer text-red-600 transition-colors hover:text-red-900 disabled:cursor-not-allowed"
                                             disabled={deleteMutation.isPending}
                                         >
                                             Delete
@@ -291,14 +298,14 @@ export default function ProjectKeysManagement() {
                                     onClick={() => {
                                         setIsModalOpen(false);
                                     }}
-                                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
+                                    className="cursor-pointer rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
+                                    className="cursor-pointer rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     {isSubmitting ? "Saving..." : editingKey ? "Update Key" : "Add Key"}
                                 </button>

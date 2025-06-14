@@ -160,7 +160,7 @@ export default function AttachmentDetailPage() {
                         <p className="text-sm text-red-700">{attachmentError.message}</p>
                         <button
                             onClick={() => void navigate("/computers")}
-                            className="mt-2 text-sm font-medium text-red-700 hover:text-red-600"
+                            className="mt-2 cursor-pointer text-sm font-medium text-red-700 hover:text-red-600"
                         >
                             Go back to computers
                         </button>
@@ -178,7 +178,7 @@ export default function AttachmentDetailPage() {
                         <p className="text-sm text-yellow-700">Attachment, project, or computer not found</p>
                         <button
                             onClick={() => void navigate("/computers")}
-                            className="mt-2 text-sm font-medium text-yellow-700 hover:text-yellow-600"
+                            className="mt-2 cursor-pointer text-sm font-medium text-yellow-700 hover:text-yellow-600"
                         >
                             Go back to computers
                         </button>
@@ -199,7 +199,7 @@ export default function AttachmentDetailPage() {
                 </div>
                 <button
                     onClick={() => void navigate(`/computers/${computer.id}`)}
-                    className="rounded-md bg-gray-200 px-4 py-2 text-gray-800 hover:bg-gray-300"
+                    className="cursor-pointer rounded-md bg-gray-200 px-4 py-2 text-gray-800 transition-colors hover:bg-gray-300"
                 >
                     Back to Computer
                 </button>
@@ -230,7 +230,14 @@ export default function AttachmentDetailPage() {
                             </div>
                             <div>
                                 <h3 className="text-sm font-medium text-gray-500">URL</h3>
-                                <p className="mt-1 font-mono break-all text-gray-900">{project.url}</p>
+                                <p className="mt-1 font-mono break-all">
+                                    <a
+                                        href={project.url}
+                                        className="cursor-pointer text-primary-600 hover:text-primary-800 hover:underline"
+                                    >
+                                        {project.url}
+                                    </a>
+                                </p>
                             </div>
                             <div>
                                 <h3 className="text-sm font-medium text-gray-500">Description</h3>
@@ -297,9 +304,12 @@ export default function AttachmentDetailPage() {
                                         onChange={(e) => {
                                             setSuspended(e.target.checked);
                                         }}
-                                        className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                        className="h-4 w-4 cursor-pointer rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                     />
-                                    <label htmlFor="suspended" className="ml-2 block text-sm text-gray-700">
+                                    <label
+                                        htmlFor="suspended"
+                                        className="ml-2 block cursor-pointer text-sm text-gray-700"
+                                    >
                                         Suspend Project
                                     </label>
                                 </div>
@@ -313,9 +323,12 @@ export default function AttachmentDetailPage() {
                                         onChange={(e) => {
                                             setDontRequestMoreWork(e.target.checked);
                                         }}
-                                        className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                        className="h-4 w-4 cursor-pointer rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                     />
-                                    <label htmlFor="dontRequestMoreWork" className="ml-2 block text-sm text-gray-700">
+                                    <label
+                                        htmlFor="dontRequestMoreWork"
+                                        className="ml-2 block cursor-pointer text-sm text-gray-700"
+                                    >
                                         Don't Request More Work
                                     </label>
                                 </div>
@@ -329,9 +342,12 @@ export default function AttachmentDetailPage() {
                                         onChange={(e) => {
                                             setDetachWhenDone(e.target.checked);
                                         }}
-                                        className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                        className="h-4 w-4 cursor-pointer rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                     />
-                                    <label htmlFor="detachWhenDone" className="ml-2 block text-sm text-gray-700">
+                                    <label
+                                        htmlFor="detachWhenDone"
+                                        className="ml-2 block cursor-pointer text-sm text-gray-700"
+                                    >
                                         Detach When Done
                                     </label>
                                 </div>
@@ -349,9 +365,9 @@ export default function AttachmentDetailPage() {
                                         onChange={(e) => {
                                             setNoCpu(e.target.checked);
                                         }}
-                                        className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                        className="h-4 w-4 cursor-pointer rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                     />
-                                    <label htmlFor="noCpu" className="ml-2 block text-sm text-gray-700">
+                                    <label htmlFor="noCpu" className="ml-2 block cursor-pointer text-sm text-gray-700">
                                         Don't Use CPU
                                     </label>
                                 </div>
@@ -365,9 +381,12 @@ export default function AttachmentDetailPage() {
                                         onChange={(e) => {
                                             setNoGpuNvidia(e.target.checked);
                                         }}
-                                        className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                        className="h-4 w-4 cursor-pointer rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                     />
-                                    <label htmlFor="noGpuNvidia" className="ml-2 block text-sm text-gray-700">
+                                    <label
+                                        htmlFor="noGpuNvidia"
+                                        className="ml-2 block cursor-pointer text-sm text-gray-700"
+                                    >
                                         Don't Use NVIDIA GPU
                                     </label>
                                 </div>
@@ -381,9 +400,12 @@ export default function AttachmentDetailPage() {
                                         onChange={(e) => {
                                             setNoGpuAmd(e.target.checked);
                                         }}
-                                        className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                        className="h-4 w-4 cursor-pointer rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                     />
-                                    <label htmlFor="noGpuAmd" className="ml-2 block text-sm text-gray-700">
+                                    <label
+                                        htmlFor="noGpuAmd"
+                                        className="ml-2 block cursor-pointer text-sm text-gray-700"
+                                    >
                                         Don't Use AMD GPU
                                     </label>
                                 </div>
@@ -397,9 +419,12 @@ export default function AttachmentDetailPage() {
                                         onChange={(e) => {
                                             setNoGpuIntel(e.target.checked);
                                         }}
-                                        className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                        className="h-4 w-4 cursor-pointer rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                     />
-                                    <label htmlFor="noGpuIntel" className="ml-2 block text-sm text-gray-700">
+                                    <label
+                                        htmlFor="noGpuIntel"
+                                        className="ml-2 block cursor-pointer text-sm text-gray-700"
+                                    >
                                         Don't Use Intel GPU
                                     </label>
                                 </div>
@@ -412,14 +437,14 @@ export default function AttachmentDetailPage() {
                                         void handleDetach();
                                     }}
                                     disabled={isSubmitting}
-                                    className="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
+                                    className="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-white transition-colors hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     {deleteAttachmentMutation.isPending ? "Detaching..." : "Detach Project"}
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
+                                    className="cursor-pointer rounded-md bg-primary-600 px-4 py-2 text-white transition-colors hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     {updateAttachmentMutation.isPending ? "Saving..." : "Save Changes"}
                                 </button>

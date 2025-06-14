@@ -143,7 +143,7 @@ export default function ProjectsPage() {
                 </div>
                 <button
                     onClick={handleAddProject}
-                    className="rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700"
+                    className="cursor-pointer rounded-md bg-primary-600 px-4 py-2 text-white transition-colors hover:bg-primary-700"
                 >
                     Add Project
                 </button>
@@ -185,8 +185,13 @@ export default function ProjectsPage() {
                                         <div className="font-mediumt ext-gray-900">{project.name}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="font-mono text-sm text-gray-900">
-                                            <a href={project.url}>{project.url}</a>
+                                        <div className="font-mono text-sm">
+                                            <a
+                                                href={project.url}
+                                                className="cursor-pointer text-primary-600 hover:text-primary-800 hover:underline"
+                                            >
+                                                {project.url}
+                                            </a>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
@@ -205,7 +210,7 @@ export default function ProjectsPage() {
                                             onClick={() => {
                                                 handleEditProject(project);
                                             }}
-                                            className="mr-4 text-primary-600 hover:text-primary-900"
+                                            className="mr-4 cursor-pointer text-primary-600 transition-colors hover:text-primary-900"
                                             disabled={isSubmitting}
                                         >
                                             Edit
@@ -214,7 +219,7 @@ export default function ProjectsPage() {
                                             onClick={() => {
                                                 void handleDeleteProject(project.id);
                                             }}
-                                            className="text-red-600 hover:text-red-900"
+                                            className="cursor-pointer text-red-600 transition-colors hover:text-red-900 disabled:cursor-not-allowed disabled:opacity-50"
                                             disabled={deleteProjectMutation.isPending}
                                         >
                                             Delete
@@ -343,9 +348,12 @@ export default function ProjectsPage() {
                                     id="enabled"
                                     checked={formData.enabled}
                                     onChange={handleInputChange}
-                                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                    className="h-4 w-4 cursor-pointer rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                 />
-                                <label htmlFor="enabled" className="ml-2 block text-sm font-medium text-gray-700">
+                                <label
+                                    htmlFor="enabled"
+                                    className="ml-2 block cursor-pointer text-sm font-medium text-gray-700"
+                                >
                                     Enabled
                                 </label>
                             </div>
@@ -356,14 +364,14 @@ export default function ProjectsPage() {
                                     onClick={() => {
                                         setIsModalOpen(false);
                                     }}
-                                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
+                                    className="cursor-pointer rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
+                                    className="cursor-pointer rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     {isSubmitting
                                         ? editingProject

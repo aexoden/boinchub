@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { User, UserUpdate } from "../../types";
+import { useAuth } from "../../contexts/AuthContext";
 import { useUsersQuery, useUpdateUserMutation, useDeleteUserMutation } from "../../hooks/queries";
+import { getRoleDisplayName, getRoleColor, canChangeRoles, isSuperAdmin } from "../../util/user";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 
 export default function UsersPage() {
+    const { user: currentUser } = useAuth();
     const { data: users = [], isLoading: loading, error } = useUsersQuery();
 
     const updateUserMutation = useUpdateUserMutation();
@@ -12,23 +15,30 @@ export default function UsersPage() {
     // Form state
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
-    const [formData, setFormData] = useState<UserUpdate>({
+    const [formData, setFormData] = useState<UserUpdate & { new_password?: string }>({
+        username: "",
         email: "",
-        password: "",
+        new_password: "",
+        role: "user",
         is_active: true,
     });
 
     // Modal error state
     const [modalError, setModalError] = useState<string | null>(null);
 
+    const canCurrentUserChangeRoles = currentUser ? canChangeRoles(currentUser) : false;
+    const isCurrentUserSuperAdmin = currentUser ? isSuperAdmin(currentUser) : false;
+
     // Open modal for editing user
     const handleEditUser = (user: User) => {
         setEditingUser(user);
 
         setFormData({
+            username: user.username,
             email: user.email,
             is_active: user.is_active,
-            password: "",
+            role: user.role,
+            new_password: "",
         });
 
         setModalError(null);
@@ -36,8 +46,9 @@ export default function UsersPage() {
     };
 
     // Handle form input changes
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value, type, checked } = e.target;
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value, type } = e.target;
+        const checked = type === "checkbox" ? e.target.checked : undefined;
 
         if (modalError) {
             setModalError(null);
@@ -55,10 +66,23 @@ export default function UsersPage() {
 
         setModalError(null);
 
-        // If password is empty, don't update it
-        const payload: UserUpdate = { ...formData };
-        if (!payload.password) {
-            delete payload.password;
+        // Prepare update payload
+        const payload: UserUpdate = {
+            email: formData.email !== editingUser.email ? formData.email : undefined,
+            username: formData.username !== editingUser.username ? formData.username : undefined,
+            role: canCurrentUserChangeRoles && formData.role !== editingUser.role ? formData.role : undefined,
+            is_active: formData.is_active !== editingUser.is_active ? formData.is_active : undefined,
+        };
+
+        // Include password if provided
+        if (formData.new_password) {
+            payload.password = formData.new_password;
+        }
+
+        // Check if there are any changes
+        if (!Object.values(payload).some((value) => !!value)) {
+            setModalError("No changes to save");
+            return;
         }
 
         try {
@@ -80,16 +104,53 @@ export default function UsersPage() {
     };
 
     // Handle user deletion
-    const handleDeleteUser = async (userId: string) => {
-        if (!window.confirm("Are you sure you want to delete this user?")) {
+    const handleDeleteUser = async (userId: string, userToDelete: User) => {
+        if (userToDelete.id === currentUser?.id) {
+            alert("You cannot delete your own account.");
+            return;
+        }
+
+        if (!window.confirm(`Are you sure you want to delete user "${userToDelete.username}"?`)) {
             return;
         }
 
         try {
             await deleteUserMutation.mutateAsync(userId);
         } catch (err: unknown) {
-            console.error("Failed to delete user:", err);
+            let errorMessage = "Failed to delete user";
+
+            if (err instanceof Error) {
+                errorMessage = err.message;
+            }
+
+            alert(errorMessage);
         }
+    };
+
+    // Check if current user can edit a specific user
+    const canEditUser = (targetUser: User): boolean => {
+        if (!currentUser) return false;
+
+        // Users can edit themselves
+        if (currentUser.id === targetUser.id) return true;
+
+        // Super admins can edit anyone except other super admins
+        if (isCurrentUserSuperAdmin) {
+            return !isSuperAdmin(targetUser);
+        }
+
+        // Regular admins can only edit regular users
+        return currentUser.role === "admin" && targetUser.role === "user";
+    };
+
+    // Check if current user can delete a specific user
+    const canDeleteUser = (targetUser: User): boolean => {
+        if (!currentUser) return false;
+
+        // Can't delete yourself
+        if (currentUser.id === targetUser.id) return false;
+
+        return canEditUser(targetUser);
     };
 
     if (error) {
@@ -146,23 +207,22 @@ export default function UsersPage() {
                             {users.map((user) => (
                                 <tr key={user.id}>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="font-medium text-gray-900">{user.username}</div>
+                                        <div className="font-medium text-gray-900">
+                                            {user.username}
+                                            {user.id === currentUser?.id && (
+                                                <span className="ml-2 text-xs text-gray-500">(You)</span>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm text-gray-900">{user.email}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">
-                                            {user.role === "admin" ? (
-                                                <span className="inline-flex rounded-full bg-purple-100 px-2 text-xs leading-5 font-semibold text-purple-800">
-                                                    Admin
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex rounded-full bg-blue-100 px-2 text-xs leading-5 font-semibold text-blue-800">
-                                                    User
-                                                </span>
-                                            )}
-                                        </div>
+                                        <span
+                                            className={`inline-flex rounded-full px-2 text-xs leading-5 font-semibold ${getRoleColor(user.role)}`}
+                                        >
+                                            {getRoleDisplayName(user.role)}
+                                        </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         {user.is_active ? (
@@ -176,22 +236,26 @@ export default function UsersPage() {
                                         )}
                                     </td>
                                     <td className="whitespace-no-wrap px-6 py-4 text-right text-sm font-medium">
-                                        <button
-                                            onClick={() => {
-                                                handleEditUser(user);
-                                            }}
-                                            className="mr-4 text-primary-600 hover:text-primary-900"
-                                            disabled={updateUserMutation.isPending}
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            onClick={() => void handleDeleteUser(user.id)}
-                                            className="text-red-600 hover:text-red-900"
-                                            disabled={updateUserMutation.isPending}
-                                        >
-                                            Delete
-                                        </button>
+                                        {canEditUser(user) && (
+                                            <button
+                                                onClick={() => {
+                                                    handleEditUser(user);
+                                                }}
+                                                className="mr-4 text-primary-600 hover:text-primary-900"
+                                                disabled={updateUserMutation.isPending}
+                                            >
+                                                Edit
+                                            </button>
+                                        )}
+                                        {canDeleteUser(user) && (
+                                            <button
+                                                onClick={() => void handleDeleteUser(user.id, user)}
+                                                className="text-red-600 hover:text-red-900"
+                                                disabled={deleteUserMutation.isPending}
+                                            >
+                                                Delete
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
@@ -234,6 +298,26 @@ export default function UsersPage() {
                             className="mt-4"
                         >
                             <div className="mb-4">
+                                <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                                    Username
+                                </label>
+                                <input
+                                    type="text"
+                                    name="username"
+                                    id="username"
+                                    value={formData.username}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                />
+                                {formData.username !== editingUser?.username && (
+                                    <p className="mt-1 text-xs text-amber-600">
+                                        ⚠️ Changing username requires setting a new password
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="mb-4">
                                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                                     Email
                                 </label>
@@ -249,19 +333,41 @@ export default function UsersPage() {
                             </div>
 
                             <div className="mb-4">
-                                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                                    Password
+                                <label htmlFor="new_password" className="block text-sm font-medium text-gray-700">
+                                    New Password
                                 </label>
                                 <input
                                     type="password"
-                                    name="password"
-                                    id="password"
-                                    value={formData.password}
+                                    name="new_password"
+                                    id="new_password"
+                                    value={formData.new_password}
                                     onChange={handleInputChange}
                                     placeholder="Leave blank to keep current password"
                                     className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                 />
+                                {formData.username !== editingUser?.username && (
+                                    <p className="mt-1 text-xs text-gray-500">Required when changing username</p>
+                                )}
                             </div>
+
+                            {canCurrentUserChangeRoles && editingUser && !isSuperAdmin(editingUser) && (
+                                <div className="mb-4">
+                                    <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+                                        Role
+                                    </label>
+                                    <select
+                                        name="role"
+                                        id="role"
+                                        value={formData.role}
+                                        onChange={handleInputChange}
+                                        className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                    >
+                                        <option value="user">User</option>
+                                        <option value="admin">Admin</option>
+                                        {isCurrentUserSuperAdmin && <option value="super_admin">Super Admin</option>}
+                                    </select>
+                                </div>
+                            )}
 
                             <div className="mb-4 flex items-center">
                                 <input

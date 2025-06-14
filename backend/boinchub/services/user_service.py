@@ -6,7 +6,7 @@
 from typing import Annotated, Any
 from uuid import UUID
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
 from sqlmodel import Session, select
 
 from boinchub.core.database import get_db
@@ -68,6 +68,10 @@ class UserService(BaseService[User, UserCreate, UserUpdate]):
         password_hash = hash_password(object_data.password)
         boinc_password_hash = hash_boinc_password(object_data.username, object_data.password)
 
+        user_count = len(self.get_all())
+        if user_count == 0 and object_data.role in {"admin", "user"}:
+            object_data.role = "super_admin"
+
         user = User(
             username=object_data.username,
             password_hash=password_hash,
@@ -110,33 +114,96 @@ class UserService(BaseService[User, UserCreate, UserUpdate]):
         """
         return super().get_all(offset=offset, limit=limit, order_by=order_by or "username", **filters)
 
-    def update(self, object_id: UUID, object_data: UserUpdate) -> User | None:
+    def update(self, object_id: UUID, object_data: UserUpdate, current_user: User | None = None) -> User | None:  # noqa: C901, PLR0912
         """Update a user.
 
         Args:
             object_id (UUID): The ID of the user to update.
             object_data (UserUpdate): The data to update the user with.
+            current_user (User | None): The current user performing the update. Defaults to None.
 
         Returns:
             User | None: The updated user object if the user exists, None otherwise.
 
+        Raises:
+            HTTPException: If the current user is not authorized to update the user.
+
         """
         user = self.get(object_id)
 
-        if user:
-            update_data = object_data.model_dump(exclude_none=True)
+        if not user:
+            return None
 
-            if "password" in update_data:
-                password = update_data.pop("password")
+        if current_user and not current_user.can_modify_user(user):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-                update_data["password_hash"] = hash_password(password)
-                update_data["boinc_password_hash"] = hash_boinc_password(user.username, password)
+        if (
+            current_user
+            and object_data.role is not None
+            and object_data.role != user.role
+            and not current_user.can_change_role(user)
+        ):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-            user.sqlmodel_update(update_data)
+        # If the current password is provided, verify it
+        password_verified = False
 
-            self.db.add(user)
-            self.db.commit()
-            self.db.refresh(user)
+        if object_data.current_password:
+            if not verify_password(object_data.current_password, user.password_hash):
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Current password is incorrect")
+            password_verified = True
+
+        if object_data.username and object_data.username != user.username:
+            # If changing username, ensure the current password is correct or a new password is provided
+            if not object_data.current_password and not object_data.password:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is required to change username"
+                )
+
+            existing_user = self.get_by_username(object_data.username)
+
+            if existing_user and existing_user.id != user.id:
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username is already taken")
+
+        update_data = object_data.model_dump(exclude_none=True)
+
+        # Handle username changes
+        username_changed = False
+
+        if "username" in update_data and update_data["username"] != user.username:
+            existing_user = self.get_by_username(update_data["username"])
+            if existing_user and existing_user.id != user.id:
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username is already taken")
+            username_changed = True
+
+        # Handle password changes
+        password_changed = False
+
+        if "password" in update_data:
+            password = update_data.pop("password")
+            update_data["password_hash"] = hash_password(password)
+            password_changed = True
+
+        # Recalculate BOINC password hash if username or password changed
+        if username_changed or password_changed:
+            new_username = update_data.get("username", user.username)
+
+            if password_changed and object_data.password:
+                update_data["boinc_password_hash"] = hash_boinc_password(new_username, object_data.password)
+            elif password_verified and object_data.current_password:
+                update_data["boinc_password_hash"] = hash_boinc_password(new_username, object_data.current_password)
+            else:
+                # A password is required to recalculate the BOINC password hash
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Username changes require a password to be provided to maintain BOINC compatibility",
+                )
+
+        user.sqlmodel_update(update_data)
+
+        self.db.add(user)
+        self.db.commit()
+        self.db.refresh(user)
 
         return user
 

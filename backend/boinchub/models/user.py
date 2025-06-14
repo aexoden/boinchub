@@ -17,6 +17,58 @@ if TYPE_CHECKING:
     from boinchub.models.user_project_key import UserProjectKey
 
 
+def validate_role(value: str) -> str:
+    """Validate that the role is valid.
+
+    Args:
+        value (str): The role to validate.
+
+    Returns:
+        str: The validated role.
+
+    Raises:
+        ValueError: If the role is not one of the allowed values.
+
+    """
+    valid_roles = ["user", "admin", "super_admin"]
+
+    if value not in valid_roles:
+        msg = f"Role must be one of: {', '.join(valid_roles)}"
+        raise ValueError(msg)
+
+    return value
+
+
+def validate_username(value: str) -> str:
+    """Validate that the username is valid.
+
+    Args:
+        value (str): The username to validate.
+
+    Returns:
+        str: The validated username.
+
+    Raises:
+        ValueError: If the username is invalid.
+
+    """
+    value = value.strip()
+
+    if not value:
+        msg = "Username cannot be empty"
+        raise ValueError(msg)
+
+    if len(value) < settings.min_username_length:
+        msg = "Username must be at least 3 characters long"
+        raise ValueError(msg)
+
+    if len(value) > settings.max_username_length:
+        msg = "Username cannot be longer than 50 characters"
+        raise ValueError(msg)
+
+    return value
+
+
 class UserBase(SQLModel):
     """User base model."""
 
@@ -25,6 +77,34 @@ class UserBase(SQLModel):
     email: str = Field(index=True)
     role: str = Field(default="user")
     is_active: bool = Field(default=True)
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, value: str) -> str:
+        """Validate that the username is valid.
+
+        Args:
+            value (str): The username to validate.
+
+        Returns:
+            str: The validated username.
+
+        """
+        return validate_username(value)
+
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, value: str) -> str:
+        """Validate that the role is valid.
+
+        Args:
+            value (str): The role to validate.
+
+        Returns:
+            str: The validated role.
+
+        """
+        return validate_role(value)
 
 
 class User(UserBase, Timestamps, table=True):
@@ -43,6 +123,44 @@ class User(UserBase, Timestamps, table=True):
     # User properties
     password_hash: str
     boinc_password_hash: str
+
+    def can_modify_user(self, target_user: "User") -> bool:
+        """Check if this user can modify another user.
+
+        Args:
+            target_user (User): The user to check.
+
+        Returns:
+            bool: True if this user can modify the target user, False otherwise.
+
+        """
+        # Super admins can modify anyone except other super admins
+        if self.role == "super_admin":
+            return target_user.role != "super_admin" or self.id == target_user.id
+
+        # Regular admins can modify regular users
+        if self.role == "admin":
+            return target_user.role == "user"
+
+        # Regular users can only modify themselves
+        return self.id == target_user.id
+
+    def can_change_role(self, target_user: "User") -> bool:
+        """Check if this user can change another user's role.
+
+        Args:
+            target_user (User): The user whose role is being changed.
+
+        Returns:
+            bool: True if this user can change the target user's role, False otherwise.
+
+        """
+        # Only super admins can change roles
+        if self.role != "super_admin":
+            return False
+
+        # Super admins can't change other super admins' roles
+        return target_user.role != "super_admin"
 
 
 class UserPublic(UserBase, Timestamps):
@@ -84,10 +202,14 @@ class UserUpdate(SQLModel):
     """Model for updating an existing user."""
 
     # User properties
+    username: str | None = None
     password: str | None = None
     email: str | None = None
     role: str | None = None
     is_active: bool | None = None
+
+    # Current password (for verification)
+    current_password: str | None = None
 
     @field_validator("password")
     @classmethod
@@ -109,3 +231,37 @@ class UserUpdate(SQLModel):
             raise ValueError(msg)
 
         return value
+
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, value: str | None) -> str | None:
+        """Validate that the role is valid.
+
+        Args:
+            value (str | None): The role to validate.
+
+        Returns:
+            str | None: The validated role.
+
+        """
+        if value is not None:
+            return validate_role(value)
+
+        return None
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, value: str | None) -> str | None:
+        """Validate that the username is valid.
+
+        Args:
+            value (str | None): The username to validate.
+
+        Returns:
+            str | None: The validated username.
+
+        """
+        if value is not None:
+            return validate_username(value)
+
+        return None

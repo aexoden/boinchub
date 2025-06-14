@@ -3,7 +3,7 @@ export interface User {
     id: string;
     username: string;
     email: string;
-    role: string;
+    role: "user" | "admin" | "super_admin";
     is_active: boolean;
 }
 
@@ -17,10 +17,12 @@ export interface UserRegister extends UserCredentials {
 }
 
 export interface UserUpdate {
+    username?: string;
     email?: string;
     password?: string;
-    role?: string;
+    role?: "user" | "admin" | "super_admin";
     is_active?: boolean;
+    current_password?: string; // For validation purposes
 }
 
 // Computer related types

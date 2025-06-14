@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router";
 import { UserCredentials, UserRegister } from "../../types";
+import { isAdmin, isSuperAdmin, canManageUsers, canChangeRoles } from "../../util/user";
 import { AuthContext } from "../../contexts/AuthContext";
 import { useCurrentUserQuery, useLoginMutation, useRegisterMutation, useLogoutMutation } from "../../hooks/queries";
 
@@ -38,9 +39,21 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         await navigate("/login");
     }
 
-    // Check if user is admin
-    const isAdmin = () => {
-        return user?.role === "admin";
+    // Role checking functions
+    const isAdminUser = () => {
+        return user ? isAdmin(user) : false;
+    };
+
+    const isSuperAdminUser = () => {
+        return user ? isSuperAdmin(user) : false;
+    };
+
+    const canManageUsersCheck = () => {
+        return user ? canManageUsers(user) : false;
+    };
+
+    const canChangeRolesCheck = () => {
+        return user ? canChangeRoles(user) : false;
     };
 
     // Context value
@@ -51,7 +64,10 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         login,
         register,
         logout,
-        isAdmin,
+        isAdmin: isAdminUser,
+        isSuperAdmin: isSuperAdminUser,
+        canManageUsers: canManageUsersCheck,
+        canChangeRoles: canChangeRolesCheck,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

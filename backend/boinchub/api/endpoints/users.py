@@ -72,11 +72,17 @@ def update_current_user(
     Returns:
         UserPublic: The updated user information.
 
+    Raises:
+        HTTPException: If the user is not updated.
+
     """
     # Don't allow users to set their own role
     user_data.role = None
 
     updated_user = user_service.update(current_user.id, user_data)
+
+    if not updated_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     return UserPublic.model_validate(updated_user)
 
@@ -119,7 +125,7 @@ def get_users(
         HTTPException: If the current user is not an admin.
 
     """
-    if current_user.role != "admin":
+    if current_user.role not in {"admin", "super_admin"}:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
 
     users = user_service.get_all(offset, limit)
@@ -144,15 +150,15 @@ def get_user(
         UserPublic: The user's information.
 
     Raises:
-        HTTPException: If the user doesn't exist or if the current user is not an admin and not the requested user.
+        HTTPException: If the user doesn't exist or if the current user doesn't have permissions
 
     """
-    if current_user.role != "admin" and current_user.id != user_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
     user = user_service.get(user_id)
 
     if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    if not current_user.can_modify_user(user):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     return UserPublic.model_validate(user)
@@ -165,7 +171,7 @@ def update_user(
     user_service: Annotated[UserService, Depends(get_user_service)],
     current_user: Annotated[User, Depends(get_current_user_if_active)],
 ) -> UserPublic:
-    """Update a user by ID..
+    """Update a user by ID.
 
     Args:
         user_id (UUID): The ID of the user to update.
@@ -177,18 +183,20 @@ def update_user(
         UserPublic: The updated user's information.
 
     Raises:
-        HTTPException: If the user doesn't exist or if the current user is not an admin and not the requested user.
+        HTTPException: If the user doesn't exist or if permissions are insufficient.
 
     """
-    if current_user.role != "admin":
-        # Don't allow non-admin users to update other users
-        if current_user.id != user_id:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    target_user = user_service.get(user_id)
+    if not target_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-        # Don't allow non-admin users to set their own role
-        user_data.role = None
+    if user_data.username and user_data.username != target_user.username and not user_data.password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be provided when changing username to maintain BOINC compatibility",
+        )
 
-    updated_user = user_service.update(user_id, user_data)
+    updated_user = user_service.update(user_id, user_data, current_user)
 
     if not updated_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -213,11 +221,21 @@ def delete_user(
         dict[str, str]: A message indicating the user was deleted.
 
     Raises:
-        HTTPException: If the user is not found or if the current user is not an admin.
+        HTTPException: If the user is not found or if permisisons are insufficient.
 
     """
-    if current_user.role != "admin":
+    target_user = user_service.get(user_id)
+    if not target_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    if not current_user.can_modify_user(target_user):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    # Prevent deletion of the last super admin
+    if target_user.role == "super_admin":
+        super_admins = user_service.get_all(role="super_admin")
+        if len(super_admins) <= 1:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot delete the last super admin")
 
     success = user_service.delete(user_id)
 

@@ -51,7 +51,7 @@ export default function Sidebar({ isAdmin }: SidebarProps) {
                         <>
                             <div className="mt-5 border-t border-gray-200 pt-5">
                                 <p className="px-3 text-xs font-semibold tracking-wider text-gray-500 uppercase">
-                                    Admin
+                                    Administration
                                 </p>
                             </div>
 

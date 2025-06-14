@@ -50,11 +50,11 @@ const queryClient = new QueryClient({
 
 interface ProtectedRouteProps {
     element: React.ReactNode;
-    allowedRoles?: string[];
+    requireAdmin?: boolean;
 }
 
-function ProtectedRoute({ element, allowedRoles }: ProtectedRouteProps) {
-    const { user, loading } = useAuth();
+function ProtectedRoute({ element, requireAdmin = false }: ProtectedRouteProps) {
+    const { user, loading, isAdmin } = useAuth();
 
     // Show loading indicator while auth state is being determined
     if (loading) {
@@ -67,7 +67,7 @@ function ProtectedRoute({ element, allowedRoles }: ProtectedRouteProps) {
     }
 
     // Check role permissions if roles are specified
-    if (allowedRoles && !allowedRoles.includes(user.role)) {
+    if (requireAdmin && !isAdmin()) {
         return <Navigate to="/dashboard" replace />;
     }
 
@@ -109,14 +109,8 @@ function AppRoutes() {
                 <Route path="settings" element={<ProtectedRoute element={<SettingsPage />} />} />
 
                 {/* Admin Routes */}
-                <Route
-                    path="admin/projects"
-                    element={<ProtectedRoute element={<ProjectsPage />} allowedRoles={["admin"]} />}
-                />
-                <Route
-                    path="admin/users"
-                    element={<ProtectedRoute element={<UsersPage />} allowedRoles={["admin"]} />}
-                />
+                <Route path="admin/projects" element={<ProtectedRoute element={<ProjectsPage />} requireAdmin />} />
+                <Route path="admin/users" element={<ProtectedRoute element={<UsersPage />} requireAdmin />} />
             </Route>
 
             {/* Fallback Route */}

@@ -1,30 +1,67 @@
 import { useState } from "react";
+import { useConfig } from "../../contexts/ConfigContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { useUpdateCurrentUserMutation } from "../../hooks/queries";
 import ProjectKeysManagement from "../../components/settings/ProjectKeysManagement";
 
 export default function SettingsPage() {
+    const { config } = useConfig();
     const { user } = useAuth();
     const updateUserMutation = useUpdateCurrentUserMutation();
 
+    // Profile form state
+    const [username, setUsername] = useState(user?.username ?? "");
     const [email, setEmail] = useState(user?.email ?? "");
+    const [currentPasswordForProfile, setCurrentPasswordForProfile] = useState("");
+
+    // Password form state
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+
+    // Message state
     const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+
+    // Check if profile has changes
+    const hasProfileChanges = username !== user?.username || email !== user.email;
+    const usernameChanged = username !== user?.username;
 
     // Handle profile update
     const handleUpdateProfile = async () => {
-        if (email === user?.email) {
+        if (!hasProfileChanges) {
             setMessage({ text: "No changes to save", type: "error" });
+            return;
+        }
+
+        // If username changed, require current password
+        if (usernameChanged && !currentPasswordForProfile) {
+            setMessage({
+                text: "Current password is required to change username",
+                type: "error",
+            });
+
             return;
         }
 
         setMessage(null);
 
         try {
-            await updateUserMutation.mutateAsync({ email });
+            await updateUserMutation.mutateAsync({
+                username: username !== user?.username ? username : undefined,
+                email: email !== user?.email ? email : undefined,
+                current_password: usernameChanged ? currentPasswordForProfile : undefined,
+            });
+
             setMessage({ text: "Profile updated successfully", type: "success" });
+            setCurrentPasswordForProfile("");
+
+            // If username changed, user will need to log in again
+            if (usernameChanged) {
+                setMessage({
+                    text: "Username updated successfully. You will need to log in again with your new username.",
+                    type: "success",
+                });
+            }
         } catch (err: unknown) {
             const errorMessage = err instanceof Error ? err.message : "Failed to update profile";
             setMessage({ text: errorMessage, type: "error" });
@@ -43,10 +80,18 @@ export default function SettingsPage() {
             return;
         }
 
+        if (config && newPassword.length < config.min_password_length) {
+            setMessage({
+                text: `New password must be at least ${config.min_password_length.toString()} characters long`,
+                type: "error",
+            });
+            return;
+        }
+
         setMessage(null);
 
         try {
-            await updateUserMutation.mutateAsync({ password: newPassword });
+            await updateUserMutation.mutateAsync({ password: newPassword, current_password: currentPassword });
             setCurrentPassword("");
             setNewPassword("");
             setConfirmPassword("");
@@ -89,11 +134,20 @@ export default function SettingsPage() {
                                 <input
                                     type="text"
                                     id="username"
-                                    value={user?.username ?? ""}
-                                    disabled
-                                    className="block w-full rounded-md border-gray-300 bg-gray-100 p-2 shadow-sm"
+                                    value={username}
+                                    onChange={(e) => {
+                                        setUsername(e.target.value.trim());
+                                        if (message?.type === "error") setMessage(null);
+                                    }}
+                                    className="block w-full rounded-md border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                    required
                                 />
-                                <p className="mt-1 text-sm text-gray-500">Your username cannot be changed</p>
+                                {usernameChanged && (
+                                    <p className="mt-1 text-sm text-amber-600">
+                                        ⚠️ Changing your username will require you to reconfigure any BOINC clients that
+                                        are connected to this account manager.
+                                    </p>
+                                )}
                             </div>
 
                             <div className="mb-4">
@@ -107,15 +161,42 @@ export default function SettingsPage() {
                                     value={email}
                                     onChange={(e) => {
                                         setEmail(e.target.value);
+                                        if (message?.type === "error") setMessage(null);
                                     }}
                                     required
                                 />
                             </div>
 
+                            {usernameChanged && (
+                                <div className="mb-4">
+                                    <label
+                                        htmlFor="current-password-profile"
+                                        className="mb-1 block text-sm font-medium text-gray-700"
+                                    >
+                                        Current Password
+                                    </label>
+                                    <input
+                                        type="password"
+                                        id="current-password-profile"
+                                        className="block w-full rounded-md border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                        value={currentPasswordForProfile}
+                                        onChange={(e) => {
+                                            setCurrentPasswordForProfile(e.target.value);
+                                            if (message?.type === "error") setMessage(null);
+                                        }}
+                                        required={usernameChanged}
+                                        placeholder="Required for username changes"
+                                    />
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        Required to verify your identity when changing username
+                                    </p>
+                                </div>
+                            )}
+
                             <button
                                 type="submit"
-                                disabled={isLoading}
-                                className="mt-4 w-full rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
+                                disabled={isLoading || !hasProfileChanges}
+                                className="mt-4 w-full rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {isLoading ? "Saving..." : "Save Changes"}
                             </button>
@@ -145,6 +226,7 @@ export default function SettingsPage() {
                                     value={currentPassword}
                                     onChange={(e) => {
                                         setCurrentPassword(e.target.value);
+                                        if (message?.type === "error") setMessage(null);
                                     }}
                                     required
                                 />
@@ -161,6 +243,7 @@ export default function SettingsPage() {
                                     value={newPassword}
                                     onChange={(e) => {
                                         setNewPassword(e.target.value);
+                                        if (message?.type === "error") setMessage(null);
                                     }}
                                     required
                                 />
@@ -180,6 +263,7 @@ export default function SettingsPage() {
                                     value={confirmPassword}
                                     onChange={(e) => {
                                         setConfirmPassword(e.target.value);
+                                        if (message?.type === "error") setMessage(null);
                                     }}
                                     required
                                 />
@@ -188,7 +272,7 @@ export default function SettingsPage() {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="mt-4 w-full rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
+                                className="mt-4 w-full rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
                             >
                                 {isLoading ? "Changing..." : "Change Password"}
                             </button>

@@ -9,6 +9,9 @@ interface AuthContextType {
     register: (userData: UserRegister) => Promise<void>;
     logout: () => void;
     isAdmin: () => boolean;
+    isSuperAdmin: () => boolean;
+    canManageUsers: () => boolean;
+    canChangeRoles: () => boolean;
 }
 
 // Create the context

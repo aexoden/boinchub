@@ -11,6 +11,7 @@ import {
 } from "../../hooks/queries";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useConfig } from "../../contexts/ConfigContext";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 export default function ComputerDetailPage() {
     const { computerId } = useParams<{ computerId: string }>();
@@ -41,6 +42,9 @@ export default function ComputerDetailPage() {
         acc[project.id] = project.name;
         return acc;
     }, {});
+
+    // Set page title
+    usePageTitle(computer?.hostname ?? "Loading...");
 
     // Create a set of project IDs the user has keys for
     const userProjectKeyIds = new Set(userProjectKeys.map((key) => key.project_id));

@@ -6,10 +6,13 @@ import {
     useUpdateProjectMutation,
     useDeleteProjectMutation,
 } from "../../hooks/queries";
+import { usePageTitle } from "../../hooks/usePageTitle";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 
 export default function ProjectsPage() {
     const { data: projects = [], isLoading: loading, error } = useProjectsQuery();
+
+    usePageTitle("Projects Administration");
 
     const createProjectMutation = useCreateProjectMutation();
     const updateProjectMutation = useUpdateProjectMutation();

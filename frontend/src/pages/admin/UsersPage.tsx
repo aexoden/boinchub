@@ -2,12 +2,15 @@ import { useState } from "react";
 import { User, UserUpdate } from "../../types";
 import { useAuth } from "../../contexts/AuthContext";
 import { useUsersQuery, useUpdateUserMutation, useDeleteUserMutation } from "../../hooks/queries";
+import { usePageTitle } from "../../hooks/usePageTitle";
 import { getRoleDisplayName, getRoleColor, canChangeRoles, isSuperAdmin } from "../../util/user";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 
 export default function UsersPage() {
     const { user: currentUser } = useAuth();
     const { data: users = [], isLoading: loading, error } = useUsersQuery();
+
+    usePageTitle("Users Administration");
 
     const updateUserMutation = useUpdateUserMutation();
     const deleteUserMutation = useDeleteUserMutation();

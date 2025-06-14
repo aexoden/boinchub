@@ -8,6 +8,7 @@ import {
     useUpdateAttachmentMutation,
     useDeleteAttachmentMutation,
 } from "../../hooks/queries";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 export default function AttachmentDetailPage() {
     const { attachmentId } = useParams<{ attachmentId: string }>();
@@ -27,6 +28,8 @@ export default function AttachmentDetailPage() {
     const { data: computer, isLoading: computerLoading } = useComputerQuery(attachment?.computer_id ?? "", {
         enabled: !!attachment?.computer_id,
     });
+
+    usePageTitle(`${project?.name ?? "Unknown Project"} on ${computer?.hostname ?? "Unknown Computer"}`);
 
     // Mutations
     const updateAttachmentMutation = useUpdateAttachmentMutation();

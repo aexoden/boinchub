@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { useCurrentUserComputersQuery, useProjectsQuery, useComputerAttachmentsQuery } from "../../hooks/queries";
 import { Computer } from "../../types";
 import { useConfig } from "../../contexts/ConfigContext";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 export default function ComputersPage() {
     const { config } = useConfig();
@@ -15,6 +16,8 @@ export default function ComputersPage() {
         acc[project.id] = project.name;
         return acc;
     }, {});
+
+    usePageTitle("My Computers");
 
     // Format computer registration date
     const formatDate = (dateString: string) => {

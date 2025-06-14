@@ -2,12 +2,15 @@ import { useState } from "react";
 import { useConfig } from "../../contexts/ConfigContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { useUpdateCurrentUserMutation } from "../../hooks/queries";
+import { usePageTitle } from "../../hooks/usePageTitle";
 import ProjectKeysManagement from "../../components/settings/ProjectKeysManagement";
 
 export default function SettingsPage() {
     const { config } = useConfig();
     const { user } = useAuth();
     const updateUserMutation = useUpdateCurrentUserMutation();
+
+    usePageTitle("Account Settings");
 
     // Profile form state
     const [username, setUsername] = useState(user?.username ?? "");

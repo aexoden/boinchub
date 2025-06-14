@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, Navigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useConfig } from "../../contexts/ConfigContext";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 export default function RegisterPage() {
     const [username, setUsername] = useState("");
@@ -11,6 +12,8 @@ export default function RegisterPage() {
     const [errorMessage, setErrorMessage] = useState("");
     const { register, loading, error, user } = useAuth();
     const { config } = useConfig();
+
+    usePageTitle("Create Account");
 
     const handleSubmit = async () => {
         setErrorMessage("");

@@ -2,12 +2,15 @@ import { Link } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useConfig } from "../../contexts/ConfigContext";
 import { useCurrentUserComputersQuery } from "../../hooks/queries";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 export default function DashboardPage() {
     const { user } = useAuth();
     const { config } = useConfig();
 
     const { data: computers = [], isLoading: loading, error } = useCurrentUserComputersQuery();
+
+    usePageTitle("Dashboard");
 
     // Format computer registration date
     const formatDate = (dateString: string) => {

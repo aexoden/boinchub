@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, Navigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useConfig } from "../../contexts/ConfigContext";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 export default function LoginPage() {
     const [username, setUsername] = useState("");
@@ -9,6 +10,8 @@ export default function LoginPage() {
     const [errorMessage, setErrorMessage] = useState("");
     const { login, loading, error, user } = useAuth();
     const { config } = useConfig();
+
+    usePageTitle("Sign In");
 
     const handleSubmit = async () => {
         setErrorMessage("");

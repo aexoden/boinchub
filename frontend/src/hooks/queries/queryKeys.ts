@@ -20,6 +20,12 @@ export const queryKeys = {
         currentUserComputers: () => [...queryKeys.users.all(), "current", "computers"] as const,
     },
 
+    // User Project Keys
+    userProjectKeys: {
+        all: () => ["userProjectKeys"] as const,
+        currentUser: () => [...queryKeys.userProjectKeys.all(), "current"] as const,
+    },
+
     // Computers
     computers: {
         all: () => ["computers"] as const,

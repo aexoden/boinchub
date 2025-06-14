@@ -205,5 +205,5 @@ def get_project_attachments(
     if current_user.role != "admin":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
-    project_attachments = project_attachment_service.get_for_project(project_id)
+    project_attachments = project_attachment_service.get_by_project(project_id)
     return [ProjectAttachmentPublic.model_validate(attachment) for attachment in project_attachments]

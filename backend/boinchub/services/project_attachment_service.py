@@ -19,7 +19,7 @@ class ProjectAttachmentService(BaseService[ProjectAttachment, ProjectAttachmentC
 
     model = ProjectAttachment
 
-    def get_for_computer(self, computer_id: UUID) -> list[ProjectAttachment]:
+    def get_by_computer(self, computer_id: UUID) -> list[ProjectAttachment]:
         """Get all project attachments for a computer.
 
         Args:
@@ -31,7 +31,7 @@ class ProjectAttachmentService(BaseService[ProjectAttachment, ProjectAttachmentC
         """
         return list(self.db.exec(select(ProjectAttachment).where(ProjectAttachment.computer_id == computer_id)).all())
 
-    def get_for_project(self, project_id: UUID) -> list[ProjectAttachment]:
+    def get_by_project(self, project_id: UUID) -> list[ProjectAttachment]:
         """Get all project attachments for a project.
 
         Args:

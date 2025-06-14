@@ -35,7 +35,6 @@ export default function AttachmentDetailPage() {
     const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
     // Form state
-    const [accountKey, setAccountKey] = useState("");
     const [resourceShare, setResourceShare] = useState("");
     const [suspended, setSuspended] = useState(false);
     const [dontRequestMoreWork, setDontRequestMoreWork] = useState(false);
@@ -47,7 +46,6 @@ export default function AttachmentDetailPage() {
 
     useEffect(() => {
         if (attachment) {
-            setAccountKey(attachment.account_key);
             setResourceShare(attachment.resource_share.toString());
             setSuspended(attachment.suspended);
             setDontRequestMoreWork(attachment.dont_request_more_work);
@@ -66,11 +64,6 @@ export default function AttachmentDetailPage() {
 
         setMessage(null);
 
-        if (!accountKey.trim()) {
-            setMessage({ text: "Account key cannot be empty", type: "error" });
-            return;
-        }
-
         const resourceShareNum = parseInt(resourceShare);
         if (isNaN(resourceShareNum) || resourceShareNum < 0) {
             setMessage({ text: "Resource share must be a valid number greater than or equal to 0", type: "error" });
@@ -78,7 +71,6 @@ export default function AttachmentDetailPage() {
         }
 
         const updateData: ProjectAttachmentUpdate = {
-            account_key: accountKey.trim(),
             resource_share: resourceShareNum,
             suspended,
             dont_request_more_work: dontRequestMoreWork,
@@ -264,38 +256,9 @@ export default function AttachmentDetailPage() {
                                 void handleSubmit();
                             }}
                         >
-                            <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-                                {/* Account Key */}
-                                <div className="md:col-span-2">
-                                    <label
-                                        htmlFor="accountKey"
-                                        className="mb-1 block text-sm font-medium text-gray-700"
-                                    >
-                                        Account Key
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="accountKey"
-                                        value={accountKey}
-                                        onChange={(e) => {
-                                            setAccountKey(e.target.value);
-
-                                            if (message?.type === "error") {
-                                                setMessage(null);
-                                            }
-                                        }}
-                                        className="block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                                        placeholder="Enter project account key"
-                                        required
-                                    />
-                                    <p className="mt-1 text-xs text-gray-500">
-                                        You can obtain this from the project website. You should be able to use either
-                                        your account key or your weak account key.
-                                    </p>
-                                </div>
-
+                            <div className="mb-6">
                                 {/* Resource Share */}
-                                <div>
+                                <div className="mb-4">
                                     <label
                                         htmlFor="resourceShare"
                                         className="mb-1 block text-sm font-medium text-gray-700"

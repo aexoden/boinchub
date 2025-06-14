@@ -12,6 +12,7 @@ from boinchub.models import Timestamps
 
 if TYPE_CHECKING:
     from boinchub.models.project_attachment import ProjectAttachment
+    from boinchub.models.user_project_key import UserProjectKey
 
 
 class ProjectBase(SQLModel):
@@ -37,6 +38,7 @@ class Project(ProjectBase, Timestamps, table=True):
 
     # Relationships
     attachments: list["ProjectAttachment"] = Relationship(back_populates="project", cascade_delete=True)
+    user_keys: list["UserProjectKey"] = Relationship(back_populates="project", cascade_delete=True)
 
 
 class ProjectPublic(ProjectBase, Timestamps):

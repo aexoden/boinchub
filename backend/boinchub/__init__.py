@@ -15,7 +15,17 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from boinchub.__about__ import __version__
-from boinchub.api.endpoints import auth, boinc, computers, config, health, project_attachments, projects, users
+from boinchub.api.endpoints import (
+    auth,
+    boinc,
+    computers,
+    config,
+    health,
+    project_attachments,
+    projects,
+    user_project_keys,
+    users,
+)
 from boinchub.core.middleware import RateLimitMiddleware
 from boinchub.core.settings import settings
 
@@ -100,6 +110,7 @@ def _create_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(project_attachments.router)
     app.include_router(projects.router)
+    app.include_router(user_project_keys.router)
     app.include_router(users.router)
 
     return app

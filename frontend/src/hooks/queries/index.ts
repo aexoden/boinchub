@@ -17,6 +17,14 @@ export {
     useDeleteUserMutation,
 } from "./useUserQueries";
 
+// User Project Key queries
+export {
+    useCurrentUserProjectKeysQuery,
+    useCreateOrUpdateProjectKeyMutation,
+    useDeleteProjectKeyMutation,
+    useAllUserProjectKeysQuery,
+} from "./useUserProjectKeyQueries";
+
 // Computer queries
 export { useComputerQuery, useComputerAttachmentsQuery } from "./useComputerQueries";
 

@@ -22,6 +22,7 @@ from boinchub.models.computer import Computer
 from boinchub.models.project import Project
 from boinchub.models.project_attachment import ProjectAttachment
 from boinchub.models.user import User
+from boinchub.models.user_project_key import UserProjectKey
 
 target_metadata = SQLModel.metadata
 

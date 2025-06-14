@@ -5,6 +5,7 @@ import {
     useComputerQuery,
     useComputerAttachmentsQuery,
     useProjectsQuery,
+    useCurrentUserProjectKeysQuery,
     useCreateAttachmentMutation,
     useDeleteAttachmentMutation,
 } from "../../hooks/queries";
@@ -18,10 +19,9 @@ export default function ComputerDetailPage() {
 
     // Queries
     const { data: computer, isLoading: computerLoading, error: computerError } = useComputerQuery(computerId ?? "");
-
     const { data: attachments = [], isLoading: attachmentsLoading } = useComputerAttachmentsQuery(computerId ?? "");
-
     const { data: allProjects = [], isLoading: projectsLoading } = useProjectsQuery(true);
+    const { data: userProjectKeys = [], isLoading: keysLoading } = useCurrentUserProjectKeysQuery();
 
     // Mutations
     const createAttachmentMutation = useCreateAttachmentMutation();
@@ -30,7 +30,6 @@ export default function ComputerDetailPage() {
     // Modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedProject, setSelectedProject] = useState<string>("");
-    const [accountKey, setAccountKey] = useState("");
     const [resourceShare, setResourceShare] = useState("100");
 
     // Error states
@@ -43,12 +42,19 @@ export default function ComputerDetailPage() {
         return acc;
     }, {});
 
+    // Create a set of project IDs the user has keys for
+    const userProjectKeyIds = new Set(userProjectKeys.map((key) => key.project_id));
+
+    // Get projects that are already attached to this computer
     const attachedProjectIds = attachments.map((a) => a.project_id);
-    const availableProjects = allProjects.filter((p) => !attachedProjectIds.includes(p.id));
+
+    // Get projects available for attachment (enabled, user has key, not already attached)
+    const availableProjects = allProjects.filter(
+        (p) => p.enabled && userProjectKeyIds.has(p.id) && !attachedProjectIds.includes(p.id),
+    );
 
     const handleAddAttachment = () => {
         setSelectedProject("");
-        setAccountKey("");
         setResourceShare("100");
         setModalError(null);
         setIsModalOpen(true);
@@ -63,9 +69,6 @@ export default function ComputerDetailPage() {
             case "project":
                 setSelectedProject(value);
                 break;
-            case "accountKey":
-                setAccountKey(value);
-                break;
             case "resourceShare":
                 setResourceShare(value);
                 break;
@@ -77,11 +80,6 @@ export default function ComputerDetailPage() {
 
         if (!selectedProject) {
             setModalError("Please select a project to attach.");
-            return;
-        }
-
-        if (!accountKey.trim()) {
-            setModalError("Please enter a valid account key.");
             return;
         }
 
@@ -100,7 +98,6 @@ export default function ComputerDetailPage() {
             const attachmentData: ProjectAttachmentCreate = {
                 computer_id: computer.id,
                 project_id: selectedProject,
-                account_key: accountKey.trim(),
                 resource_share: resourceShareNum,
             };
 
@@ -164,7 +161,7 @@ export default function ComputerDetailPage() {
     };
 
     // Loading state
-    const isLoading = computerLoading || attachmentsLoading || projectsLoading;
+    const isLoading = computerLoading || attachmentsLoading || projectsLoading || keysLoading;
     const isSubmitting = createAttachmentMutation.isPending;
 
     if (isLoading) {
@@ -286,17 +283,45 @@ export default function ComputerDetailPage() {
                                 ? "bg-primary-600 hover:bg-primary-700"
                                 : "cursor-not-allowed bg-gray-400"
                         }`}
-                        title={availableProjects.length === 0 ? "No available projects to attach" : ""}
+                        title={
+                            availableProjects.length === 0
+                                ? "No available projects to attach. Set up project account keys in your settings first."
+                                : ""
+                        }
                     >
                         Attach Project
                     </button>
                 </div>
 
+                {/* Show message if no project keys are set up */}
+                {userProjectKeys.length === 0 && (
+                    <div className="mb-4 border-l-4 border-yellow-500 bg-yellow-50 p-4">
+                        <div className="flex">
+                            <div className="ml-3">
+                                <p className="text-sm text-yellow-700">
+                                    You need to set up project account keys before you can attach projects to your
+                                    computers.
+                                </p>
+                                <Link
+                                    to="/settings"
+                                    className="mt-2 text-sm font-medium text-yellow-700 hover:text-yellow-600"
+                                >
+                                    Go to Settings to add project keys
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {attachments.length === 0 ? (
                     <div className="py-8 text-center text-gray-500">
                         <p>No projects are attached to this computer.</p>
-                        {availableProjects.length > 0 && (
+                        {availableProjects.length > 0 ? (
                             <p className="mt-2">Click the "Attach Project" button to add a project.</p>
+                        ) : userProjectKeys.length > 0 ? (
+                            <p className="mt-2">All available projects are already attached to this computer.</p>
+                        ) : (
+                            <p className="mt-2">Set up project account keys in Settings to attach projects.</p>
                         )}
                     </div>
                 ) : (
@@ -426,26 +451,8 @@ export default function ComputerDetailPage() {
                                         </option>
                                     ))}
                                 </select>
-                            </div>
-
-                            <div className="mb-4">
-                                <label htmlFor="accountKey" className="block text-sm font-medium text-gray-700">
-                                    Account Key
-                                </label>
-                                <input
-                                    type="text"
-                                    id="accountKey"
-                                    value={accountKey}
-                                    onChange={(e) => {
-                                        handleInputChange("accountKey", e.target.value);
-                                    }}
-                                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                                    required
-                                    placeholder="Enter project account key"
-                                />
                                 <p className="mt-1 text-sm text-gray-500">
-                                    You can obtain this from the project website. You should be able to use either your
-                                    account key or your weak account key.
+                                    Only projects for which you have account keys are shown.
                                 </p>
                             </div>
 

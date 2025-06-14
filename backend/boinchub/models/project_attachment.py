@@ -35,9 +35,6 @@ class ProjectAttachmentBase(SQLModel):
     no_gpu_amd: bool = Field(default=False)
     no_gpu_intel: bool = Field(default=False)
 
-    # Authentication
-    account_key: str = Field(default="")
-
 
 class ProjectAttachment(ProjectAttachmentBase, Timestamps, table=True):
     """Project attachment model."""
@@ -79,6 +76,3 @@ class ProjectAttachmentUpdate(SQLModel):
     no_gpu_nvidia: bool | None = None
     no_gpu_amd: bool | None = None
     no_gpu_intel: bool | None = None
-
-    # Authentication
-    account_key: str | None = None

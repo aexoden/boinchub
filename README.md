@@ -5,8 +5,8 @@
 ## IMPORTANT NOTE
 
 Until this project reaches version 0.1.0, you should assume that it is completely
-broken and unusable. In addition, it is entirely possible that no database
-upgrade path will be provided.
+broken and unusable. No database upgrade path should be expected until at least
+version 0.1.0. There is no guarantee of API stability at this time.
 
 ## License
 

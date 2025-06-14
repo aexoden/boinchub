@@ -62,6 +62,26 @@ export interface ProjectUpdate {
     enabled?: boolean;
 }
 
+// User Project Key related types
+export interface UserProjectKey {
+    id: string;
+    user_id: string;
+    project_id: string;
+    account_key: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface UserProjectKeyWithProject extends UserProjectKey {
+    project_name: string;
+    project_url: string;
+}
+
+export interface UserProjectKeyRequest {
+    project_id: string;
+    account_key: string;
+}
+
 // Project Attachment related types
 export interface ProjectAttachment {
     id: string;
@@ -75,7 +95,6 @@ export interface ProjectAttachment {
     no_gpu_nvidia: boolean;
     no_gpu_amd: boolean;
     no_gpu_intel: boolean;
-    account_key: string;
 }
 
 export interface ProjectAttachmentCreate {
@@ -89,7 +108,6 @@ export interface ProjectAttachmentCreate {
     no_gpu_nvidia?: boolean;
     no_gpu_amd?: boolean;
     no_gpu_intel?: boolean;
-    account_key?: string;
 }
 
 export interface ProjectAttachmentUpdate {
@@ -101,7 +119,6 @@ export interface ProjectAttachmentUpdate {
     no_gpu_nvidia?: boolean;
     no_gpu_amd?: boolean;
     no_gpu_intel?: boolean;
-    account_key?: string;
 }
 
 // Authentication related types

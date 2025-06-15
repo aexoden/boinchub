@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router";
-import { ProjectAttachmentCreate } from "../../types";
+import { ProjectAttachmentCreate, ProjectAttachment } from "../../types";
 import {
     useComputerQuery,
     useComputerAttachmentsQuery,
@@ -9,6 +9,8 @@ import {
     useCreateAttachmentMutation,
     useDeleteAttachmentMutation,
 } from "../../hooks/queries";
+import ResourceUsageDisplay from "../../components/common/ResourceUsageDisplay";
+import AttachmentStatusDisplay from "../../components/common/AttachmentStatusDisplay";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useConfig } from "../../contexts/ConfigContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
@@ -312,74 +314,12 @@ export default function ComputerDetailPage() {
                         )}
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                        Project
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                        Resource Share
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                        Status
-                                    </th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200 bg-white">
-                                {attachments.map((attachment) => {
-                                    const projectName = projectsMap[attachment.project_id] || "Unknown Project";
-
-                                    return (
-                                        <tr key={attachment.id}>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-gray-900">{projectName}</div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-900">{attachment.resource_share}</div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                {attachment.suspended ? (
-                                                    <span className="inline-flex rounded-full bg-yellow-100 px-2 text-xs leading-5 font-semibold text-yellow-800">
-                                                        Suspended
-                                                    </span>
-                                                ) : attachment.dont_request_more_work ? (
-                                                    <span className="inline-flex rounded-full bg-orange-100 px-2 text-xs leading-5 font-semibold text-orange-800">
-                                                        No New Work
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex rounded-full bg-green-100 px-2 text-xs leading-5 font-semibold text-green-800">
-                                                        Active
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
-                                                <Link
-                                                    to={`/attachments/${attachment.id}`}
-                                                    className="mr-4 cursor-pointer text-primary-600 hover:text-primary-900"
-                                                >
-                                                    Edit
-                                                </Link>
-                                                <button
-                                                    onClick={() => {
-                                                        void handleDeleteAttachment(attachment.id);
-                                                    }}
-                                                    className="cursor-pointer text-red-600 transition-colors hover:text-red-900 disabled:cursor-not-allowed disabled:opacity-50"
-                                                    disabled={deleteAttachmentMutation.isPending}
-                                                >
-                                                    {deleteAttachmentMutation.isPending ? "Detaching..." : "Detach"}
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                    <ComputerDetailAttachmentTable
+                        attachments={attachments}
+                        projectsMap={projectsMap}
+                        handleDeleteAttachment={handleDeleteAttachment}
+                        deleteAttachmentMutation={deleteAttachmentMutation}
+                    />
                 )}
             </div>
 
@@ -484,6 +424,85 @@ export default function ComputerDetailPage() {
                     </DialogPanel>
                 </div>
             </Dialog>
+        </div>
+    );
+}
+
+interface ComputerDetailAttachmentTableProps {
+    attachments: ProjectAttachment[];
+    projectsMap: Record<string, string>;
+    handleDeleteAttachment: (attachmentId: string) => Promise<void>;
+    deleteAttachmentMutation: ReturnType<typeof useDeleteAttachmentMutation>;
+}
+
+function ComputerDetailAttachmentTable({
+    attachments,
+    projectsMap,
+    handleDeleteAttachment,
+    deleteAttachmentMutation,
+}: ComputerDetailAttachmentTableProps) {
+    return (
+        <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                    <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                            Project
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                            Resource Share
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                            Resources
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                            Status
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-500 uppercase">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 bg-white">
+                    {attachments.map((attachment) => {
+                        const projectName = projectsMap[attachment.project_id] || "Unknown Project";
+
+                        return (
+                            <tr key={attachment.id}>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="text-sm font-medium text-gray-900">{projectName}</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="text-sm text-gray-900">{attachment.resource_share}</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <ResourceUsageDisplay attachment={attachment} />
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <AttachmentStatusDisplay attachment={attachment} />{" "}
+                                </td>
+                                <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+                                    <Link
+                                        to={`/attachments/${attachment.id}`}
+                                        className="mr-4 cursor-pointer text-primary-600 hover:text-primary-900"
+                                    >
+                                        Edit
+                                    </Link>
+                                    <button
+                                        onClick={() => {
+                                            void handleDeleteAttachment(attachment.id);
+                                        }}
+                                        className="cursor-pointer text-red-600 transition-colors hover:text-red-900 disabled:cursor-not-allowed disabled:opacity-50"
+                                        disabled={deleteAttachmentMutation.isPending}
+                                    >
+                                        {deleteAttachmentMutation.isPending ? "Detaching..." : "Detach"}
+                                    </button>
+                                </td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
         </div>
     );
 }

@@ -1,6 +1,8 @@
 import { Link } from "react-router";
 import { useCurrentUserComputersQuery, useProjectsQuery, useComputerAttachmentsQuery } from "../../hooks/queries";
 import { Computer } from "../../types";
+import ResourceUsageDisplay from "../../components/common/ResourceUsageDisplay";
+import AttachmentStatusDisplay from "../../components/common/AttachmentStatusDisplay";
 import { useConfig } from "../../contexts/ConfigContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { formatDate } from "../../util/date";
@@ -75,7 +77,7 @@ function ComputerCard({ computer, projectsMap }: ComputerCardProps) {
     const { data: attachments = [], isLoading: attachmentsLoading } = useComputerAttachmentsQuery(computer.id);
 
     return (
-        <div key={computer.id} className="overflow-hidden rounded-lg bg-white shadow">
+        <div className="overflow-hidden rounded-lg bg-white shadow">
             <div className="flex items-center justify-between bg-primary-700 px-6 py-4 text-white">
                 <h2 className="text-xl font-semibold">{computer.hostname}</h2>
                 <Link
@@ -128,6 +130,9 @@ function ComputerCard({ computer, projectsMap }: ComputerCardProps) {
                                             Resource Share
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                            Resources
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                                             Status
                                         </th>
                                         <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-500 uppercase">
@@ -152,19 +157,10 @@ function ComputerCard({ computer, projectsMap }: ComputerCardProps) {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    {attachment.suspended ? (
-                                                        <span className="inline-flex rounded-full bg-yellow-100 px-2 text-xs leading-5 font-semibold text-yellow-800">
-                                                            Suspended
-                                                        </span>
-                                                    ) : attachment.dont_request_more_work ? (
-                                                        <span className="inline-flex rounded-full bg-orange-100 px-2 text-xs leading-5 font-semibold text-orange-800">
-                                                            No New Work
-                                                        </span>
-                                                    ) : (
-                                                        <span className="inline-flex rounded-full bg-green-100 px-2 text-xs leading-5 font-semibold text-green-800">
-                                                            Active
-                                                        </span>
-                                                    )}
+                                                    <ResourceUsageDisplay attachment={attachment} />
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <AttachmentStatusDisplay attachment={attachment} />
                                                 </td>
                                                 <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
                                                     <Link

@@ -12,6 +12,7 @@ import {
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useConfig } from "../../contexts/ConfigContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
+import { formatDate } from "../../util/date";
 
 export default function ComputerDetailPage() {
     const { computerId } = useParams<{ computerId: string }>();
@@ -144,24 +145,6 @@ export default function ComputerDetailPage() {
 
             setPageError(errorMessage);
         }
-    };
-
-    // Format computer registration date
-    const formatDate = (dateString: string) => {
-        const date = new Date(Date.parse(dateString));
-
-        // Format: YYYY-MM-DD HH:mm:ss
-        const formatted_date = date.toISOString().replace("T", " ").substring(0, 19);
-
-        // Get the timezone abbreviation
-        const timeZone =
-            Intl.DateTimeFormat("en", {
-                timeZoneName: "short",
-            })
-                .formatToParts(date)
-                .find((part) => part.type === "timeZoneName")?.value ?? "";
-
-        return `${formatted_date} ${timeZone}`;
     };
 
     // Loading state

@@ -3,6 +3,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useConfig } from "../../contexts/ConfigContext";
 import { useCurrentUserComputersQuery } from "../../hooks/queries";
 import { usePageTitle } from "../../hooks/usePageTitle";
+import { formatDate } from "../../util/date";
 
 export default function DashboardPage() {
     const { user } = useAuth();
@@ -11,24 +12,6 @@ export default function DashboardPage() {
     const { data: computers = [], isLoading: loading, error } = useCurrentUserComputersQuery();
 
     usePageTitle("Dashboard");
-
-    // Format computer registration date
-    const formatDate = (dateString: string) => {
-        const date = new Date(Date.parse(dateString));
-
-        // Format: YYYY-MM-DD HH:mm:ss
-        const formatted_date = date.toISOString().replace("T", " ").substring(0, 19);
-
-        // Get the timezone abbreviation
-        const timeZone =
-            Intl.DateTimeFormat("en", {
-                timeZoneName: "short",
-            })
-                .formatToParts(date)
-                .find((part) => part.type === "timeZoneName")?.value ?? "";
-
-        return `${formatted_date} ${timeZone}`;
-    };
 
     return (
         <div>

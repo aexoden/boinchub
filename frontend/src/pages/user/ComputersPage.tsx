@@ -3,6 +3,7 @@ import { useCurrentUserComputersQuery, useProjectsQuery, useComputerAttachmentsQ
 import { Computer } from "../../types";
 import { useConfig } from "../../contexts/ConfigContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
+import { formatDate } from "../../util/date";
 
 export default function ComputersPage() {
     const { config } = useConfig();
@@ -18,24 +19,6 @@ export default function ComputersPage() {
     }, {});
 
     usePageTitle("My Computers");
-
-    // Format computer registration date
-    const formatDate = (dateString: string) => {
-        const date = new Date(Date.parse(dateString));
-
-        // Format: YYYY-MM-DD HH:mm:ss
-        const formatted_date = date.toISOString().replace("T", " ").substring(0, 19);
-
-        // Get the timezone abbreviation
-        const timeZone =
-            Intl.DateTimeFormat("en", {
-                timeZoneName: "short",
-            })
-                .formatToParts(date)
-                .find((part) => part.type === "timeZoneName")?.value ?? "";
-
-        return `${formatted_date} ${timeZone}`;
-    };
 
     // Loading state
     const isLoading = computersLoading || projectsLoading;
@@ -75,12 +58,7 @@ export default function ComputersPage() {
             ) : (
                 <div className="space-y-8">
                     {computers.map((computer) => (
-                        <ComputerCard
-                            key={computer.id}
-                            computer={computer}
-                            projectsMap={projectsMap}
-                            formatDate={formatDate}
-                        />
+                        <ComputerCard key={computer.id} computer={computer} projectsMap={projectsMap} />
                     ))}
                 </div>
             )}
@@ -91,10 +69,9 @@ export default function ComputersPage() {
 interface ComputerCardProps {
     computer: Computer;
     projectsMap: Record<string, string>;
-    formatDate: (dateString: string) => string;
 }
 
-function ComputerCard({ computer, projectsMap, formatDate }: ComputerCardProps) {
+function ComputerCard({ computer, projectsMap }: ComputerCardProps) {
     const { data: attachments = [], isLoading: attachmentsLoading } = useComputerAttachmentsQuery(computer.id);
 
     return (

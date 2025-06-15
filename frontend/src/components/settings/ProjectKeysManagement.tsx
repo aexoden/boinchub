@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import {
     useCurrentUserProjectKeysQuery,
@@ -22,6 +22,11 @@ export default function ProjectKeysManagement() {
     // Mutations
     const createOrUpdateMutation = useCreateOrUpdateProjectKeyMutation();
     const deleteMutation = useDeleteProjectKeyMutation();
+
+    // Sort user project keys by project name
+    const sortedUserProjectKeys = useMemo(() => {
+        return [...userProjectKeys].sort((a, b) => a.project_name.localeCompare(b.project_name));
+    }, [userProjectKeys]);
 
     // Get available projects (enabled projects the user doesn't have keys for)
     const userProjectIds = new Set(userProjectKeys.map((key) => key.project_id));
@@ -137,7 +142,7 @@ export default function ProjectKeysManagement() {
                     <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary-500 border-t-transparent"></div>
                     <span className="ml-2 text-sm text-gray-600">Loading project keys...</span>
                 </div>
-            ) : userProjectKeys.length === 0 ? (
+            ) : sortedUserProjectKeys.length === 0 ? (
                 <div className="py-8 text-center text-gray-500">
                     <p>You haven't set up any project account keys yet.</p>
                     <p className="mt-2">Add a project key to start attaching projects to your computers.</p>
@@ -159,7 +164,7 @@ export default function ProjectKeysManagement() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 bg-white">
-                            {userProjectKeys.map((key) => (
+                            {sortedUserProjectKeys.map((key) => (
                                 <tr key={key.id}>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div>

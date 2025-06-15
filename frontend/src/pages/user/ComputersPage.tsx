@@ -6,6 +6,7 @@ import AttachmentStatusDisplay from "../../components/common/AttachmentStatusDis
 import { useConfig } from "../../contexts/ConfigContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { formatDate } from "../../util/date";
+import { useMemo } from "react";
 
 export default function ComputersPage() {
     const { config } = useConfig();
@@ -76,6 +77,14 @@ interface ComputerCardProps {
 function ComputerCard({ computer, projectsMap }: ComputerCardProps) {
     const { data: attachments = [], isLoading: attachmentsLoading } = useComputerAttachmentsQuery(computer.id);
 
+    const sortedAttachments = useMemo(() => {
+        return [...attachments].sort((a, b) => {
+            const nameA = projectsMap[a.project_id] || "Unknown Project";
+            const nameB = projectsMap[b.project_id] || "Unknown Project";
+            return nameA.localeCompare(nameB);
+        });
+    }, [attachments, projectsMap]);
+
     return (
         <div className="overflow-hidden rounded-lg bg-white shadow">
             <div className="flex items-center justify-between bg-primary-700 px-6 py-4 text-white">
@@ -108,7 +117,7 @@ function ComputerCard({ computer, projectsMap }: ComputerCardProps) {
                             <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-primary-500 border-t-transparent"></div>
                             <span className="ml-2 text-sm text-gray-600">Loading attachments...</span>
                         </div>
-                    ) : attachments.length === 0 ? (
+                    ) : sortedAttachments.length === 0 ? (
                         <div className="py-4 text-center text-gray-500">
                             <p>No projects attached to this computer.</p>
                             <Link
@@ -141,7 +150,7 @@ function ComputerCard({ computer, projectsMap }: ComputerCardProps) {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 bg-white">
-                                    {attachments.map((attachment) => {
+                                    {sortedAttachments.map((attachment) => {
                                         const projectName = projectsMap[attachment.project_id] || "Unknown Project";
 
                                         return (

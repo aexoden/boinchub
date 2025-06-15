@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router";
 import { ProjectAttachmentCreate, ProjectAttachment } from "../../types";
 import {
@@ -442,6 +442,14 @@ function ComputerDetailAttachmentTable({
     handleDeleteAttachment,
     deleteAttachmentMutation,
 }: ComputerDetailAttachmentTableProps) {
+    const sortedAttachments = useMemo(() => {
+        return [...attachments].sort((a, b) => {
+            const nameA = projectsMap[a.project_id] || "Unknown Project";
+            const nameB = projectsMap[b.project_id] || "Unknown Project";
+            return nameA.localeCompare(nameB);
+        });
+    }, [attachments, projectsMap]);
+
     return (
         <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
@@ -465,7 +473,7 @@ function ComputerDetailAttachmentTable({
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                    {attachments.map((attachment) => {
+                    {sortedAttachments.map((attachment) => {
                         const projectName = projectsMap[attachment.project_id] || "Unknown Project";
 
                         return (

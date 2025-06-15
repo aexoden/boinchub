@@ -46,6 +46,16 @@ export function useUpdateUserMutation() {
         onSuccess: async (updatedUser) => {
             queryClient.setQueryData(queryKeys.users.detail(updatedUser.id), updatedUser);
             await queryClient.invalidateQueries({ queryKey: queryKeys.users.lists() });
+
+            const currentUser = queryClient.getQueryData(queryKeys.auth.currentUser());
+
+            if (currentUser) {
+                const currentUserId = typeof currentUser === "object" && "id" in currentUser ? currentUser.id : null;
+
+                if (currentUserId === updatedUser.id) {
+                    queryClient.setQueryData(queryKeys.auth.currentUser(), updatedUser);
+                }
+            }
         },
     });
 }

@@ -31,8 +31,13 @@ export interface Computer {
     cpid: string;
     hostname: string;
     user_id: string;
+    preference_group_id: string;
     created_at: string;
     updated_at: string;
+}
+
+export interface ComputerUpdate {
+    preference_group_id?: string;
 }
 
 // Project related types
@@ -143,4 +148,189 @@ export class ApiError extends Error {
         this.status = status;
         this.detail = detail;
     }
+}
+
+// Preference Group related types
+export interface PreferenceGroup {
+    id: string;
+    user_id: string | null;
+    name: string;
+    description: string;
+    is_default: boolean;
+    created_at: string;
+    updated_at: string;
+
+    // Battery settings
+    battery_charge_min_pct: number;
+    battery_max_temperature: number;
+    run_on_batteries: boolean;
+
+    // Activity settings
+    run_if_user_active: boolean;
+    run_gpu_if_user_active: boolean;
+    suspend_if_no_recent_input: number;
+    idle_time_to_run: number;
+
+    // Time restrictions
+    start_hour: number;
+    end_hour: number;
+    net_start_hour: number;
+    net_end_hour: number;
+
+    // Memory and processing settings
+    leave_apps_in_memory: boolean;
+    max_ncpus_pct: number;
+    niu_max_ncpus_pct: number;
+    cpu_usage_limit: number;
+    niu_cpu_usage_limit: number;
+    suspend_cpu_usage: number;
+    niu_suspend_cpu_usage: number;
+    cpu_scheduling_period_minutes: number;
+    max_cpus: number;
+
+    // Work buffer settings
+    work_buf_min_days: number;
+    work_buf_additional_days: number;
+
+    // Disk usage settings
+    disk_interval: number;
+    disk_max_used_gb: number;
+    disk_max_used_pct: number;
+    disk_min_free_gb: number;
+
+    // Memory usage settings
+    vm_max_used_pct: number;
+    ram_max_used_busy_pct: number;
+    ram_max_used_idle_pct: number;
+
+    // Network settings
+    confirm_before_connecting: boolean;
+    hangup_if_dialed: boolean;
+    max_bytes_sec_up: number;
+    max_bytes_sec_down: number;
+    daily_xfer_limit_mb: number;
+    daily_xfer_period_days: number;
+    network_wifi_only: boolean;
+
+    // Other settings
+    dont_verify_images: boolean;
+}
+export interface PreferenceGroupCreate {
+    name: string;
+    description: string;
+    is_default: boolean;
+
+    battery_charge_min_pct: number;
+    battery_max_temperature: number;
+    run_on_batteries: boolean;
+
+    // Activity settings
+    run_if_user_active: boolean;
+    run_gpu_if_user_active: boolean;
+    suspend_if_no_recent_input: number;
+    idle_time_to_run: number;
+
+    // Time restrictions
+    start_hour: number;
+    end_hour: number;
+    net_start_hour: number;
+    net_end_hour: number;
+
+    // Memory and processing settings
+    leave_apps_in_memory: boolean;
+    max_ncpus_pct: number;
+    niu_max_ncpus_pct: number;
+    cpu_usage_limit: number;
+    niu_cpu_usage_limit: number;
+    suspend_cpu_usage: number;
+    niu_suspend_cpu_usage: number;
+    cpu_scheduling_period_minutes: number;
+    max_cpus: number;
+
+    // Work buffer settings
+    work_buf_min_days: number;
+    work_buf_additional_days: number;
+
+    // Disk usage settings
+    disk_interval: number;
+    disk_max_used_gb: number;
+    disk_max_used_pct: number;
+    disk_min_free_gb: number;
+
+    // Memory usage settings
+    vm_max_used_pct: number;
+    ram_max_used_busy_pct: number;
+    ram_max_used_idle_pct: number;
+
+    // Network settings
+    confirm_before_connecting: boolean;
+    hangup_if_dialed: boolean;
+    max_bytes_sec_up: number;
+    max_bytes_sec_down: number;
+    daily_xfer_limit_mb: number;
+    daily_xfer_period_days: number;
+    network_wifi_only: boolean;
+
+    // Other settings
+    dont_verify_images: boolean;
+}
+
+export interface PreferenceGroupUpdate {
+    name?: string;
+    description?: string;
+    is_default?: boolean;
+
+    battery_charge_min_pct?: number;
+    battery_max_temperature?: number;
+    run_on_batteries?: boolean;
+
+    // Activity settings
+    run_if_user_active?: boolean;
+    run_gpu_if_user_active?: boolean;
+    suspend_if_no_recent_input?: number;
+    idle_time_to_run?: number;
+
+    // Time restrictions
+    start_hour?: number;
+    end_hour?: number;
+    net_start_hour?: number;
+    net_end_hour?: number;
+
+    // Memory and processing settings
+    leave_apps_in_memory?: boolean;
+    max_ncpus_pct?: number;
+    niu_max_ncpus_pct?: number;
+    cpu_usage_limit?: number;
+    niu_cpu_usage_limit?: number;
+    suspend_cpu_usage?: number;
+    niu_suspend_cpu_usage?: number;
+    cpu_scheduling_period_minutes?: number;
+    max_cpus?: number;
+
+    // Work buffer settings
+    work_buf_min_days?: number;
+    work_buf_additional_days?: number;
+
+    // Disk usage settings
+    disk_interval?: number;
+    disk_max_used_gb?: number;
+    disk_max_used_pct?: number;
+    disk_min_free_gb?: number;
+
+    // Memory usage settings
+    vm_max_used_pct?: number;
+    ram_max_used_busy_pct?: number;
+    ram_max_used_idle_pct?: number;
+
+    // Network settings
+    confirm_before_connecting?: boolean;
+    hangup_if_dialed?: boolean;
+    max_bytes_sec_up?: number;
+    max_bytes_sec_down?: number;
+    daily_xfer_limit_mb?: number;
+    daily_xfer_period_days?: number;
+    network_wifi_only?: boolean;
+
+    // Other settings
+    dont_verify_images?: boolean;
 }

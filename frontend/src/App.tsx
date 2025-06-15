@@ -15,10 +15,12 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 
 // User Pages
-import DashboardPage from "./pages/user/DashboardPage";
-import ComputersPage from "./pages/user/ComputersPage";
-import ComputerDetailPage from "./pages/user/ComputerDetailPage";
 import AttachmentDetailPage from "./pages/user/AttachmentDetailPage";
+import ComputerDetailPage from "./pages/user/ComputerDetailPage";
+import ComputersPage from "./pages/user/ComputersPage";
+import DashboardPage from "./pages/user/DashboardPage";
+import PreferenceGroupsPage from "./pages/user/PreferenceGroupsPage";
+import PreferenceGroupEditPage from "./pages/user/PreferenceGroupEditPage";
 import SettingsPage from "./pages/user/SettingsPage";
 
 // Admin Pages
@@ -105,6 +107,15 @@ function AppRoutes() {
                 <Route
                     path="attachments/:attachmentId"
                     element={<ProtectedRoute element={<AttachmentDetailPage />} />}
+                />
+                <Route path="preference-groups" element={<ProtectedRoute element={<PreferenceGroupsPage />} />} />
+                <Route
+                    path="preference-groups/:groupId/edit"
+                    element={<ProtectedRoute element={<PreferenceGroupEditPage />} />}
+                />
+                <Route
+                    path="preference-groups/new"
+                    element={<ProtectedRoute element={<PreferenceGroupEditPage isNew />} />}
                 />
                 <Route path="settings" element={<ProtectedRoute element={<SettingsPage />} />} />
 

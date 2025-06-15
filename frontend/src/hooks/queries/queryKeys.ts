@@ -34,6 +34,8 @@ export const queryKeys = {
         details: () => [...queryKeys.computers.all(), "detail"] as const,
         detail: (id: string) => [...queryKeys.computers.details(), id] as const,
         attachments: (computerId: string) => [...queryKeys.computers.detail(computerId), "attachments"] as const,
+        preferenceGroup: (computerId: string) =>
+            [...queryKeys.computers.detail(computerId), "preferenceGroup"] as const,
     },
 
     // Projects
@@ -44,6 +46,15 @@ export const queryKeys = {
         details: () => [...queryKeys.projects.all(), "detail"] as const,
         detail: (id: string) => [...queryKeys.projects.details(), id] as const,
         attachments: (projectId: string) => [...queryKeys.projects.detail(projectId), "attachments"] as const,
+    },
+
+    // Preference Groups
+    preferenceGroups: {
+        all: () => ["preferenceGroups"] as const,
+        lists: () => [...queryKeys.preferenceGroups.all(), "list"] as const,
+        list: (filters: Record<string, unknown>) => [...queryKeys.preferenceGroups.lists(), filters] as const,
+        details: () => [...queryKeys.preferenceGroups.all(), "detail"] as const,
+        detail: (id: string) => [...queryKeys.preferenceGroups.details(), id] as const,
     },
 
     // Project Attachments

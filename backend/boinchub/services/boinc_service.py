@@ -3,14 +3,20 @@
 # SPDX-License-Identifier: MIT
 """Service for BOINC-related operations."""
 
+import datetime
+
+from decimal import Decimal
 from typing import Annotated
 
 from fastapi import Depends
 from sqlmodel import Session
 
 from boinchub.core.database import get_db
-from boinchub.core.xmlrpc import AccountManagerReply, AccountManagerRequest, BoincError, GlobalPreferences
+from boinchub.core.settings import settings
+from boinchub.core.xmlrpc import AccountManagerReply, AccountManagerRequest, BoincError, GlobalPreferences, HostSpecific
+from boinchub.models.preference_group import PreferenceGroup
 from boinchub.services.computer_service import ComputerService
+from boinchub.services.preference_group_service import PreferenceGroupService
 from boinchub.services.user_service import UserService
 
 
@@ -55,15 +61,51 @@ class BoincService:
             )
 
         # Create or update the computer record
-        computer = ComputerService(self.db).update_or_create_from_request(user, request)
+        computer_service = ComputerService(self.db)
+        computer = computer_service.update_or_create_from_request(user, request)
+
+        # Ensure the computer has a preference group
+        preference_group_service = PreferenceGroupService(self.db)
+        if not computer.preference_group:
+            default_group = preference_group_service.get_default(user.id)
+            computer.preference_group = default_group
+            self.db.add(computer)
+            self.db.commit()
+            self.db.refresh(computer)
+
+        # Get the computer's preference group and build global preferences
+        global_preferences = build_global_preferences(computer.preference_group)
 
         # Return successful response with placeholder data
         return AccountManagerReply(
             repeat_sec=3600,
-            global_preferences=GlobalPreferences(),
+            global_preferences=global_preferences,
             accounts=[],
             uuid=computer.id,
         )
+
+
+def build_global_preferences(preference_group: PreferenceGroup) -> GlobalPreferences:
+    """Build GlobalPreferences from a PreferenceGroup.
+
+    Args:
+        preference_group: The preference group to build preferences from.
+
+    Returns:
+        GlobalPreferences: The constructed global preferences.
+
+    """
+    # Create preferences with current timestamp
+    now = datetime.datetime.now(datetime.UTC)
+    mod_time = Decimal(now.timestamp())
+
+    preference_group_data = preference_group.model_dump()
+
+    preference_group_data["host_specific"] = HostSpecific()
+    preference_group_data["source_project"] = settings.backend_url + "/boinc/"
+    preference_group_data["mod_time"] = mod_time
+
+    return GlobalPreferences.model_validate(preference_group_data)
 
 
 def get_boinc_service(db: Annotated[Session, Depends(get_db)]) -> BoincService:

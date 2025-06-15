@@ -21,6 +21,7 @@ from boinchub.api.endpoints import (
     computers,
     config,
     health,
+    preference_groups,
     project_attachments,
     projects,
     user_project_keys,
@@ -108,6 +109,7 @@ def _create_app() -> FastAPI:
     app.include_router(computers.router)
     app.include_router(config.router)
     app.include_router(health.router)
+    app.include_router(preference_groups.router)
     app.include_router(project_attachments.router)
     app.include_router(projects.router)
     app.include_router(user_project_keys.router)

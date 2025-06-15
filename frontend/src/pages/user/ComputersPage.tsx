@@ -1,5 +1,10 @@
 import { Link } from "react-router";
-import { useCurrentUserComputersQuery, useProjectsQuery, useComputerAttachmentsQuery } from "../../hooks/queries";
+import {
+    useCurrentUserComputersQuery,
+    useProjectsQuery,
+    useComputerAttachmentsQuery,
+    usePreferenceGroupsQuery,
+} from "../../hooks/queries";
 import { Computer } from "../../types";
 import ResourceUsageDisplay from "../../components/common/ResourceUsageDisplay";
 import AttachmentStatusDisplay from "../../components/common/AttachmentStatusDisplay";
@@ -13,18 +18,23 @@ export default function ComputersPage() {
 
     // Queries
     const { data: computers = [], isLoading: computersLoading, error: computersError } = useCurrentUserComputersQuery();
-
     const { data: projects = [], isLoading: projectsLoading } = useProjectsQuery(true);
+    const { data: preferenceGroups = [], isLoading: preferenceGroupsLoading } = usePreferenceGroupsQuery();
 
     const projectsMap = projects.reduce<Record<string, string>>((acc, project) => {
         acc[project.id] = project.name;
         return acc;
     }, {});
 
+    const preferenceGroupsMap = preferenceGroups.reduce<Record<string, string>>((acc, group) => {
+        acc[group.id] = group.name;
+        return acc;
+    }, {});
+
     usePageTitle("My Computers");
 
     // Loading state
-    const isLoading = computersLoading || projectsLoading;
+    const isLoading = computersLoading || projectsLoading || preferenceGroupsLoading;
 
     if (computersError) {
         return (
@@ -61,7 +71,12 @@ export default function ComputersPage() {
             ) : (
                 <div className="space-y-8">
                     {computers.map((computer) => (
-                        <ComputerCard key={computer.id} computer={computer} projectsMap={projectsMap} />
+                        <ComputerCard
+                            key={computer.id}
+                            computer={computer}
+                            projectsMap={projectsMap}
+                            preferenceGroupsMap={preferenceGroupsMap}
+                        />
                     ))}
                 </div>
             )}
@@ -72,9 +87,10 @@ export default function ComputersPage() {
 interface ComputerCardProps {
     computer: Computer;
     projectsMap: Record<string, string>;
+    preferenceGroupsMap: Record<string, string>;
 }
 
-function ComputerCard({ computer, projectsMap }: ComputerCardProps) {
+function ComputerCard({ computer, projectsMap, preferenceGroupsMap }: ComputerCardProps) {
     const { data: attachments = [], isLoading: attachmentsLoading } = useComputerAttachmentsQuery(computer.id);
 
     const sortedAttachments = useMemo(() => {
@@ -84,6 +100,10 @@ function ComputerCard({ computer, projectsMap }: ComputerCardProps) {
             return nameA.localeCompare(nameB);
         });
     }, [attachments, projectsMap]);
+
+    const preferenceGroupName = computer.preference_group_id
+        ? preferenceGroupsMap[computer.preference_group_id] || "Unknown Group"
+        : "Not Assigned";
 
     return (
         <div className="overflow-hidden rounded-lg bg-white shadow">
@@ -98,14 +118,18 @@ function ComputerCard({ computer, projectsMap }: ComputerCardProps) {
             </div>
 
             <div className="p-6">
-                <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-3">
                     <div>
-                        <h3 className="mb-1 text-sm font-medium text-gray-500">CPID</h3>
-                        <p className="font-mono text-gray-900">{computer.cpid}</p>
+                        <h3 className="mb-1 text-sm font-medium text-gray-500">Preference Group</h3>
+                        <p className="text-gray-900">{preferenceGroupName}</p>
                     </div>
                     <div>
                         <h3 className="mb-1 text-sm font-medium text-gray-500">Last Connection</h3>
                         <p className="text-gray-900">{formatDate(computer.updated_at)}</p>
+                    </div>
+                    <div>
+                        <h3 className="mb-1 text-sm font-medium text-gray-500">CPID</h3>
+                        <p className="font-mono text-gray-900">{computer.cpid}</p>
                     </div>
                 </div>
 

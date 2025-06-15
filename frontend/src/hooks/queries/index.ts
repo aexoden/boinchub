@@ -26,7 +26,7 @@ export {
 } from "./useUserProjectKeyQueries";
 
 // Computer queries
-export { useComputerQuery, useComputerAttachmentsQuery } from "./useComputerQueries";
+export { useComputerQuery, useComputerAttachmentsQuery, useUpdateComputerMutation } from "./useComputerQueries";
 
 // Project queries
 export {
@@ -37,6 +37,15 @@ export {
     useUpdateProjectMutation,
     useDeleteProjectMutation,
 } from "./useProjectQueries";
+
+// Preference Group queries
+export {
+    usePreferenceGroupsQuery,
+    usePreferenceGroupQuery,
+    useCreatePreferenceGroupMutation,
+    useUpdatePreferenceGroupMutation,
+    useDeletePreferenceGroupMutation,
+} from "./usePreferenceGroupQueries";
 
 // Attachment queries
 export {

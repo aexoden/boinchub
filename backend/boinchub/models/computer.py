@@ -9,6 +9,7 @@ from uuid import UUID, uuid4
 from sqlmodel import Field, Relationship, SQLModel, UniqueConstraint
 
 from boinchub.models import Timestamps
+from boinchub.models.preference_group import PreferenceGroup
 from boinchub.models.user import User
 
 if TYPE_CHECKING:
@@ -24,6 +25,9 @@ class ComputerBase(SQLModel):
 
     # Foreign keys
     user_id: UUID = Field(foreign_key="users.id", ondelete="CASCADE", index=True)
+    preference_group_id: UUID | None = Field(
+        default=None, foreign_key="preference_groups.id", ondelete="SET NULL", index=True
+    )
 
 
 class Computer(ComputerBase, Timestamps, table=True):
@@ -37,6 +41,7 @@ class Computer(ComputerBase, Timestamps, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
     # Relationships
+    preference_group: PreferenceGroup | None = Relationship(back_populates="computers")
     project_attachments: list["ProjectAttachment"] = Relationship(back_populates="computer", cascade_delete=True)
     user: User = Relationship(back_populates="computers")
 
@@ -55,9 +60,4 @@ class ComputerCreate(ComputerBase):
 class ComputerUpdate(SQLModel):
     """Model for updating a computer."""
 
-    # Computer properties
-    cpid: str | None = None
-    hostname: str | None = None
-
-    # Relationships
-    user: User | None = None
+    preference_group_id: UUID | None = None

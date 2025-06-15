@@ -1,5 +1,5 @@
 import { NavLink } from "react-router";
-import { HomeIcon, ServerIcon, UsersIcon, CogIcon } from "@heroicons/react/24/outline";
+import { HomeIcon, ServerIcon, UsersIcon, CogIcon, AdjustmentsHorizontalIcon } from "@heroicons/react/24/outline";
 
 interface SidebarProps {
     isAdmin: boolean;
@@ -34,6 +34,19 @@ export default function Sidebar({ isAdmin }: SidebarProps) {
                         <ServerIcon className="mr-3 h-5 w-5" />
                         My Computers
                     </NavLink>
+
+                    <NavLink
+                        to="/preference-groups"
+                        className={({ isActive }) =>
+                            `flex items-center rounded-md px-3 py-3 text-gray-700 ${
+                                isActive ? "bg-primary-100 text-primary-700" : "hover:bg-gray-100"
+                            }`
+                        }
+                    >
+                        <AdjustmentsHorizontalIcon className="mr-3 h-5 w-5" />
+                        Preference Groups
+                    </NavLink>
+
                     <NavLink
                         to="/settings"
                         className={({ isActive }) =>

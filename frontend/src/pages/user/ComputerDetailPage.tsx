@@ -8,6 +8,8 @@ import {
     useCurrentUserProjectKeysQuery,
     useCreateAttachmentMutation,
     useDeleteAttachmentMutation,
+    useUpdateComputerMutation,
+    usePreferenceGroupsQuery,
 } from "../../hooks/queries";
 import ResourceUsageDisplay from "../../components/common/ResourceUsageDisplay";
 import AttachmentStatusDisplay from "../../components/common/AttachmentStatusDisplay";
@@ -26,19 +28,26 @@ export default function ComputerDetailPage() {
     const { data: attachments = [], isLoading: attachmentsLoading } = useComputerAttachmentsQuery(computerId ?? "");
     const { data: allProjects = [], isLoading: projectsLoading } = useProjectsQuery(true);
     const { data: userProjectKeys = [], isLoading: keysLoading } = useCurrentUserProjectKeysQuery();
+    const { data: preferenceGroups = [], isLoading: preferenceGroupsLoading } = usePreferenceGroupsQuery();
 
     // Mutations
     const createAttachmentMutation = useCreateAttachmentMutation();
     const deleteAttachmentMutation = useDeleteAttachmentMutation();
+    const updateComputerMutation = useUpdateComputerMutation();
 
     // Modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedProject, setSelectedProject] = useState<string>("");
     const [resourceShare, setResourceShare] = useState("100");
 
+    // Preference group state
+    const [selectedPreferenceGroup, setSelectedPreferenceGroup] = useState<string | null>(null);
+    const [isPreferenceGroupModalOpen, setIsPreferenceGroupModalOpen] = useState(false);
+
     // Error states
     const [pageError, setPageError] = useState<string | null>(null);
     const [modalError, setModalError] = useState<string | null>(null);
+    const [preferenceGroupError, setPreferenceGroupError] = useState<string | null>(null);
 
     // Create a map for quick project lookup
     const projectsMap = allProjects.reduce<Record<string, string>>((acc, project) => {
@@ -60,11 +69,20 @@ export default function ComputerDetailPage() {
         (p) => p.enabled && userProjectKeyIds.has(p.id) && !attachedProjectIds.includes(p.id),
     );
 
+    // Find current preference group
+    const currentPreferenceGroup = preferenceGroups.find((pg) => pg.id === computer?.preference_group_id);
+
     const handleAddAttachment = () => {
         setSelectedProject("");
         setResourceShare("100");
         setModalError(null);
         setIsModalOpen(true);
+    };
+
+    const handleChangePreferenceGroup = () => {
+        setSelectedPreferenceGroup(currentPreferenceGroup?.id ?? null);
+        setPreferenceGroupError(null);
+        setIsPreferenceGroupModalOpen(true);
     };
 
     const handleInputChange = (field: string, value: string) => {
@@ -126,6 +144,39 @@ export default function ComputerDetailPage() {
         }
     };
 
+    const handleUpdatePreferenceGroup = async () => {
+        setPreferenceGroupError(null);
+
+        if (!computer) {
+            setPreferenceGroupError("Computer not found.");
+            return;
+        }
+
+        try {
+            await updateComputerMutation.mutateAsync({
+                computerId: computer.id,
+                computerData: {
+                    preference_group_id: selectedPreferenceGroup ?? undefined,
+                },
+            });
+
+            setIsPreferenceGroupModalOpen(false);
+            setPageError(null);
+        } catch (err: unknown) {
+            let errorMessage = "Failed to update preference group";
+
+            if (err instanceof Error) {
+                errorMessage = err.message;
+            } else if (typeof err === "string") {
+                errorMessage = err;
+            } else if (err && typeof err === "object" && "detail" in err) {
+                errorMessage = String(err.detail);
+            }
+
+            setPreferenceGroupError(errorMessage);
+        }
+    };
+
     const handleDeleteAttachment = async (attachmentId: string) => {
         if (!window.confirm("Are you sure you want to detach this project?")) {
             return;
@@ -150,8 +201,9 @@ export default function ComputerDetailPage() {
     };
 
     // Loading state
-    const isLoading = computerLoading || attachmentsLoading || projectsLoading || keysLoading;
-    const isSubmitting = createAttachmentMutation.isPending;
+    const isLoading =
+        computerLoading || attachmentsLoading || projectsLoading || keysLoading || preferenceGroupsLoading;
+    const isSubmitting = createAttachmentMutation.isPending || updateComputerMutation.isPending;
 
     if (isLoading) {
         return (
@@ -233,15 +285,36 @@ export default function ComputerDetailPage() {
 
             {/* Computer Details */}
             <div className="mb-8 rounded-lg bg-white p-6 shadow">
-                <h2 className="mb-4 text-lg font-medium text-gray-900">Computer Information</h2>
+                <div className="mb-4 flex items-center justify-between">
+                    <h2 className="text-lg font-medium text-gray-900">Computer Information</h2>
+                    <button
+                        onClick={handleChangePreferenceGroup}
+                        className="cursor-pointer rounded-md bg-primary-600 px-4 py-2 text-white transition-colors hover:bg-primary-700"
+                    >
+                        Change Preference Group
+                    </button>
+                </div>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
                         <h3 className="text-sm font-medium text-gray-500">Hostname</h3>
                         <p className="mt-1 text-gray-900">{computer.hostname}</p>
                     </div>
                     <div>
-                        <h3 className="text-sm font-medium text-gray-500">BOINC CPID</h3>
-                        <p className="mt-1 font-mono text-gray-900">{computer.cpid}</p>
+                        <h3 className="text-sm font-medium text-gray-500">Preference Group</h3>
+                        <p className="mt-1 text-gray-900">
+                            {currentPreferenceGroup ? (
+                                <span className="inline-flex items-center">
+                                    {currentPreferenceGroup.name}
+                                    {currentPreferenceGroup.is_default && (
+                                        <span className="ml-2 inline-flex rounded-full bg-yellow-100 px-2 py-1 text-xs font-semibold text-yellow-800">
+                                            Default
+                                        </span>
+                                    )}
+                                </span>
+                            ) : (
+                                <span className="text-gray-500">Not assigned</span>
+                            )}
+                        </p>
                     </div>
                     <div>
                         <h3 className="text-sm font-medium text-gray-500">First Seen</h3>
@@ -250,6 +323,10 @@ export default function ComputerDetailPage() {
                     <div>
                         <h3 className="text-sm font-medium text-gray-500">Last Connection</h3>
                         <p className="mt-1 text-gray-900">{formatDate(computer.updated_at)}</p>
+                    </div>
+                    <div>
+                        <h3 className="text-sm font-medium text-gray-500">BOINC CPID</h3>
+                        <p className="mt-1 font-mono text-gray-900">{computer.cpid}</p>
                     </div>
                     <div>
                         <h3 className="text-sm font-medium text-gray-500">
@@ -419,6 +496,91 @@ export default function ComputerDetailPage() {
                                     className="cursor-pointer rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     {isSubmitting ? "Attaching..." : "Attach Project"}
+                                </button>
+                            </div>
+                        </form>
+                    </DialogPanel>
+                </div>
+            </Dialog>
+
+            {/* Change Preference Group Modal */}
+            <Dialog
+                open={isPreferenceGroupModalOpen}
+                onClose={() => {
+                    setIsPreferenceGroupModalOpen(false);
+                }}
+                transition
+                className="fixed inset-0 flex w-screen items-center justify-center bg-black/30 p-4 transition duration-300 ease-out data-closed:opacity-0"
+            >
+                <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
+                    <DialogPanel className="inline-block w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                        <DialogTitle as="h3" className="text-lg leading-6 font-medium text-gray-900">
+                            Change Preference Group
+                        </DialogTitle>
+
+                        {/* Preference Group Error Display */}
+                        {preferenceGroupError && (
+                            <div className="mt-4 border-l-4 border-red-500 bg-red-50 p-4">
+                                <div className="flex">
+                                    <div className="ml-3">
+                                        <p className="text-sm text-red-700">{preferenceGroupError}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                void handleUpdatePreferenceGroup();
+                            }}
+                            className="mt-4"
+                        >
+                            <div className="mb-4">
+                                <label htmlFor="preferenceGroup" className="block text-sm font-medium text-gray-700">
+                                    Preference Group
+                                </label>
+                                <select
+                                    id="preferenceGroup"
+                                    value={selectedPreferenceGroup ?? ""}
+                                    onChange={(e) => {
+                                        setSelectedPreferenceGroup(e.target.value);
+                                        if (preferenceGroupError) setPreferenceGroupError(null);
+                                    }}
+                                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                >
+                                    <option disabled value="">
+                                        Select a preference group
+                                    </option>
+                                    {preferenceGroups.map((group) => (
+                                        <option key={group.id} value={group.id}>
+                                            {group.name}
+                                            {group.is_default && " (Default)"}
+                                            {group.user_id === null && " (Global)"}
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="mt-1 text-sm text-gray-500">
+                                    Choose a preference group to control BOINC computing preferences for this computer.
+                                </p>
+                            </div>
+
+                            <div className="mt-6 flex justify-end space-x-3">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsPreferenceGroupModalOpen(false);
+                                    }}
+                                    className="cursor-pointer rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={updateComputerMutation.isPending}
+                                    className="cursor-pointer rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    {updateComputerMutation.isPending ? "Updating..." : "Update Preference Group"}
                                 </button>
                             </div>
                         </form>

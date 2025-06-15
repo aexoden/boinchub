@@ -1,5 +1,5 @@
 import apiClient from "./api-client";
-import { Computer } from "../types";
+import { Computer, ComputerUpdate } from "../types";
 
 export const computerService = {
     // Get computers for the current user
@@ -11,6 +11,12 @@ export const computerService = {
     // Get a computer by ID
     getComputerById: async (computerId: string): Promise<Computer> => {
         const response = await apiClient.get<Computer>(`/api/v1/computers/${computerId}`);
+        return response.data;
+    },
+
+    // Update a computer
+    updateComputer: async (computerId: string, computerData: ComputerUpdate): Promise<Computer> => {
+        const response = await apiClient.patch<Computer>(`/api/v1/computers/${computerId}`, computerData);
         return response.data;
     },
 };

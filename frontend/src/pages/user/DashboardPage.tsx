@@ -90,7 +90,7 @@ export default function DashboardPage() {
                     <h2 className="mb-4 text-lg font-medium text-gray-900">BOINC Account Manager Information</h2>
                     <div className="space-y-3">
                         <div>
-                            <p className="space-y-3">
+                            <div className="space-y-3">
                                 <p className="mt-2">
                                     To use {config?.account_manager_name ?? "BoincHub"}, set up the BOINC client on your
                                     computer and connect to this account manager using the following URL:
@@ -98,7 +98,7 @@ export default function DashboardPage() {
                                 <div className="mt-2 rounded-md bg-gray-100 p-3 font-mono">
                                     {config?.boinc_url ?? "Loading..."}
                                 </div>
-                            </p>
+                            </div>
                         </div>
                     </div>
                 </div>

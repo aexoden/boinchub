@@ -391,6 +391,7 @@ export default function ComputerDetailPage() {
                                     type="number"
                                     id="resourceShare"
                                     min="0"
+                                    step="any"
                                     value={resourceShare}
                                     onChange={(e) => {
                                         handleInputChange("resourceShare", e.target.value);

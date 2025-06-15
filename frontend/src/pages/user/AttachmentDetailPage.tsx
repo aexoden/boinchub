@@ -67,7 +67,7 @@ export default function AttachmentDetailPage() {
 
         setMessage(null);
 
-        const resourceShareNum = parseInt(resourceShare);
+        const resourceShareNum = parseFloat(resourceShare);
         if (isNaN(resourceShareNum) || resourceShareNum < 0) {
             setMessage({ text: "Resource share must be a valid number greater than or equal to 0", type: "error" });
             return;
@@ -287,6 +287,7 @@ export default function AttachmentDetailPage() {
                                             }
                                         }}
                                         min="0"
+                                        step="any"
                                         className="block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                     />
                                     <p className="mt-1 text-xs text-gray-500">

@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: MIT
 """Service for computer-related operations."""
 
+import datetime
+
 from typing import Annotated
 
 from fastapi import Depends
@@ -43,6 +45,8 @@ class ComputerService(BaseService[Computer, ComputerCreate, ComputerUpdate]):
             Computer: The updated or created computer object.
 
         """
+        connection_time = datetime.datetime.now(datetime.UTC)
+
         # Attempt to look up the target computer by UUID, if it matches the authenticated user.
         if request.uuid:
             computer = self.get(request.uuid)
@@ -51,6 +55,7 @@ class ComputerService(BaseService[Computer, ComputerCreate, ComputerUpdate]):
                 # Update metadata
                 computer.cpid = request.host_cpid
                 computer.hostname = request.domain_name
+                computer.last_connected_at = connection_time
 
                 self.db.add(computer)
                 self.db.commit()
@@ -63,6 +68,7 @@ class ComputerService(BaseService[Computer, ComputerCreate, ComputerUpdate]):
 
         if computer and computer.user_id == user.id:
             computer.hostname = request.domain_name
+            computer.last_connected_at = connection_time
 
             self.db.add(computer)
             self.db.commit()
@@ -77,6 +83,7 @@ class ComputerService(BaseService[Computer, ComputerCreate, ComputerUpdate]):
             if computer and computer.user_id == user.id:
                 computer.cpid = request.host_cpid
                 computer.hostname = request.domain_name
+                computer.last_connected_at = connection_time
 
                 self.db.add(computer)
                 self.db.commit()
@@ -89,6 +96,7 @@ class ComputerService(BaseService[Computer, ComputerCreate, ComputerUpdate]):
             cpid=request.host_cpid,
             hostname=request.domain_name,
             user_id=user.id,
+            last_connected_at=connection_time,
         )
 
         return self.create(computer_data)

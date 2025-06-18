@@ -34,6 +34,7 @@ export interface Computer {
     preference_group_id: string;
     created_at: string;
     updated_at: string;
+    last_connected_at: string | null;
 }
 
 export interface ComputerUpdate {
@@ -220,6 +221,7 @@ export interface PreferenceGroupCreate {
     description: string;
     is_default: boolean;
 
+    // Battery settings
     battery_charge_min_pct: number;
     battery_max_temperature: number;
     run_on_batteries: boolean;

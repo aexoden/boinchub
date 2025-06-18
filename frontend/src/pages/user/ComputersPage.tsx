@@ -125,7 +125,9 @@ function ComputerCard({ computer, projectsMap, preferenceGroupsMap }: ComputerCa
                     </div>
                     <div>
                         <h3 className="mb-1 text-sm font-medium text-gray-500">Last Connection</h3>
-                        <p className="text-gray-900">{formatDate(computer.updated_at)}</p>
+                        <p className="text-gray-900">
+                            {computer.last_connected_at ? formatDate(computer.last_connected_at) : "Never"}
+                        </p>
                     </div>
                     <div>
                         <h3 className="mb-1 text-sm font-medium text-gray-500">CPID</h3>

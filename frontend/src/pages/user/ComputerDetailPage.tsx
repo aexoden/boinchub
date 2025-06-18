@@ -322,7 +322,9 @@ export default function ComputerDetailPage() {
                     </div>
                     <div>
                         <h3 className="text-sm font-medium text-gray-500">Last Connection</h3>
-                        <p className="mt-1 text-gray-900">{formatDate(computer.updated_at)}</p>
+                        <p className="mt-1 text-gray-900">
+                            {computer.last_connected_at ? formatDate(computer.last_connected_at) : "Never"}
+                        </p>
                     </div>
                     <div>
                         <h3 className="text-sm font-medium text-gray-500">BOINC CPID</h3>

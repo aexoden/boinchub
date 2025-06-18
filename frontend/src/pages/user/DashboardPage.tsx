@@ -68,7 +68,9 @@ export default function DashboardPage() {
                                                 {computer.cpid.substring(0, 8)}...
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                {formatDate(computer.updated_at)}
+                                                {computer.last_connected_at
+                                                    ? formatDate(computer.last_connected_at)
+                                                    : "Never"}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <Link

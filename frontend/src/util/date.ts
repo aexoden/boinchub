@@ -1,8 +1,16 @@
 export function formatDate(dateString: string) {
     const date = new Date(Date.parse(dateString));
 
-    // Format: YYYY-MM-DD HH:mm:ss
-    const formatted_date = date.toISOString().replace("T", " ").substring(0, 19);
+    // Format the date in an ISO-like format with in the local timezone, taking advantage of the fact that Sweden's
+    // date format is similar to ISO 8601.
+    const formatted_date = date.toLocaleString("sv", {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+    });
 
     // Get the timezone abbreviation
     const timeZone =

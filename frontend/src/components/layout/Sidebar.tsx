@@ -1,11 +1,21 @@
 import { NavLink } from "react-router";
-import { HomeIcon, ServerIcon, UsersIcon, CogIcon, AdjustmentsHorizontalIcon } from "@heroicons/react/24/outline";
+import {
+    HomeIcon,
+    ServerIcon,
+    UsersIcon,
+    CogIcon,
+    AdjustmentsHorizontalIcon,
+    KeyIcon,
+} from "@heroicons/react/24/outline";
+import { useConfig } from "../../contexts/ConfigContext";
 
 interface SidebarProps {
     isAdmin: boolean;
 }
 
 export default function Sidebar({ isAdmin }: SidebarProps) {
+    const { config } = useConfig();
+
     return (
         <div className="min-h-[calc(100vh-4rem)] w-64 bg-white shadow-md">
             <div className="px-4 pt-5 pb-6">
@@ -67,6 +77,20 @@ export default function Sidebar({ isAdmin }: SidebarProps) {
                                     Administration
                                 </p>
                             </div>
+
+                            {config?.require_invite_code && (
+                                <NavLink
+                                    to="/admin/invite-codes"
+                                    className={({ isActive }) =>
+                                        `flex items-center rounded-md px-3 py-3 text-gray-700 ${
+                                            isActive ? "bg-primary-100 text-primary-700" : "hover:bg-gray-100"
+                                        }`
+                                    }
+                                >
+                                    <KeyIcon className="mr-3 h-5 w-5" />
+                                    Invite Codes
+                                </NavLink>
+                            )}
 
                             <NavLink
                                 to="/admin/projects"

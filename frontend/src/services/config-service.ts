@@ -4,6 +4,7 @@ export interface AppConfig {
     account_manager_name: string;
     boinc_url: string;
     min_password_length: number;
+    require_invite_code: boolean;
 }
 
 export const configService = {

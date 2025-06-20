@@ -19,6 +19,7 @@ if config.config_file_name is not None:
 from sqlmodel import SQLModel
 from boinchub.core.settings import settings  # noqa: E402
 from boinchub.models.computer import Computer
+from boinchub.models.invite_code import InviteCode
 from boinchub.models.preference_group import PreferenceGroup
 from boinchub.models.project import Project
 from boinchub.models.project_attachment import ProjectAttachment

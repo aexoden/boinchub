@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     min_username_length: int = 3
     max_username_length: int = 50
     min_password_length: int = 16
+    require_invite_code: bool = False
 
     # Signing key settings
     public_key: str = "INVALID PUBLIC KEY"

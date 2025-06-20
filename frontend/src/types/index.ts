@@ -14,6 +14,7 @@ export interface UserCredentials {
 
 export interface UserRegister extends UserCredentials {
     email: string;
+    invite_code?: string;
 }
 
 export interface UserUpdate {
@@ -39,6 +40,28 @@ export interface Computer {
 
 export interface ComputerUpdate {
     preference_group_id?: string;
+}
+
+// Invite code related types
+export interface InviteCode {
+    id: string;
+    code: string;
+    is_active: boolean;
+    created_by_user_id: string;
+    used_by_user_id: string | null;
+    used_at: string | null;
+    created_at: string;
+    updated_at: string;
+    created_by_username?: string;
+    used_by_username?: string;
+}
+
+export interface InviteCodeCreate {
+    code?: string; // Optional, will be generated if not provided
+}
+
+export interface InviteCodeUpdate {
+    is_active?: boolean;
 }
 
 // Project related types

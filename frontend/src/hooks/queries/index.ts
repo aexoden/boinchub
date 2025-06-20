@@ -28,6 +28,15 @@ export {
 // Computer queries
 export { useComputerQuery, useComputerAttachmentsQuery, useUpdateComputerMutation } from "./useComputerQueries";
 
+// Invite Code queries
+export {
+    useInviteCodesQuery,
+    useInviteCodeQuery,
+    useCreateInviteCodeMutation,
+    useUpdateInviteCodeMutation,
+    useDeleteInviteCodeMutation,
+} from "./useInviteCodeQueries";
+
 // Project queries
 export {
     useProjectsQuery,

@@ -9,21 +9,28 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from boinchub.core.security import get_current_user_if_active
+from boinchub.core.settings import settings
 from boinchub.models.computer import ComputerPublic
 from boinchub.models.user import User, UserCreate, UserPublic, UserUpdate
 from boinchub.services.computer_service import ComputerService, get_computer_service
+from boinchub.services.invite_code_service import InviteCodeService, get_invite_code_service
 from boinchub.services.user_service import UserService, get_user_service
 
 router = APIRouter(prefix="/api/v1/users", tags=["users"])
 
 
 @router.post("/register")
-def register_user(user_data: UserCreate, user_service: Annotated[UserService, Depends(get_user_service)]) -> UserPublic:
+def register_user(
+    user_data: UserCreate,
+    user_service: Annotated[UserService, Depends(get_user_service)],
+    invite_code_service: Annotated[InviteCodeService, Depends(get_invite_code_service)],
+) -> UserPublic:
     """Register a new user.
 
     Args:
         user_data (UserCreate): The data for the new user.
-        db (Session): The database session.
+        user_service (UserService): The service for managing users.
+        invite_code_service (InviteCodeService): The service for managing invite codes.
 
     Returns:
         UserPublic: The created user's information.
@@ -31,6 +38,12 @@ def register_user(user_data: UserCreate, user_service: Annotated[UserService, De
     Raises:
         HTTPException: If the username already exists.
     """
+    # Validate the invite code if enabled
+    if settings.require_invite_code and (
+        not user_data.invite_code or not invite_code_service.validate(user_data.invite_code)
+    ):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired invite code")
+
     if user_service.get_by_username(user_data.username) is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username is unavailable")
 
@@ -38,6 +51,9 @@ def register_user(user_data: UserCreate, user_service: Annotated[UserService, De
     user_data.role = "user"
 
     user = user_service.create(user_data)
+
+    if settings.require_invite_code and user_data.invite_code:
+        invite_code_service.use(user_data.invite_code, user)
 
     return UserPublic.model_validate(user)
 

@@ -24,6 +24,7 @@ import PreferenceGroupEditPage from "./pages/user/PreferenceGroupEditPage";
 import SettingsPage from "./pages/user/SettingsPage";
 
 // Admin Pages
+import InviteCodesPage from "./pages/admin/InviteCodesPage";
 import ProjectsPage from "./pages/admin/ProjectsPage";
 import UsersPage from "./pages/admin/UsersPage";
 
@@ -120,6 +121,10 @@ function AppRoutes() {
                 <Route path="settings" element={<ProtectedRoute element={<SettingsPage />} />} />
 
                 {/* Admin Routes */}
+                <Route
+                    path="admin/invite-codes"
+                    element={<ProtectedRoute element={<InviteCodesPage />} requireAdmin />}
+                />
                 <Route path="admin/projects" element={<ProtectedRoute element={<ProjectsPage />} requireAdmin />} />
                 <Route path="admin/users" element={<ProtectedRoute element={<UsersPage />} requireAdmin />} />
             </Route>

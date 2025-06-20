@@ -17,6 +17,7 @@ class AppConfig(BaseModel):
     account_manager_name: str
     boinc_url: str
     min_password_length: int
+    require_invite_code: bool
 
 
 @router.get("")
@@ -33,4 +34,5 @@ async def get_config() -> AppConfig:
         account_manager_name=settings.account_manager_name,
         boinc_url=boinc_url,
         min_password_length=settings.min_password_length,
+        require_invite_code=settings.require_invite_code,
     )

@@ -38,6 +38,15 @@ export const queryKeys = {
             [...queryKeys.computers.detail(computerId), "preferenceGroup"] as const,
     },
 
+    // Invite Codes
+    inviteCodes: {
+        all: () => ["inviteCodes"] as const,
+        lists: () => [...queryKeys.inviteCodes.all(), "list"] as const,
+        list: (filters: Record<string, unknown>) => [...queryKeys.inviteCodes.lists(), filters] as const,
+        details: () => [...queryKeys.inviteCodes.all(), "detail"] as const,
+        detail: (id: string) => [...queryKeys.inviteCodes.details(), id] as const,
+    },
+
     // Projects
     projects: {
         all: () => ["projects"] as const,

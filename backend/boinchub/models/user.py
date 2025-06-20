@@ -177,6 +177,7 @@ class UserCreate(UserBase):
 
     # User properties
     password: str
+    invite_code: str | None = None
 
     @field_validator("password")
     @classmethod

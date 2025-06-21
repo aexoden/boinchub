@@ -60,9 +60,22 @@ export function useDeleteAttachmentMutation() {
             await queryClient.cancelQueries({ queryKey: queryKeys.attachments.detail(attachmentId) });
 
             // Get the attachment data before deletion for optimistic update
-            const previousAttachment = queryClient.getQueryData(queryKeys.attachments.detail(attachmentId));
+            const previousAttachment = queryClient.getQueryData<ProjectAttachment>(
+                queryKeys.attachments.detail(attachmentId),
+            );
 
-            return { previousAttachment };
+            // If we don't have the attachment data in cache, try to fetch it
+            // This ensures we have the computer_id and project_id for invalidation
+            let attachmentData = previousAttachment;
+            if (!attachmentData) {
+                try {
+                    attachmentData = await attachmentService.getAttachmentById(attachmentId);
+                } catch (error) {
+                    console.warn("Could not fetch attachment data for cache invalidation:", error);
+                }
+            }
+
+            return { previousAttachment: attachmentData };
         },
         onSuccess: async (_, attachmentId, context) => {
             // Remove the attachment from cache
@@ -70,13 +83,40 @@ export function useDeleteAttachmentMutation() {
 
             // Invalidate related queries if we have the previous attachment data
             if (context.previousAttachment) {
-                const attachment = context.previousAttachment as ProjectAttachment;
-                await queryClient.invalidateQueries({
-                    queryKey: queryKeys.computers.attachments(attachment.computer_id),
-                });
-                await queryClient.invalidateQueries({
-                    queryKey: queryKeys.projects.attachments(attachment.project_id),
-                });
+                const attachment = context.previousAttachment;
+                await Promise.all([
+                    queryClient.invalidateQueries({
+                        queryKey: queryKeys.computers.attachments(attachment.computer_id),
+                    }),
+                    queryClient.invalidateQueries({
+                        queryKey: queryKeys.projects.attachments(attachment.project_id),
+                    }),
+                ]);
+            } else {
+                // Fallback: Invalidate all attachment-related queries if we don't have specific IDs
+                console.warn("Invalidating all attachment queries due to missing attachment data");
+                await Promise.all([
+                    queryClient.invalidateQueries({
+                        queryKey: queryKeys.computers.all(),
+                        predicate: (query) => {
+                            const key = query.queryKey as string[];
+                            return key.includes("attachments");
+                        },
+                    }),
+                    queryClient.invalidateQueries({
+                        queryKey: queryKeys.projects.all(),
+                        predicate: (query) => {
+                            const key = query.queryKey as string[];
+                            return key.includes("attachments");
+                        },
+                    }),
+                ]);
+            }
+        },
+        onError: (_error, attachmentId, context) => {
+            // If deletion failed, restore the attachment data to cache if we had it
+            if (context?.previousAttachment) {
+                queryClient.setQueryData(queryKeys.attachments.detail(attachmentId), context.previousAttachment);
             }
         },
     });

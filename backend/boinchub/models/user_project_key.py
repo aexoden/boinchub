@@ -6,13 +6,55 @@
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
+import sqlalchemy.types as sa_types
+
+from sqlalchemy.engine import Dialect
 from sqlmodel import Field, Relationship, SQLModel, UniqueConstraint
 
+from boinchub.core.encryption import decrypt_account_key, encrypt_account_key
 from boinchub.models import Timestamps
 
 if TYPE_CHECKING:
     from boinchub.models.project import Project
     from boinchub.models.user import User
+
+
+class EncryptedAccountKey(sa_types.TypeDecorator):
+    """Custom SQLAlchemy type for encrypted account keys."""
+
+    impl = sa_types.String
+
+    cache_ok = True
+
+    def process_bind_param(self, value: str | None, dialect: Dialect) -> str:  # noqa: ARG002, PLR6301
+        """Encrypt the account key before storing it in the database.
+
+        Args:
+            value (str | None): The account key to encrypt.
+            dialect (Dialect): The SQLAlchemy dialect being used.
+
+        Returns:
+            str: The encrypted account key, or an empty string if the value is None or empty.
+
+        """
+        if not value:
+            return ""
+        return encrypt_account_key(value)
+
+    def process_result_value(self, value: str | None, dialect: Dialect) -> str:  # noqa: ARG002, PLR6301
+        """Decrypt the account key when retrieving it from the database.
+
+        Args:
+            value (str | None): The encrypted account key from the database.
+            dialect (Dialect): The SQLAlchemy dialect being used.
+
+        Returns:
+            str: The decrypted account key, or an empty string if the value is None or empty.
+
+        """
+        if not value:
+            return ""
+        return decrypt_account_key(value)
 
 
 class UserProjectKeyBase(SQLModel):
@@ -23,7 +65,7 @@ class UserProjectKeyBase(SQLModel):
     project_id: UUID = Field(foreign_key="projects.id", ondelete="CASCADE", index=True)
 
     # Account key
-    account_key: str = Field(default="")
+    account_key: str = Field(default="", sa_type=EncryptedAccountKey)
 
 
 class UserProjectKey(UserProjectKeyBase, Timestamps, table=True):

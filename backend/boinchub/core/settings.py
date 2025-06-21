@@ -9,6 +9,7 @@ from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 MINIMUM_SECRET_KEY_LENGTH = 32
+MINIMUM_ENCRYPTION_KEY_LENGTH = 32
 
 
 class Settings(BaseSettings):
@@ -40,6 +41,10 @@ class Settings(BaseSettings):
     secret_key: str = ""
     access_token_expire_minutes: int = 30
 
+    # Encryption settings for account keys
+    master_encryption_key: str = ""
+    encryption_salt: str = "boinchub_account_keys_salt_v1"
+
     @field_validator("secret_key")
     @classmethod
     def validate_secret_key(cls, value: str) -> str:
@@ -61,6 +66,31 @@ class Settings(BaseSettings):
 
         if len(value) < MINIMUM_SECRET_KEY_LENGTH:
             msg = f"SECRET_KEY must be at least {MINIMUM_SECRET_KEY_LENGTH} characters long"
+            raise ValueError(msg)
+
+        return value
+
+    @field_validator("master_encryption_key")
+    @classmethod
+    def validate_master_encryption_key(cls, value: str) -> str:
+        """Validate that the master encryption key is set and sufficiently complex.
+
+        Args:
+            value (str): The master encryption key to validate.
+
+        Returns:
+            str: The validated master encryption key.
+
+        Raises:
+            ValueError: If the master encryption key is not set or is too short.
+
+        """
+        if not value:
+            msg = "MASTER_ENCRYPTION_KEY must be set for account key encryption"
+            raise ValueError(msg)
+
+        if len(value) < MINIMUM_ENCRYPTION_KEY_LENGTH:
+            msg = f"MASTER_ENCRYPTION_KEY must be at least {MINIMUM_ENCRYPTION_KEY_LENGTH} characters long"
             raise ValueError(msg)
 
         return value

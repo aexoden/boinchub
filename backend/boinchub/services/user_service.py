@@ -148,20 +148,16 @@ class UserService(BaseService[User, UserCreate, UserUpdate]):
         # Check if this is a self-update
         is_self_update = current_user and current_user.id == user.id
 
-        # If user is changing their own password, require current password verification
-        if is_self_update and object_data.password and not object_data.current_password:
+        # If user is changing their own password or BOINC password, require current password verification
+        if is_self_update and (object_data.password or object_data.boinc_password) and not object_data.current_password:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Current password is required to change your own password",
             )
 
         # If the current password is provided, verify it
-        password_verified = False
-
-        if object_data.current_password:
-            if not verify_password(object_data.current_password, user.password_hash):
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Current password is incorrect")
-            password_verified = True
+        if object_data.current_password and not verify_password(object_data.current_password, user.password_hash):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Current password is incorrect")
 
         if object_data.username and object_data.username != user.username:
             # If changing username, ensure the current password is correct or a new password is provided
@@ -179,35 +175,42 @@ class UserService(BaseService[User, UserCreate, UserUpdate]):
 
         # Handle username changes
         username_changed = False
+        hash_username = update_data.get("username", user.username)
 
         if "username" in update_data and update_data["username"] != user.username:
             existing_user = self.get_by_username(update_data["username"])
             if existing_user and existing_user.id != user.id:
                 raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username is already taken")
-            username_changed = True
 
         # Handle password changes
-        password_changed = False
+        new_password = None
 
         if "password" in update_data:
             password = update_data.pop("password")
             update_data["password_hash"] = hash_password(password)
-            password_changed = True
+            new_password = password
 
-        # Recalculate BOINC password hash if username or password changed
-        if username_changed or password_changed:
-            new_username = update_data.get("username", user.username)
+        # Handle BOINC password changes
+        boinc_password = update_data.pop("boinc_password", None)
 
-            if password_changed and object_data.password:
-                update_data["boinc_password_hash"] = hash_boinc_password(new_username, object_data.password)
-            elif password_verified and object_data.current_password:
-                update_data["boinc_password_hash"] = hash_boinc_password(new_username, object_data.current_password)
-            else:
-                # A password is required to recalculate the BOINC password hash
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Username changes require a password to be provided to maintain BOINC compatibility",
-                )
+        if boinc_password:
+            # Explicit non-empty BOINC password
+            update_data["boinc_password_hash"] = hash_boinc_password(user.username, boinc_password)
+        elif new_password and boinc_password is None:
+            # Not set BOINC password, but new password is provided
+            if object_data.current_password:
+                expected_boinc_hash = hash_boinc_password(user.username, object_data.current_password)
+                if user.boinc_password_hash == expected_boinc_hash:
+                    update_data["boinc_password_hash"] = hash_boinc_password(user.username, new_password)
+        elif new_password:
+            # Explicit empty BOINC password, but new password is provided
+            update_data["boinc_password_hash"] = hash_boinc_password(user.username, new_password)
+        elif username_changed and object_data.current_password:
+            # Empty or not set BOINC password, but username changed
+            update_data["boinc_password_hash"] = hash_boinc_password(hash_username, object_data.current_password)
+        elif boinc_password == "" and object_data.current_password:  # noqa: PLC1901
+            # Explicit empty BOINC password, username and password unchanged
+            update_data["boinc_password_hash"] = hash_boinc_password(user.username, object_data.current_password)
 
         user.sqlmodel_update(update_data)
 

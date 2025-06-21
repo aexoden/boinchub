@@ -21,6 +21,7 @@ export interface UserUpdate {
     username?: string;
     email?: string;
     password?: string;
+    boinc_password?: string;
     role?: "user" | "admin" | "super_admin";
     is_active?: boolean;
     current_password?: string; // For validation purposes

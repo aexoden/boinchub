@@ -207,6 +207,7 @@ class UserUpdate(SQLModel):
     # User properties
     username: str | None = None
     password: str | None = None
+    boinc_password: str | None = None
     email: str | None = None
     role: str | None = None
     is_active: bool | None = None
@@ -231,6 +232,29 @@ class UserUpdate(SQLModel):
         """
         if value is not None and len(value) < settings.min_password_length:
             msg = f"Password must be at least {settings.min_password_length} characters long"
+            raise ValueError(msg)
+
+        return value
+
+    @field_validator("boinc_password")
+    @classmethod
+    def validate_boinc_password_length(cls, value: str | None) -> str | None:
+        """Validate that the BOINC password meets the minimum length requirement.
+
+        Empty strings are allowed to indicate a reset.
+
+        Args:
+            value (str | None): The BOINC password to validate.
+
+        Returns:
+            str | None: The validated BOINC password.
+
+        Raises:
+            ValueError: If the BOINC password is shorter than the minimum length.
+
+        """
+        if value and len(value) < settings.min_password_length:
+            msg = f"BOINC password must be at least {settings.min_password_length} characters long"
             raise ValueError(msg)
 
         return value

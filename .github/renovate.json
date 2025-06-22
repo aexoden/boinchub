@@ -1,0 +1,23 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:best-practices"
+    ],
+    "lockFileMaintenance": {
+        "enabled": true
+    },
+    "packageRules": [
+        {
+            "groupName": "{{manager}} patch dependencies",
+            "groupSlug": "{{manager}}-patch",
+            "matchPackageNames": [
+                "*"
+            ],
+            "matchUpdateTypes": [
+                "patch"
+            ]
+        }
+    ],
+    "rangeStrategy": "bump"
+
+}

@@ -93,6 +93,7 @@ def _create_app() -> FastAPI:
         RateLimitMiddleware,
         endpoints={
             "/api/v1/auth/login",
+            "/api/v1/auth/refresh",
             "/api/v1/users/register",
             "/boinc/rpc.php",
         },
@@ -109,7 +110,8 @@ def _create_app() -> FastAPI:
         ],
         allow_credentials=True,
         allow_methods=["*"],
-        allow_headers=["*"],
+        allow_headers=["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"],
+        expose_headers=["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"],
     )
 
     # Include routers

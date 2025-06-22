@@ -1,5 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
-import { TokenPair, RefreshTokenRequest, ApiError, ErrorResponse } from "../types";
+import { TokenResponse, ApiError, ErrorResponse } from "../types";
+import { tokenStorage } from "./token-storage";
+import { User } from "../types";
 
 // Create a base API client
 const apiClient: AxiosInstance = axios.create({
@@ -7,16 +9,13 @@ const apiClient: AxiosInstance = axios.create({
     headers: {
         "Content-Type": "application/json",
     },
+    withCredentials: true,
 });
 
 // Helper function to safely check if data matches ErrorResponse
 function isErrorResponse(data: unknown): data is ErrorResponse {
     return typeof data === "object" && data !== null && "detail" in data;
 }
-
-// Token storage helpers
-const TOKEN_STORAGE_KEY = "access_token";
-const REFRESH_TOKEN_STORAGE_KEY = "refresh_token";
 
 let isRefreshing = false;
 let failedQueue: {
@@ -39,7 +38,7 @@ const processQueue = (error: unknown, token: string | null = null) => {
 // Add a request interceptor to add the token to requests
 apiClient.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+        const token = tokenStorage.getAccessToken();
 
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
@@ -75,66 +74,50 @@ apiClient.interceptors.response.use(
                         return Promise.reject(err);
                     });
             }
+
             originalRequest._retry = true;
             isRefreshing = true;
 
-            const refreshToken = localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
+            try {
+                // Create a separate axios instance for the refresh request to avoid circular interceptor calls
+                const refreshClient = axios.create({
+                    baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8501",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    withCredentials: true,
+                });
 
-            if (refreshToken) {
-                try {
-                    const refreshRequest: RefreshTokenRequest = {
-                        refresh_token: refreshToken,
-                    };
+                const response = await refreshClient.post<TokenResponse>("/api/v1/auth/refresh", {});
+                const { access_token, expires_in } = response.data;
 
-                    // Create a separate axios instance for the refresh request to avoid circular interceptor calls
-                    const refreshClient = axios.create({
-                        baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8501",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                    });
+                // Store new tokens
+                tokenStorage.setAccessToken(access_token, expires_in);
 
-                    const response = await refreshClient.post<TokenPair>("/api/v1/auth/refresh", refreshRequest);
-                    const { access_token, refresh_token } = response.data;
-
-                    // Store new tokens
-                    localStorage.setItem(TOKEN_STORAGE_KEY, access_token);
-                    localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, refresh_token);
-
-                    // Update the authorization header for the original request
-                    if (originalRequest.headers) {
-                        originalRequest.headers.Authorization = `Bearer ${access_token}`;
-                    }
-
-                    // Process the queue with the new token
-                    processQueue(null, access_token);
-
-                    // Retry the original request
-                    return await apiClient(originalRequest);
-                } catch (refreshError) {
-                    // Refresh failed, clear tokens and redirect to login
-                    localStorage.removeItem(TOKEN_STORAGE_KEY);
-                    localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
-
-                    processQueue(refreshError, null);
-
-                    if (window.location.pathname !== "/login" && window.location.pathname !== "/register") {
-                        window.location.href = "/login";
-                    }
-
-                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                    return await Promise.reject(refreshError);
-                } finally {
-                    isRefreshing = false;
+                // Update the authorization header for the original request
+                if (originalRequest.headers) {
+                    originalRequest.headers.Authorization = `Bearer ${access_token}`;
                 }
-            } else {
-                // No refresh token available, redirect to login
-                localStorage.removeItem(TOKEN_STORAGE_KEY);
-                localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
+
+                // Process the queue with the new token
+                processQueue(null, access_token);
+
+                // Retry the original request
+                return await apiClient(originalRequest);
+            } catch (refreshError) {
+                // Refresh failed, clear tokens and redirect to login
+                tokenStorage.clearAccessToken();
+
+                processQueue(refreshError, null);
 
                 if (window.location.pathname !== "/login" && window.location.pathname !== "/register") {
                     window.location.href = "/login";
                 }
+
+                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                return await Promise.reject(refreshError);
+            } finally {
+                isRefreshing = false;
             }
         }
 
@@ -150,53 +133,70 @@ apiClient.interceptors.response.use(
 
 // Authentication service
 export const authService = {
-    login: async (username: string, password: string): Promise<TokenPair> => {
+    login: async (username: string, password: string): Promise<TokenResponse> => {
         const formData = new FormData();
         formData.append("username", username);
         formData.append("password", password);
 
-        const response = await apiClient.post<TokenPair>("/api/v1/auth/login", formData, {
+        const response = await apiClient.post<TokenResponse>("/api/v1/auth/login", formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
             },
         });
 
-        const { access_token, refresh_token } = response.data;
+        const { access_token, expires_in } = response.data;
 
         // Store tokens in localStorage
-        localStorage.setItem(TOKEN_STORAGE_KEY, access_token);
-        localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, refresh_token);
+        tokenStorage.setAccessToken(access_token, expires_in);
 
         return response.data;
     },
 
     logout: async (): Promise<void> => {
-        // Call the backend logout endpoint if we have a token
-        const token = localStorage.getItem(TOKEN_STORAGE_KEY);
-
-        if (token) {
-            try {
-                await apiClient.post("/api/v1/auth/logout");
-            } catch (error) {
-                console.warn("Logout failed:", error);
-            }
+        // Call the backend logout endpoint (this will clear the refresh token cookie)
+        try {
+            await apiClient.post("/api/v1/auth/logout");
+        } catch (error) {
+            console.warn("Logout failed:", error);
+        } finally {
+            tokenStorage.clearAccessToken();
         }
+    },
 
-        // Clear tokens from localStorage
-        localStorage.removeItem(TOKEN_STORAGE_KEY);
-        localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
+    refresh: async (): Promise<TokenResponse> => {
+        const response = await apiClient.post<TokenResponse>("/api/v1/auth/refresh");
+        const { access_token, expires_in } = response.data;
+
+        tokenStorage.setAccessToken(access_token, expires_in);
+
+        return response.data;
     },
 
     isAuthenticated: (): boolean => {
-        return !!localStorage.getItem(TOKEN_STORAGE_KEY);
+        return tokenStorage.hasAccessToken() && !tokenStorage.isTokenExpired();
+    },
+
+    getCurrentUser: async (): Promise<User> => {
+        try {
+            const response = await apiClient.get<User>("/api/v1/auth/me");
+            return response.data;
+        } catch (error) {
+            // If the request fails, clear the access token
+            tokenStorage.clearAccessToken();
+            throw error;
+        }
     },
 
     getAccessToken: (): string | null => {
-        return localStorage.getItem(TOKEN_STORAGE_KEY);
+        return tokenStorage.getAccessToken();
     },
 
-    getRefershToken: (): string | null => {
-        return localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
+    getTokenExpiration: (): Date | null => {
+        return tokenStorage.getTokenExpiration();
+    },
+
+    isTokenExpired: (bufferSeconds = 60): boolean => {
+        return tokenStorage.isTokenExpired(bufferSeconds);
     },
 };
 

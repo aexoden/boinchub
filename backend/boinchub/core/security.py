@@ -40,10 +40,12 @@ class TokenPair(SQLModel):
     expires_in: int = ACCESS_TOKEN_EXPIRE_MINUTES * 60
 
 
-class RefreshTokenRequest(SQLModel):
-    """Model for refresh token request."""
+class TokenResponse(SQLModel):
+    """Model for access token response."""
 
-    refresh_token: str
+    access_token: str
+    token_type: str = "bearer"  # noqa: S105
+    expires_in: int = ACCESS_TOKEN_EXPIRE_MINUTES * 60
 
 
 def hash_password(password: str) -> str:
@@ -203,11 +205,10 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Annotate
     try:
         payload = decode_token(token)
         user_id: UUID | None = payload.get("sub")
-        token_type: str | None = payload.get("type")
 
-        if not user_id or token_type != "access":  # noqa: S105
+        if not user_id:
             raise credentials_exception
-    except JWTError as e:
+    except (JWTError, ValueError) as e:
         raise credentials_exception from e
 
     # Import here to avoid circular dependency
@@ -223,16 +224,16 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Annotate
 
 
 def get_current_user_if_active(current_user: Annotated[User, Depends(get_current_user)]) -> User:
-    """Get the current user if they are active.
+    """Get the current user if their account is active.
 
     Args:
         current_user (User): The current authenticated user.
 
     Returns:
-        User: The authenticated active user.
+        User: The authenticated user if their account is active.
 
     Raises:
-        HTTPException: If the user is inactive.
+        HTTPException: If the user's account is inactive.
 
     """
     if not current_user.is_active:
@@ -241,12 +242,12 @@ def get_current_user_if_active(current_user: Annotated[User, Depends(get_current
     return current_user
 
 
-def extract_device_info(user_agent: str, ip_address: str) -> dict[str, str]:
+def extract_device_info(user_agent: str, client_ip: str) -> dict[str, str]:
     """Extract device information from request headers.
 
     Args:
         user_agent (str): The user agent string from the request.
-        ip_address (str): The IP address of the request.
+        client_ip (str): The IP address of the client.
 
     Returns:
         dict[str, str]: A dictionary containing device information.
@@ -254,16 +255,19 @@ def extract_device_info(user_agent: str, ip_address: str) -> dict[str, str]:
     """
     device_name = "Unknown Device"
 
-    if "Chrome" in user_agent:
-        device_name = "Chrome Browser"
-    elif "Firefox" in user_agent:
-        device_name = "Firefox Browser"
-    elif "Safari" in user_agent:
-        device_name = "Safari Browser"
-    elif "Edge" in user_agent:
-        device_name = "Edge Browser"
+    if "Mobile" in user_agent:
+        device_name = "Mobile Device"
+    elif "Tablet" in user_agent:
+        device_name = "Tablet"
+    elif "Windows" in user_agent:
+        device_name = "Windows Computer"
+    elif "Mac" in user_agent:
+        device_name = "Mac Computer"
+    elif "Linux" in user_agent:
+        device_name = "Linux Computer"
 
-    device_fingerprint = hashlib.sha256(f"{user_agent}{ip_address}".encode()).hexdigest()
+    fingerprint_data = f"{user_agent}:{client_ip}"
+    device_fingerprint = hashlib.sha256(fingerprint_data.encode()).hexdigest()
 
     return {
         "device_name": device_name,

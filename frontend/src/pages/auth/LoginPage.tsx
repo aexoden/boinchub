@@ -3,6 +3,7 @@ import { Link, Navigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useConfig } from "../../contexts/ConfigContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
+import { UserCredentials } from "../../types";
 
 export default function LoginPage() {
     const [username, setUsername] = useState("");
@@ -22,7 +23,8 @@ export default function LoginPage() {
         }
 
         try {
-            await login({ username, password });
+            const credentials: UserCredentials = { username, password };
+            await login(credentials);
         } catch (_error) {
             // Error is handled in the auth context
         }
@@ -72,6 +74,7 @@ export default function LoginPage() {
                                 }}
                                 className="relative block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-primary-500 focus:ring-primary-500 focus:outline-none sm:text-sm"
                                 placeholder="Username"
+                                disabled={loading}
                             />
                         </div>
                         <div>
@@ -90,17 +93,22 @@ export default function LoginPage() {
                                 }}
                                 className="relative block w-full appearance-none rounded-none rounded-b-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-primary-500 focus:ring-primary-500 focus:outline-none sm:text-sm"
                                 placeholder="Password"
+                                disabled={loading}
                             />
                         </div>
                     </div>
 
-                    {(errorMessage || error) && <div className="text-sm text-red-500">{errorMessage || error}</div>}
+                    {(errorMessage || error) && (
+                        <div className="rounded-md bg-red-50 p-4">
+                            <div className="text-sm text-red-700">{errorMessage || error}</div>
+                        </div>
+                    )}
 
                     <div>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="group relative flex w-full justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none"
+                            className="group relative flex w-full justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {loading ? "Signing in..." : "Sign in"}
                         </button>

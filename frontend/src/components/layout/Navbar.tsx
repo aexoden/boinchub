@@ -24,7 +24,9 @@ export default function Navbar() {
                                     <button
                                         type="button"
                                         className="rounded-md bg-primary-600 p-2 hover:bg-primary-800"
-                                        onClick={logout}
+                                        onClick={() => {
+                                            void logout();
+                                        }}
                                     >
                                         Logout
                                     </button>

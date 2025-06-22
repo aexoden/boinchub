@@ -6,42 +6,82 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
+from fastapi import APIRouter, Cookie, Depends, Header, HTTPException, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from boinchub.core.security import (
-    RefreshTokenRequest,
-    TokenPair,
+    TokenResponse,
     create_token_pair,
     decode_token,
     extract_device_info,
     get_current_user_if_active,
 )
-from boinchub.models.user import User
+from boinchub.core.settings import settings
+from boinchub.models.user import User, UserPublic
 from boinchub.models.user_session import UserSessionPublic
 from boinchub.services.session_service import SessionService, get_session_service
 from boinchub.services.user_service import UserService, get_user_service
 
 router = APIRouter(prefix="/api/v1/auth", tags=["authentication"])
 
+# Cookie settings for refresh tokens
+REFRESH_TOKEN_COOKIE_NAME = "refresh_token"  # noqa: S105
+REFRESH_TOKEN_COOKIE_MAX_AGE = 7 * 24 * 60 * 60
+
+
+def set_refresh_token_cookie(response: Response, refresh_token: str) -> None:
+    """Set the refresh token in a secure cookie.
+
+    Args:
+        response (Response): The HTTP response object.
+        refresh_token (str): The refresh token to set in the cookie.
+
+    """
+    response.set_cookie(
+        key=REFRESH_TOKEN_COOKIE_NAME,
+        value=refresh_token,
+        max_age=REFRESH_TOKEN_COOKIE_MAX_AGE,
+        httponly=True,
+        secure=settings.environment == "production",
+        samesite="strict",
+        path="/api/v1/auth",
+    )
+
+
+def clear_refresh_token_cookie(response: Response) -> None:
+    """Clear the refresh token cookie.
+
+    Args:
+        response (Response): The HTTP response object.
+
+    """
+    response.delete_cookie(
+        key=REFRESH_TOKEN_COOKIE_NAME,
+        path="/api/v1/auth",
+        secure=settings.environment == "production",
+        samesite="strict",
+    )
+
 
 @router.post("/login")
 async def login_for_access_token(
+    response: Response,
     request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     user_service: Annotated[UserService, Depends(get_user_service)],
     session_service: Annotated[SessionService, Depends(get_session_service)],
-) -> TokenPair:
+) -> TokenResponse:
     """Generate access and refresh tokens for a user.
 
     Args:
+        response (Response): The HTTP response object to set cookies.
         request (Request): The HTTP request object.
         form_data (OAuth2PasswordRequestForm): The form data containing username and password.
         user_service (UserService): The user service for database operations.
         session_service (SessionService): The session service for managing user sessions.
 
     Returns:
-        TokenPair: The generated access and refresh tokens.
+        TokenResponse: The access token and expiration information (refresh token set as cookie)
 
     Raises:
         HTTPException: If authentication fails.
@@ -71,35 +111,54 @@ async def login_for_access_token(
         ip_address=client_ip,
     )
 
+    # Set refresh token as secure cookie
+    set_refresh_token_cookie(response, token_pair.refresh_token)
+
+    # Return only access token
+    return TokenResponse(
+        access_token=token_pair.access_token,
+        token_type="bearer",  # noqa: S106
+        expires_in=token_pair.expires_in,
+    )
+
     return token_pair
 
 
 @router.post("/refresh")
 async def refresh_access_token(
+    response: Response,
     request: Request,
-    refresh_request: RefreshTokenRequest,
     session_service: Annotated[SessionService, Depends(get_session_service)],
     user_service: Annotated[UserService, Depends(get_user_service)],
-) -> TokenPair:
-    """Refresh the access token using a valid refresh token.
+    refresh_token: Annotated[str | None, Cookie(alias=REFRESH_TOKEN_COOKIE_NAME)] = None,
+) -> TokenResponse:
+    """Refresh the access token using the refresh token from cookies.
 
     Args:
+        response (Response): The HTTP response object to set cookies.
         request (Request): The HTTP request object.
-        refresh_request (RefreshTokenRequest): The request containing the refresh token.
         session_service (SessionService): The session service for managing user sessions.
         user_service (UserService): The user service for database operations.
+        refresh_token (str | None): The refresh token from the cookie.
 
     Returns:
-        TokenPair: The new access and refresh tokens.
+        TokenResponse: The new access token and expiration information (refresh token updated in cookie)
 
     Raises:
         HTTPException: If the refresh token is invalid or expired.
 
     """
-    # Validate refersh token and get session
-    session = session_service.get_session_by_refresh_token(refresh_request.refresh_token)
+    # Validate refresh token and get session
+    if not refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token not found",
+        )
+
+    session = session_service.get_session_by_refresh_token(refresh_token)
 
     if not session:
+        clear_refresh_token_cookie(response)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired refresh token",
@@ -110,6 +169,7 @@ async def refresh_access_token(
 
     if not user or not user.is_active:
         session_service.revoke_session(session.id)
+        clear_refresh_token_cookie(response)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User account is inactive")
 
     # Create new token pair
@@ -119,19 +179,27 @@ async def refresh_access_token(
     client_ip = request.client.host if request.client else session.ip_address
     session_service.update_session_access(session.id, token_pair.refresh_token, client_ip)
 
-    return token_pair
+    # Update refresh token cookie with new token
+    set_refresh_token_cookie(response, token_pair.refresh_token)
+
+    # Return new access token
+    return TokenResponse(
+        access_token=token_pair.access_token,
+        token_type="bearer",  # noqa: S106
+        expires_in=token_pair.expires_in,
+    )
 
 
 @router.post("/logout")
 async def logout(
-    _current_user: Annotated[User, Depends(get_current_user_if_active)],
+    response: Response,
     session_service: Annotated[SessionService, Depends(get_session_service)],
     authorization: Annotated[str | None, Header()] = None,
 ) -> dict[str, str]:
     """Logout the current user session.
 
     Args:
-        current_user (User): The currently authenticated user.
+        response (Response): The HTTP response object to clear cookies.
         session_service (SessionService): The session service for managing user sessions.
         authorization (str | None): The Authorization header containing the access token.
 
@@ -142,27 +210,46 @@ async def logout(
         HTTPException: If the Authorization header is missing or invalid.
 
     """
-    # In theory, we'll never get to this point without an access token, but the type checker doesn't know that
-    if not authorization:
+    # Validate the authorization header
+    if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authorization header is missing",
+            detail="Authorization header missing or invalid",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
     # Extract session ID from access token
     try:
-        token = authorization.replace("Bearer ", "")
+        # Extract token from header
+        token = authorization.split(" ")[1]
+
+        # Decode token to get session ID
         payload = decode_token(token)
         session_id = payload.get("session_id")
 
         if session_id:
-            session_service.revoke_session(session_id)
+            session_service.revoke_session(UUID(session_id))
     except Exception:  # noqa: BLE001, S110
-        # Even if we can't decode the token, still return success
+        # Even if token processing fails, we should still clear the cookie
         pass
 
+    # Clear the refresh token cookie
+    clear_refresh_token_cookie(response)
+
     return {"message": "Successfully logged out"}
+
+
+@router.get("/me")
+async def get_current_user(
+    current_user: Annotated[User, Depends(get_current_user_if_active)],
+) -> UserPublic:
+    """Get the currently authenticated user.
+
+    Returns:
+        UserPublic: The public representation of the current user.
+
+    """
+    return UserPublic.model_validate(current_user)
 
 
 @router.post("/logout-all")

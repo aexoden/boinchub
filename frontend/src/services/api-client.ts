@@ -11,6 +11,7 @@ const apiClient: AxiosInstance = axios.create({
         "Content-Type": "application/json",
     },
     withCredentials: true,
+    timeout: 15000,
 });
 
 // Helper function to safely check if data matches ErrorResponse
@@ -85,8 +86,10 @@ apiClient.interceptors.response.use(
                     baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8501",
                     headers: {
                         "Content-Type": "application/json",
+                        "Accept": "application/json",
                     },
                     withCredentials: true,
+                    timeout: 10000,
                 });
 
                 const response = await refreshClient.post<TokenResponse>("/api/v1/auth/refresh", {});

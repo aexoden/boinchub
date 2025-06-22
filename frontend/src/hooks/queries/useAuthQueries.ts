@@ -10,7 +10,7 @@ export function useCurrentUserQuery() {
     return useQuery({
         queryKey: queryKeys.auth.currentUser(),
         queryFn: userService.getCurrentUser,
-        enabled: authService.isAuthenticated(),
+        enabled: true,
         retry: (failureCount, error) => {
             if (error instanceof Error && "status" in error) {
                 const status = error.status;
@@ -20,10 +20,14 @@ export function useCurrentUserQuery() {
                 }
             }
 
-            return failureCount < 3;
+            return failureCount < 2;
         },
         staleTime: 5 * 60 * 1000,
         gcTime: 10 * 60 * 1000,
+        networkMode: "always",
+        meta: {
+            errorMessage: false,
+        },
     });
 }
 

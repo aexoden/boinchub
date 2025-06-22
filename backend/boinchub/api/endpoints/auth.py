@@ -121,8 +121,6 @@ async def login_for_access_token(
         expires_in=token_pair.expires_in,
     )
 
-    return token_pair
-
 
 @router.post("/refresh")
 async def refresh_access_token(

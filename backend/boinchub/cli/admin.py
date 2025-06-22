@@ -63,6 +63,7 @@ def create_admin(username: str, email: str, password: str | None = None, *, supe
                 password=password,
                 email=email,
                 role=role,
+                invite_code=None,  # Invite code is not used in CLI
             )
 
             user = user_service.create(user_data)

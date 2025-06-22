@@ -5,6 +5,7 @@ import { useUpdateCurrentUserMutation } from "../../hooks/queries";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import ProjectKeysManagement from "../../components/settings/ProjectKeysManagement";
+import SessionManagement from "../../components/settings/SessionManagement";
 
 export default function SettingsPage() {
     const { config } = useConfig();
@@ -180,13 +181,16 @@ export default function SettingsPage() {
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-gray-900">Account Settings</h1>
                 <p className="mt-1 text-gray-600">
-                    Manage your account settings, project keys, and change your passwords
+                    Manage your account settings, project keys, sessions, and change your passwords
                 </p>
             </div>
 
             <div className="space-y-6">
                 {/* Project Keys Management */}
                 <ProjectKeysManagement />
+
+                {/* Session Management */}
+                <SessionManagement />
 
                 {/* Message Display */}
                 {message && (

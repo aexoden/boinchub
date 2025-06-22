@@ -7,6 +7,9 @@ export { useConfigQuery } from "./useConfigQueries";
 // Auth queries
 export { useCurrentUserQuery, useLoginMutation, useRegisterMutation, useLogoutMutation } from "./useAuthQueries";
 
+// Session queries
+export { useUserSessionsQuery, useRevokeSessionMutation, useLogoutAllOtherSessionsMutation } from "./useSessionQueries";
+
 // User queries
 export {
     useUsersQuery,

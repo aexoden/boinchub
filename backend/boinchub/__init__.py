@@ -30,6 +30,7 @@ from boinchub.api.endpoints import (
 )
 from boinchub.core.middleware import RateLimitMiddleware
 from boinchub.core.settings import settings
+from boinchub.tasks.user_session import SessionCleanupTask
 
 # Configure logging
 logging.basicConfig(
@@ -39,7 +40,7 @@ logging.basicConfig(
 
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncGenerator[None, Any]:  # noqa: RUF029
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None, Any]:
     """Lifespan context manager for the FastAPI application.
 
     Yields:
@@ -61,7 +62,14 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, Any]:  # noqa: RUF029
         logger.exception("Configuration error")
         raise
 
+    # Initialize session cleanup task
+    session_cleanup_task = SessionCleanupTask()
+    session_cleanup_task.start_background_task()
+
     yield
+
+    logger.info("Shutting down BoincHub v%s", __version__)
+    await session_cleanup_task.stop()
 
 
 def _create_app() -> FastAPI:

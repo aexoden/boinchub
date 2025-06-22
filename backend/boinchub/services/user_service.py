@@ -157,7 +157,7 @@ class UserService(BaseService[User, UserCreate, UserUpdate]):
 
         # If the current password is provided, verify it
         if object_data.current_password and not verify_password(object_data.current_password, user.password_hash):
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Current password is incorrect")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect")
 
         if object_data.username and object_data.username != user.username:
             # If changing username, ensure the current password is correct or a new password is provided
@@ -172,6 +172,7 @@ class UserService(BaseService[User, UserCreate, UserUpdate]):
                 raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username is already taken")
 
         update_data = object_data.model_dump(exclude_none=True)
+        update_data.pop("current_password")
 
         # Handle username changes
         username_changed = False

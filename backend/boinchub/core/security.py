@@ -5,8 +5,10 @@
 
 import datetime
 import hashlib
+import secrets
 
 from typing import Annotated, Any
+from uuid import UUID
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
@@ -23,16 +25,25 @@ from boinchub.models.user import User
 SECRET_KEY = settings.secret_key
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
+REFRESH_TOKEN_EXPIRE_DAYS = settings.refresh_token_expire_days
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 _password_hasher = PasswordHasher()
 
 
-class Token(SQLModel):
-    """Model for JWT token response."""
+class TokenPair(SQLModel):
+    """Model for access/refresh token pair response."""
 
     access_token: str
-    token_type: str
+    refresh_token: str
+    token_type: str = "bearer"  # noqa: S105
+    expires_in: int = ACCESS_TOKEN_EXPIRE_MINUTES * 60
+
+
+class RefreshTokenRequest(SQLModel):
+    """Model for refresh token request."""
+
+    refresh_token: str
 
 
 def hash_password(password: str) -> str:
@@ -79,6 +90,29 @@ def verify_password(password: str, password_hash: str) -> bool:
         return False
 
 
+def generate_refresh_token() -> str:
+    """Generate a cryptographically secure refresh token.
+
+    Returns:
+        str: A securely generated refresh token.
+
+    """
+    return secrets.token_urlsafe(32)
+
+
+def hash_refresh_token(token: str) -> str:
+    """Hash a refresh token for secure storage.
+
+    Args:
+        token (str): The refresh token to hash.
+
+    Returns:
+        str: The hashed refresh token.
+
+    """
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
 def create_access_token(data: dict[str, Any], expires_delta: datetime.timedelta | None = None) -> str:
     """Create a JWT access token.
 
@@ -97,9 +131,53 @@ def create_access_token(data: dict[str, Any], expires_delta: datetime.timedelta 
     else:
         expire = datetime.datetime.now(tz=datetime.UTC) + datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": expire, "iat": datetime.datetime.now(tz=datetime.UTC), "type": "access"})
 
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def create_token_pair(user_id: UUID, session_id: UUID) -> TokenPair:
+    """Create a complete access/refresh token pair.
+
+    Args:
+        user_id (UUID): The ID of the user.
+        session_id (UUID): The ID of the user session.
+
+    Returns:
+        TokenPair: The generated token pair
+
+    """
+    # Create access token with user and session information
+    access_token_expires = datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={
+            "sub": str(user_id),
+            "session_id": str(session_id),
+        },
+        expires_delta=access_token_expires,
+    )
+
+    # Generate refresh token
+    refresh_token = generate_refresh_token()
+
+    return TokenPair(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    )
+
+
+def decode_token(token: str) -> dict[str, Any]:
+    """Decode and validate a JWT token.
+
+    Args:
+        token (str): The JWT token to decode.
+
+    Returns:
+        dict[str, Any]: The decoded token payload.
+
+    """
+    return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
 
 def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Annotated[Session, Depends(get_db)]) -> User:
@@ -110,10 +188,10 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Annotate
         db (Session): The database session.
 
     Returns:
-        user: The authenticated user.
+        User: The authenticated user.
 
     Raises:
-        HTTPException: If the token is invalid or the user does not exist.
+        HTTPException: If the token is invalid or the user doesn't exist.
 
     """  # noqa: DOC502
     credentials_exception = HTTPException(
@@ -123,10 +201,11 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Annotate
     )
 
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
+        payload = decode_token(token)
+        user_id: UUID | None = payload.get("sub")
+        token_type: str | None = payload.get("type")
 
-        if not isinstance(username, str):
+        if not user_id or token_type != "access":  # noqa: S105
             raise credentials_exception
     except JWTError as e:
         raise credentials_exception from e
@@ -135,7 +214,7 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Annotate
     from boinchub.services.user_service import UserService  # noqa: PLC0415
 
     user_service = UserService(db)
-    user = user_service.get_by_username(username)
+    user = user_service.get(user_id)
 
     if user is None:
         raise credentials_exception
@@ -147,10 +226,10 @@ def get_current_user_if_active(current_user: Annotated[User, Depends(get_current
     """Get the current user if they are active.
 
     Args:
-        current_user (User): The current user.
+        current_user (User): The current authenticated user.
 
     Returns:
-        User: The user object if the user is active.
+        User: The authenticated active user.
 
     Raises:
         HTTPException: If the user is inactive.
@@ -160,3 +239,33 @@ def get_current_user_if_active(current_user: Annotated[User, Depends(get_current
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
 
     return current_user
+
+
+def extract_device_info(user_agent: str, ip_address: str) -> dict[str, str]:
+    """Extract device information from request headers.
+
+    Args:
+        user_agent (str): The user agent string from the request.
+        ip_address (str): The IP address of the request.
+
+    Returns:
+        dict[str, str]: A dictionary containing device information.
+
+    """
+    device_name = "Unknown Device"
+
+    if "Chrome" in user_agent:
+        device_name = "Chrome Browser"
+    elif "Firefox" in user_agent:
+        device_name = "Firefox Browser"
+    elif "Safari" in user_agent:
+        device_name = "Safari Browser"
+    elif "Edge" in user_agent:
+        device_name = "Edge Browser"
+
+    device_fingerprint = hashlib.sha256(f"{user_agent}{ip_address}".encode()).hexdigest()
+
+    return {
+        "device_name": device_name,
+        "device_fingerprint": device_fingerprint,
+    }

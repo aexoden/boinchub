@@ -39,11 +39,17 @@ class Settings(BaseSettings):
 
     # JWT settings
     secret_key: str = ""
-    access_token_expire_minutes: int = 30
+    access_token_expire_minutes: int = 15
+    refresh_token_expire_days: int = 30
 
     # Encryption settings for account keys
     master_encryption_key: str = ""
     encryption_salt: str = "boinchub_account_keys_salt_v1"
+
+    # Session management settings
+    max_sessions_per_user: int = 50
+    session_cleanup_interval_hours: int = 24
+    inactive_session_retention_days: int = 7
 
     @field_validator("secret_key")
     @classmethod

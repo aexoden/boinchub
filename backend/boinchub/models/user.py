@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from boinchub.models.computer import Computer
     from boinchub.models.preference_group import PreferenceGroup
     from boinchub.models.user_project_key import UserProjectKey
+    from boinchub.models.user_session import UserSession
 
 
 def validate_role(value: str) -> str:
@@ -121,6 +122,7 @@ class User(UserBase, Timestamps, table=True):
     computers: list["Computer"] = Relationship(back_populates="user", cascade_delete=True)
     preference_groups: list["PreferenceGroup"] = Relationship(back_populates="user", cascade_delete=True)
     project_keys: list["UserProjectKey"] = Relationship(back_populates="user", cascade_delete=True)
+    sessions: list["UserSession"] = Relationship(back_populates="user", cascade_delete=True)
 
     # User properties
     password_hash: str

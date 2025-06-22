@@ -27,6 +27,21 @@ export interface UserUpdate {
     current_password?: string; // For validation purposes
 }
 
+// Session related types
+export interface UserSession {
+    id: string;
+    user_id: string;
+    device_name: string;
+    device_fingerprint: string;
+    user_agent: string;
+    ip_address: string;
+    is_active: boolean;
+    last_accessed_at: string;
+    created_at: string;
+    updated_at: string;
+    is_current?: boolean;
+}
+
 // Computer related types
 export interface Computer {
     id: string;
@@ -154,9 +169,14 @@ export interface ProjectAttachmentUpdate {
 }
 
 // Authentication related types
-export interface AuthResponse {
+export interface TokenPair {
     access_token: string;
+    refresh_token: string;
     token_type: string;
+}
+
+export interface RefreshTokenRequest {
+    refresh_token: string;
 }
 
 export interface ErrorResponse {

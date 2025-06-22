@@ -120,7 +120,7 @@ requires-dist = [
     { name = "psycopg2", specifier = ">=2.9.10" },
     { name = "pydantic", specifier = ">=2.11.7" },
     { name = "pydantic-settings", specifier = ">=2.10.0" },
-    { name = "pydantic-xml", specifier = ">=2.16.0" },
+    { name = "pydantic-xml", specifier = ">=2.17.2" },
     { name = "python-jose", extras = ["cryptography"], specifier = ">=3.4.0" },
     { name = "sqlmodel", specifier = ">=0.0.24" },
     { name = "types-lxml", specifier = ">=2025.3.30" },
@@ -582,15 +582,15 @@ wheels = [
 
 [[package]]
 name = "pydantic-xml"
-version = "2.16.0"
+version = "2.17.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "pydantic-core" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/dc/d0/3db5753708c7e0c26ff83168d7a40082cf06f0314123f8595df889f39ec2/pydantic_xml-2.16.0.tar.gz", hash = "sha256:64ae5d8538a23706471f0b2007c9252ef290dff40c216dbc3051c79030aaf03f", size = 25330, upload-time = "2025-04-20T09:56:07.37Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d8/7a/1a801e578ee6c9e7707de9eef0b7b232381a77e00ecdc5dfa3ccb2565721/pydantic_xml-2.17.2.tar.gz", hash = "sha256:0e0f2ae84518198373b593eca58bba12b08c1a7ace368dd4ed12b60babc8182d", size = 25871, upload-time = "2025-06-21T15:16:04.595Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a1/6b/c824b29d2559ed08efe9eb53d7d1f350548a3123a71ea78afc7dbb581876/pydantic_xml-2.16.0-py3-none-any.whl", hash = "sha256:e1ecd513287e30070ce0a9f8c0e461187ebf5b18da79ca62f5dd4219fb93b68e", size = 40968, upload-time = "2025-04-20T09:56:05.966Z" },
+    { url = "https://files.pythonhosted.org/packages/66/00/0492d88608d5cdf53f9883fe3274874f4ee8d6f5003ef059cd55c12fe82c/pydantic_xml-2.17.2-py3-none-any.whl", hash = "sha256:3990908939ecc18f304045f3ee544bbdb68e253248fde20dc1af6829e80c03f5", size = 42113, upload-time = "2025-06-21T15:16:03.241Z" },
 ]
 
 [[package]]

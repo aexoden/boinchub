@@ -25,30 +25,11 @@ export default function SessionManagement() {
 
     // Helper function to get a readable device name
     const getDeviceName = (session: UserSession) => {
-        // Ignore the device name because they're useless
-        // if (session.device_name && session.device_name !== "Unknown Device") {
-        //    return session.device_name;
-        // }
+        if (session.device_name) {
+            return session.device_name;
+        }
 
-        // Try to extract browser and OS info from user agent
-        const ua = session.user_agent.toLowerCase();
-        let browser = "Unknown Browser";
-        let os = "Unknown OS";
-
-        // Detect browser
-        if (ua.includes("chrome")) browser = "Chrome";
-        else if (ua.includes("firefox")) browser = "Firefox";
-        else if (ua.includes("safari")) browser = "Safari";
-        else if (ua.includes("edge")) browser = "Edge";
-
-        // Detect OS
-        if (ua.includes("windows")) os = "Windows";
-        else if (ua.includes("mac")) os = "macOS";
-        else if (ua.includes("linux")) os = "Linux";
-        else if (ua.includes("android")) os = "Android";
-        else if (ua.includes("iphone") || ua.includes("ipad")) os = "iOS";
-
-        return `${browser} on ${os}`;
+        return "Unknown Device";
     };
 
     // Helper function to get location info (simplified)

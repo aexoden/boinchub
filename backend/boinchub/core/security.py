@@ -10,6 +10,8 @@ import secrets
 from typing import Annotated, Any
 from uuid import UUID
 
+import user_agents
+
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from fastapi import Depends, HTTPException, status
@@ -253,23 +255,12 @@ def extract_device_info(user_agent: str, client_ip: str) -> dict[str, str]:
         dict[str, str]: A dictionary containing device information.
 
     """
-    device_name = "Unknown Device"
-
-    if "Mobile" in user_agent:
-        device_name = "Mobile Device"
-    elif "Tablet" in user_agent:
-        device_name = "Tablet"
-    elif "Windows" in user_agent:
-        device_name = "Windows Computer"
-    elif "Mac" in user_agent:
-        device_name = "Mac Computer"
-    elif "Linux" in user_agent:
-        device_name = "Linux Computer"
+    user_agent_parsed = user_agents.parse(user_agent)
 
     fingerprint_data = f"{user_agent}:{client_ip}"
     device_fingerprint = hashlib.sha256(fingerprint_data.encode()).hexdigest()
 
     return {
-        "device_name": device_name,
+        "device_name": str(user_agent_parsed),
         "device_fingerprint": device_fingerprint,
     }

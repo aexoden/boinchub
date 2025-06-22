@@ -1,13 +1,14 @@
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import React, { useState } from "react";
-import { Project, ProjectCreate, ProjectUpdate } from "../../types";
+
 import {
-    useProjectsQuery,
     useCreateProjectMutation,
-    useUpdateProjectMutation,
     useDeleteProjectMutation,
+    useProjectsQuery,
+    useUpdateProjectMutation,
 } from "../../hooks/queries";
 import { usePageTitle } from "../../hooks/usePageTitle";
-import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { Project, ProjectCreate, ProjectUpdate } from "../../types";
 
 export default function ProjectsPage() {
     const { data: projects = [], isLoading: loading, error } = useProjectsQuery();

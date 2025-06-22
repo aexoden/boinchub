@@ -1,5 +1,6 @@
-import apiClient from "./api-client";
 import { UserSession } from "../types";
+
+import apiClient from "./api-client";
 
 export const sessionService = {
     // Get all sessions for the current user

@@ -1,5 +1,5 @@
-import { useConfigQuery } from "../../hooks/queries";
 import { ConfigContext } from "../../contexts/ConfigContext";
+import { useConfigQuery } from "../../hooks/queries";
 
 export default function ConfigProvider({ children }: { children: React.ReactNode }) {
     const { data: config, isLoading: loading, error } = useConfigQuery();

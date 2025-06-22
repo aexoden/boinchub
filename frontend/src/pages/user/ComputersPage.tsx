@@ -1,17 +1,18 @@
-import { Link } from "react-router";
-import {
-    useCurrentUserComputersQuery,
-    useProjectsQuery,
-    useComputerAttachmentsQuery,
-    usePreferenceGroupsQuery,
-} from "../../hooks/queries";
-import { Computer } from "../../types";
-import ResourceUsageDisplay from "../../components/common/ResourceUsageDisplay";
-import AttachmentStatusDisplay from "../../components/common/AttachmentStatusDisplay";
-import { useConfig } from "../../contexts/ConfigContext";
-import { usePageTitle } from "../../hooks/usePageTitle";
-import { formatDate } from "../../util/date";
 import { useMemo } from "react";
+import { Link } from "react-router";
+
+import AttachmentStatusDisplay from "../../components/common/AttachmentStatusDisplay";
+import ResourceUsageDisplay from "../../components/common/ResourceUsageDisplay";
+import { useConfig } from "../../contexts/ConfigContext";
+import {
+    useComputerAttachmentsQuery,
+    useCurrentUserComputersQuery,
+    usePreferenceGroupsQuery,
+    useProjectsQuery,
+} from "../../hooks/queries";
+import { usePageTitle } from "../../hooks/usePageTitle";
+import { Computer } from "../../types";
+import { formatDate } from "../../util/date";
 
 export default function ComputersPage() {
     const { config } = useConfig();

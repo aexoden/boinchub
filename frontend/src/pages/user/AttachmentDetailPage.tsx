@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router";
-import { ProjectAttachmentUpdate } from "../../types";
+import { useNavigate, useParams } from "react-router";
+
 import {
     useAttachmentQuery,
-    useProjectQuery,
     useComputerQuery,
-    useUpdateAttachmentMutation,
     useDeleteAttachmentMutation,
+    useProjectQuery,
+    useUpdateAttachmentMutation,
 } from "../../hooks/queries";
 import { usePageTitle } from "../../hooks/usePageTitle";
+import { ProjectAttachmentUpdate } from "../../types";
 
 export default function AttachmentDetailPage() {
     const { attachmentId } = useParams<{ attachmentId: string }>();

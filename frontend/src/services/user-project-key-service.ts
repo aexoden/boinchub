@@ -1,5 +1,6 @@
+import { UserProjectKey, UserProjectKeyRequest, UserProjectKeyWithProject } from "../types";
+
 import apiClient from "./api-client";
-import { UserProjectKey, UserProjectKeyWithProject, UserProjectKeyRequest } from "../types";
 
 export const userProjectKeyService = {
     // Get current user's project keys

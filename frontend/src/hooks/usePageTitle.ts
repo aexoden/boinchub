@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+
 import { useConfig } from "../contexts/ConfigContext";
 
 export function usePageTitle(title: string) {

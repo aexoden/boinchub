@@ -1,10 +1,11 @@
-import { useState, useMemo } from "react";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { useMemo, useState } from "react";
+
 import {
-    useCurrentUserProjectKeysQuery,
-    useProjectsQuery,
     useCreateOrUpdateProjectKeyMutation,
+    useCurrentUserProjectKeysQuery,
     useDeleteProjectKeyMutation,
+    useProjectsQuery,
 } from "../../hooks/queries";
 import { UserProjectKeyRequest } from "../../types";
 

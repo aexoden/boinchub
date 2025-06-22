@@ -1,5 +1,6 @@
-import apiClient from "./api-client";
 import { Computer, ComputerUpdate } from "../types";
+
+import apiClient from "./api-client";
 
 export const computerService = {
     // Get computers for the current user

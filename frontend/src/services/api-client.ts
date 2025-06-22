@@ -1,7 +1,8 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
-import { TokenResponse, ApiError, ErrorResponse } from "../types";
+
+import { ApiError, ErrorResponse, TokenResponse, User } from "../types";
+
 import { tokenStorage } from "./token-storage";
-import { User } from "../types";
 
 // Create a base API client
 const apiClient: AxiosInstance = axios.create({

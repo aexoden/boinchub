@@ -1,6 +1,7 @@
-import { useState } from "react";
 import { ComputerDesktopIcon, DevicePhoneMobileIcon, GlobeAltIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { useUserSessionsQuery, useRevokeSessionMutation, useLogoutAllOtherSessionsMutation } from "../../hooks/queries";
+import { useState } from "react";
+
+import { useLogoutAllOtherSessionsMutation, useRevokeSessionMutation, useUserSessionsQuery } from "../../hooks/queries";
 import { UserSession } from "../../types";
 import { formatDate } from "../../util/date";
 

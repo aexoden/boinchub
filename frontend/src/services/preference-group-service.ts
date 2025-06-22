@@ -1,5 +1,6 @@
-import apiClient from "./api-client";
 import { PreferenceGroup, PreferenceGroupCreate, PreferenceGroupUpdate } from "../types";
+
+import apiClient from "./api-client";
 
 export const preferenceGroupService = {
     // Get all preference groups

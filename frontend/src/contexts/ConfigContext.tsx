@@ -1,4 +1,5 @@
 import { createContext, useContext } from "react";
+
 import { AppConfig } from "../services/config-service";
 
 interface ConfigContextType {

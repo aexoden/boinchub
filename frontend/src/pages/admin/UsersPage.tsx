@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { User, UserUpdate } from "../../types";
-import { useAuth } from "../../contexts/AuthContext";
-import { useUsersQuery, useUpdateUserMutation, useDeleteUserMutation } from "../../hooks/queries";
-import { usePageTitle } from "../../hooks/usePageTitle";
-import { getRoleDisplayName, getRoleColor, canChangeRoles, isSuperAdmin } from "../../util/user";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { useState } from "react";
+
+import { useAuth } from "../../contexts/AuthContext";
+import { useDeleteUserMutation, useUpdateUserMutation, useUsersQuery } from "../../hooks/queries";
+import { usePageTitle } from "../../hooks/usePageTitle";
+import { User, UserUpdate } from "../../types";
+import { canChangeRoles, getRoleColor, getRoleDisplayName, isSuperAdmin } from "../../util/user";
 
 export default function UsersPage() {
     const { user: currentUser } = useAuth();

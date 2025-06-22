@@ -1,12 +1,13 @@
-import { NavLink } from "react-router";
 import {
+    AdjustmentsHorizontalIcon,
+    CogIcon,
     HomeIcon,
+    KeyIcon,
     ServerIcon,
     UsersIcon,
-    CogIcon,
-    AdjustmentsHorizontalIcon,
-    KeyIcon,
 } from "@heroicons/react/24/outline";
+import { NavLink } from "react-router";
+
 import { useConfig } from "../../contexts/ConfigContext";
 
 interface SidebarProps {

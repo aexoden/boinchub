@@ -1,9 +1,10 @@
 import js from "@eslint/js";
-import globals from "globals";
+import stylistic from "@stylistic/eslint-plugin";
+import importPlugin from "eslint-plugin-import";
 import prettier from "eslint-plugin-prettier/recommended";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
-import stylistic from "@stylistic/eslint-plugin";
+import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
@@ -26,6 +27,8 @@ export default tseslint.config(
                     },
                 },
             },
+            importPlugin.flatConfigs.recommended,
+            importPlugin.flatConfigs.typescript,
             prettier,
         ],
         files: ["**/*.{js,ts,tsx}"],
@@ -60,6 +63,15 @@ export default tseslint.config(
                 "error",
                 {
                     allowThrowingAny: true,
+                },
+            ],
+            "import/no-unresolved": "off",
+            "import/order": [
+                "error",
+                {
+                    "alphabetize": { order: "asc" },
+                    "named": true,
+                    "newlines-between": "always",
                 },
             ],
             "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],

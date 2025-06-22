@@ -1,14 +1,15 @@
+import { QuestionMarkCircleIcon } from "@heroicons/react/16/solid";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
-import { QuestionMarkCircleIcon } from "@heroicons/react/16/solid";
-import { PreferenceGroupCreate } from "../../types";
+
 import {
-    usePreferenceGroupQuery,
     useCreatePreferenceGroupMutation,
+    usePreferenceGroupQuery,
     useUpdatePreferenceGroupMutation,
 } from "../../hooks/queries/usePreferenceGroupQueries";
 import { usePageTitle } from "../../hooks/usePageTitle";
+import { PreferenceGroupCreate } from "../../types";
 
 function NumericInput({
     id,

@@ -1,7 +1,9 @@
 import { Outlet } from "react-router";
+
+import { useAuth } from "../../contexts/AuthContext";
+
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
-import { useAuth } from "../../contexts/AuthContext";
 
 export default function AppLayout() {
     const { isAdmin } = useAuth();

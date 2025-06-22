@@ -1,5 +1,6 @@
-import apiClient from "./api-client";
 import { InviteCode, InviteCodeCreate, InviteCodeUpdate } from "../types";
+
+import apiClient from "./api-client";
 
 export const inviteCodeService = {
     // Get all invite codes (admin only)

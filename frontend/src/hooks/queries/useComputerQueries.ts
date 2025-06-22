@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { computerService } from "../../services/computer-service";
+
 import { attachmentService } from "../../services/attachment-service";
-import { queryKeys } from "./queryKeys";
+import { computerService } from "../../services/computer-service";
 import { ComputerUpdate } from "../../types";
+
+import { queryKeys } from "./queryKeys";
 
 export function useComputerQuery(computerId: string, options?: { enabled?: boolean }) {
     return useQuery({

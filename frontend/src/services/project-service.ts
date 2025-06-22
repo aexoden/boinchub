@@ -1,5 +1,6 @@
-import apiClient from "./api-client";
 import { Project, ProjectCreate, ProjectUpdate } from "../types";
+
+import apiClient from "./api-client";
 
 export const projectService = {
     // Get all projects

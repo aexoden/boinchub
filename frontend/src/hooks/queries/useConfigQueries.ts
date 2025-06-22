@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
+
 import { configService } from "../../services/config-service";
+
 import { queryKeys } from "./queryKeys";
 
 export function useConfigQuery() {

@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { useConfig } from "../../contexts/ConfigContext";
-import { useAuth } from "../../contexts/AuthContext";
-import { useUpdateCurrentUserMutation } from "../../hooks/queries";
-import { usePageTitle } from "../../hooks/usePageTitle";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
+import { useState } from "react";
+
 import ProjectKeysManagement from "../../components/settings/ProjectKeysManagement";
 import SessionManagement from "../../components/settings/SessionManagement";
+import { useAuth } from "../../contexts/AuthContext";
+import { useConfig } from "../../contexts/ConfigContext";
+import { useUpdateCurrentUserMutation } from "../../hooks/queries";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 export default function SettingsPage() {
     const { config } = useConfig();

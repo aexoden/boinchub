@@ -1,21 +1,22 @@
-import { useState, useMemo } from "react";
-import { useParams, useNavigate, Link } from "react-router";
-import { ProjectAttachmentCreate, ProjectAttachment } from "../../types";
-import {
-    useComputerQuery,
-    useComputerAttachmentsQuery,
-    useProjectsQuery,
-    useCurrentUserProjectKeysQuery,
-    useCreateAttachmentMutation,
-    useDeleteAttachmentMutation,
-    useUpdateComputerMutation,
-    usePreferenceGroupsQuery,
-} from "../../hooks/queries";
-import ResourceUsageDisplay from "../../components/common/ResourceUsageDisplay";
-import AttachmentStatusDisplay from "../../components/common/AttachmentStatusDisplay";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router";
+
+import AttachmentStatusDisplay from "../../components/common/AttachmentStatusDisplay";
+import ResourceUsageDisplay from "../../components/common/ResourceUsageDisplay";
 import { useConfig } from "../../contexts/ConfigContext";
+import {
+    useComputerAttachmentsQuery,
+    useComputerQuery,
+    useCreateAttachmentMutation,
+    useCurrentUserProjectKeysQuery,
+    useDeleteAttachmentMutation,
+    usePreferenceGroupsQuery,
+    useProjectsQuery,
+    useUpdateComputerMutation,
+} from "../../hooks/queries";
 import { usePageTitle } from "../../hooks/usePageTitle";
+import { ProjectAttachment, ProjectAttachmentCreate } from "../../types";
 import { formatDate } from "../../util/date";
 
 export default function ComputerDetailPage() {

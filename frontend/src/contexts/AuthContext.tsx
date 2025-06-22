@@ -1,4 +1,5 @@
 import { createContext, useContext } from "react";
+
 import { User, UserCredentials, UserRegister } from "../types";
 
 interface AuthState {

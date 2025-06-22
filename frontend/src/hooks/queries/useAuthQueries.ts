@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { authService } from "../../services/api-client";
 import { userService } from "../../services/user-service";
 import { UserCredentials, UserRegister } from "../../types";
+
 import { queryKeys } from "./queryKeys";
 
 export function useCurrentUserQuery() {

@@ -1,5 +1,6 @@
-import apiClient from "./api-client";
 import { User, UserRegister, UserUpdate } from "../types";
+
+import apiClient from "./api-client";
 
 export const userService = {
     // Get current user info

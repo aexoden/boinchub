@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { userService } from "../../services/user-service";
+
 import { computerService } from "../../services/computer-service";
+import { userService } from "../../services/user-service";
 import { UserUpdate } from "../../types";
+
 import { queryKeys } from "./queryKeys";
 
 export function useUsersQuery(offset = 0, limit = 100) {

@@ -1,32 +1,24 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router";
 
 import AuthProvider from "./components/common/AuthProvider";
 import ConfigProvider from "./components/common/ConfigProvider";
+import AppLayout from "./components/layout/AppLayout";
 import { useAuth } from "./contexts/AuthContext";
 import { useConfig } from "./contexts/ConfigContext";
-
-// Layouts
-import AppLayout from "./components/layout/AppLayout";
-
-// Auth Pages
+import InviteCodesPage from "./pages/admin/InviteCodesPage";
+import ProjectsPage from "./pages/admin/ProjectsPage";
+import UsersPage from "./pages/admin/UsersPage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
-
-// User Pages
 import AttachmentDetailPage from "./pages/user/AttachmentDetailPage";
 import ComputerDetailPage from "./pages/user/ComputerDetailPage";
 import ComputersPage from "./pages/user/ComputersPage";
 import DashboardPage from "./pages/user/DashboardPage";
-import PreferenceGroupsPage from "./pages/user/PreferenceGroupsPage";
 import PreferenceGroupEditPage from "./pages/user/PreferenceGroupEditPage";
+import PreferenceGroupsPage from "./pages/user/PreferenceGroupsPage";
 import SettingsPage from "./pages/user/SettingsPage";
-
-// Admin Pages
-import InviteCodesPage from "./pages/admin/InviteCodesPage";
-import ProjectsPage from "./pages/admin/ProjectsPage";
-import UsersPage from "./pages/admin/UsersPage";
 
 const queryClient = new QueryClient({
     defaultOptions: {

@@ -1,12 +1,14 @@
 import { useCallback } from "react";
+
 import { UseAuthReturn } from "../contexts/AuthContext";
 import { UserCredentials, UserRegister } from "../types";
 import { isAdmin as checkIsAdmin, isSuperAdmin as checkIsSuperAdmin } from "../util/user";
+
 import {
     useCurrentUserQuery,
     useLoginMutation,
-    useRegisterMutation,
     useLogoutMutation,
+    useRegisterMutation,
 } from "./queries/useAuthQueries";
 
 export const useAuthImpl = (): UseAuthReturn => {

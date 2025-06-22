@@ -1,10 +1,11 @@
+import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { PreferenceGroup } from "../../types";
-import { usePreferenceGroupsQuery, useDeletePreferenceGroupMutation } from "../../hooks/queries";
+
 import { useAuth } from "../../contexts/AuthContext";
+import { useDeletePreferenceGroupMutation, usePreferenceGroupsQuery } from "../../hooks/queries";
 import { usePageTitle } from "../../hooks/usePageTitle";
-import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { PreferenceGroup } from "../../types";
 
 export default function PreferenceGroupsPage() {
     const { user, isAdmin } = useAuth();

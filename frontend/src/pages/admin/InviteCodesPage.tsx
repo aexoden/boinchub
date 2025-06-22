@@ -1,13 +1,14 @@
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useState } from "react";
-import { InviteCode, InviteCodeCreate } from "../../types";
+
 import {
-    useInviteCodesQuery,
     useCreateInviteCodeMutation,
-    useUpdateInviteCodeMutation,
     useDeleteInviteCodeMutation,
+    useInviteCodesQuery,
+    useUpdateInviteCodeMutation,
 } from "../../hooks/queries/useInviteCodeQueries";
 import { usePageTitle } from "../../hooks/usePageTitle";
-import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { InviteCode, InviteCodeCreate } from "../../types";
 import { formatDate } from "../../util/date";
 
 export default function InviteCodesPage() {

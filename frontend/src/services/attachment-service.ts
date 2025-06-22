@@ -1,5 +1,6 @@
-import apiClient from "./api-client";
 import { ProjectAttachment, ProjectAttachmentCreate, ProjectAttachmentUpdate } from "../types";
+
+import apiClient from "./api-client";
 
 export const attachmentService = {
     // Create an attachment

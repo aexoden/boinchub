@@ -24,7 +24,7 @@ export default function Navbar() {
                                 <div>
                                     <button
                                         type="button"
-                                        className="rounded-md bg-primary-600 p-2 hover:bg-primary-800"
+                                        className="cursor-pointer rounded-md bg-primary-600 p-2 hover:bg-primary-800"
                                         onClick={() => {
                                             void logout();
                                         }}

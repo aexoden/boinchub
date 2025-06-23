@@ -116,6 +116,10 @@ class Settings(BaseSettings):
             str: The validated database URL.
 
         """
+        # Work around outdated postgres prefixes
+        if value.startswith("postgres://"):
+            value = value.replace("postgres://", "postgresql+psycopg2://", 1)
+
         if not value.startswith("postgresql"):
             warnings.warn(
                 "Using a non-PostgreSQL database is not recommended. BoincHub is optimized for PostgreSQL.",

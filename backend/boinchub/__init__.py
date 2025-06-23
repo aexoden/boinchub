@@ -7,12 +7,16 @@ import logging
 
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any
 
 import uvicorn
 
 from fastapi import FastAPI
+from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from boinchub.__about__ import __version__
 from boinchub.api.endpoints import (
@@ -126,6 +130,33 @@ def _create_app() -> FastAPI:
     app.include_router(projects.router)
     app.include_router(user_project_keys.router)
     app.include_router(users.router)
+
+    # Serve static files in production
+    static_dir = Path(__file__).parent.parent / "static"
+
+    if static_dir.exists():
+        logger = logging.getLogger(__name__)
+        logger.info("Serving static files from %s", static_dir)
+        app.mount("/assets", StaticFiles(directory=static_dir / "assets"), name="assets")
+
+        @app.get("/{full_path:path}", include_in_schema=False)
+        async def serve_spa(full_path: str) -> FileResponse:
+            """Serve the SPA index file for any unmatched paths.
+
+            Args:
+                full_path (str): The requested path.
+
+            Returns:
+                FileResponse: The index.html file for SPA routing.
+
+            Raises:
+                HTTPException: If the path starts with "api/" or "boinc/", returns 404 Not Found.
+
+            """
+            if full_path.startswith(("api/", "boinc/")):
+                raise HTTPException(status_code=404, detail="Not Found")
+
+            return FileResponse(static_dir / "index.html")
 
     return app
 

@@ -1,0 +1,35 @@
+{
+    "name": "boinchub",
+    "description": "BoincHub BOINC Account Manager",
+    "healthchecks": {
+        "web": [
+            {
+                "type": "startup",
+                "name": "fastapi",
+                "description": "Verifying the FastAPI backend is running",
+                "path": "/api/v1/health",
+                "attempts": 3,
+                "delay": 5,
+                "content": "true"
+            },
+            {
+                "type": "startup",
+                "name": "database",
+                "description": "Verifying the database backend is ready",
+                "path": "/api/v1/health/ready",
+                "attempts": 3,
+                "delay": 5,
+                "content": "true"
+            },
+            {
+                "type": "startup",
+                "name": "react",
+                "description": "Verifying the frontend static files are being served",
+                "path": "/",
+                "attempts": 3,
+                "content": "<html",
+                "initialDelay": 2
+            }
+        ]
+    }
+}

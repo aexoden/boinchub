@@ -17,6 +17,7 @@ from boinchub.core.security import (
     get_current_user_if_active,
 )
 from boinchub.core.settings import settings
+from boinchub.core.utils import get_client_ip
 from boinchub.models.user import User, UserPublic
 from boinchub.models.user_session import UserSessionPublic
 from boinchub.services.session_service import SessionService, get_session_service
@@ -174,7 +175,7 @@ async def refresh_access_token(
     token_pair = create_token_pair(user.id, session.id)
 
     # Update session access time, refresh token and IP
-    client_ip = request.client.host if request.client else session.ip_address
+    client_ip = get_client_ip(request)
     session_service.update_session_access(session.id, token_pair.refresh_token, client_ip)
 
     # Update refresh token cookie with new token

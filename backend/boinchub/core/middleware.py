@@ -13,6 +13,8 @@ from fastapi.responses import JSONResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
+from boinchub.core.utils import get_client_ip
+
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     """Middleware to enforce rate limiting on API requests."""
@@ -22,6 +24,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         Args:
             app: The FastAPI application instance.
+            endpoints (set[str]): Set of endpoint paths to apply rate limiting.
             calls (int): The number of allowed calls within the period.
             period (int): The time period in seconds for rate limiting.
 
@@ -49,7 +52,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         # Get client identifier (IP address)
-        client_id = request.client.host if request.client else "unknown"
+        client_id = get_client_ip(request)
 
         # Clean old entries
         now = time.time()

@@ -27,11 +27,7 @@ export const useAuthImpl = (): UseAuthReturn => {
 
     // Get error state
     const error =
-        currentUserQuery.error?.message ??
-        loginMutation.error?.message ??
-        registerMutation.error?.message ??
-        logoutMutation.error?.message ??
-        null;
+        loginMutation.error?.message ?? registerMutation.error?.message ?? logoutMutation.error?.message ?? null;
 
     const login = useCallback(
         async (credentials: UserCredentials): Promise<void> => {

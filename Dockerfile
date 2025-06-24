@@ -13,8 +13,8 @@ ENV NODE_ENV=production
 RUN pnpm build
 
 # Backend stage
-FROM python:3.13-alpine3.22 AS backend
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+FROM python:3.13-alpine3.22@sha256:9b4929a72599b6c6389ece4ecbf415fd1355129f22bb92bb137eea098f05e975 AS backend
+COPY --from=ghcr.io/astral-sh/uv:latest@sha256:cda0fdc9b6066975ba4c791597870d18bc3a441dfc18ab24c5e888c16e15780c /uv /uvx /bin/
 
 # Install system dependencies
 RUN apk add --no-cache \

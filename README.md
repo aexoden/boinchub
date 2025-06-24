@@ -37,7 +37,7 @@ slow or nonexistent, but I am happy to look at well-written pull requests.
 
 - Python 3.13 or higher
 - [uv](https://github.com/astral-sh/uv)
-- Node.js 18+ with pnpm
+- Node.js with pnpm
 - PostgreSQL
 - BOINC crypt_prog utility (for signing key generation and signing project URLs)
 

@@ -4,7 +4,6 @@ import { Link, useNavigate, useParams } from "react-router";
 
 import AttachmentStatusDisplay from "../../components/common/AttachmentStatusDisplay";
 import ResourceUsageDisplay from "../../components/common/ResourceUsageDisplay";
-import { useConfig } from "../../contexts/ConfigContext";
 import {
     useComputerAttachmentsQuery,
     useComputerQuery,
@@ -22,7 +21,6 @@ import { formatDate } from "../../util/date";
 export default function ComputerDetailPage() {
     const { computerId } = useParams<{ computerId: string }>();
     const navigate = useNavigate();
-    const { config } = useConfig();
 
     // Queries
     const { data: computer, isLoading: computerLoading, error: computerError } = useComputerQuery(computerId ?? "");
@@ -86,6 +84,33 @@ export default function ComputerDetailPage() {
         setIsPreferenceGroupModalOpen(true);
     };
 
+    const handleToggleVacationOverride = async () => {
+        if (!computer) return;
+
+        try {
+            await updateComputerMutation.mutateAsync({
+                computerId: computer.id,
+                computerData: {
+                    vacation_override: !computer.vacation_override,
+                },
+            });
+
+            setPageError(null);
+        } catch (err: unknown) {
+            let errorMessage = "Failed to toggle vacation override";
+
+            if (err instanceof Error) {
+                errorMessage = err.message;
+            } else if (typeof err === "string") {
+                errorMessage = err;
+            } else if (err && typeof err === "object" && "detail" in err) {
+                errorMessage = String(err.detail);
+            }
+
+            setPageError(errorMessage);
+        }
+    };
+
     const handleInputChange = (field: string, value: string) => {
         if (modalError) {
             setModalError(null);
@@ -120,18 +145,20 @@ export default function ComputerDetailPage() {
             return;
         }
 
-        try {
-            const attachmentData: ProjectAttachmentCreate = {
-                computer_id: computer.id,
-                project_id: selectedProject,
-                resource_share: resourceShareNum,
-            };
+        const attachmentData: ProjectAttachmentCreate = {
+            computer_id: computer.id,
+            project_id: selectedProject,
+            resource_share: resourceShareNum,
+        };
 
+        try {
             await createAttachmentMutation.mutateAsync(attachmentData);
             setIsModalOpen(false);
+            setSelectedProject("");
+            setResourceShare("100");
             setPageError(null);
         } catch (err: unknown) {
-            let errorMessage = "Failed to create attachment";
+            let errorMessage = "Failed to attach project";
 
             if (err instanceof Error) {
                 errorMessage = err.message;
@@ -178,8 +205,8 @@ export default function ComputerDetailPage() {
         }
     };
 
-    const handleDeleteAttachment = async (attachmentId: string) => {
-        if (!window.confirm("Are you sure you want to detach this project?")) {
+    const handleDeleteAttachment = async (attachmentId: string, projectName: string) => {
+        if (!window.confirm(`Are you sure you want to detach from ${projectName}?`)) {
             return;
         }
 
@@ -284,21 +311,67 @@ export default function ComputerDetailPage() {
                 </div>
             )}
 
+            {/* Vacation Override Alert */}
+            {computer.vacation_override && (
+                <div className="mb-6 border-l-4 border-orange-500 bg-orange-50 p-4">
+                    <div className="flex">
+                        <div className="ml-3">
+                            <p className="text-sm font-medium text-orange-700">
+                                Vacation override is active. All projects are temporarily set to not request new work.
+                            </p>
+                            <p className="mt-1 text-sm text-orange-600">
+                                Individual project settings are preserved and will be restored when vacation override is
+                                disabled.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Computer Details */}
             <div className="mb-8 rounded-lg bg-white p-6 shadow">
                 <div className="mb-4 flex items-center justify-between">
                     <h2 className="text-lg font-medium text-gray-900">Computer Information</h2>
-                    <button
-                        onClick={handleChangePreferenceGroup}
-                        className="cursor-pointer rounded-md bg-primary-600 px-4 py-2 text-white transition-colors hover:bg-primary-700"
-                    >
-                        Change Preference Group
-                    </button>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={() => {
+                                void handleToggleVacationOverride();
+                            }}
+                            disabled={isSubmitting}
+                            className={`cursor-pointer rounded-md px-4 py-2 text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                                computer.vacation_override
+                                    ? "bg-green-600 hover:bg-green-700"
+                                    : "bg-orange-600 hover:bg-orange-700"
+                            }`}
+                        >
+                            {computer.vacation_override ? "Disable Vacation Override" : "Enable Vacation Override"}
+                        </button>
+                        <button
+                            onClick={handleChangePreferenceGroup}
+                            className="cursor-pointer rounded-md bg-primary-600 px-4 py-2 text-white transition-colors hover:bg-primary-700"
+                        >
+                            Change Preference Group
+                        </button>
+                    </div>
                 </div>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
                         <h3 className="text-sm font-medium text-gray-500">Hostname</h3>
                         <p className="mt-1 text-gray-900">{computer.hostname}</p>
+                    </div>
+                    <div>
+                        <h3 className="text-sm font-medium text-gray-500">Vacation Override</h3>
+                        <p className="mt-1 text-gray-900">
+                            <span
+                                className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
+                                    computer.vacation_override
+                                        ? "bg-orange-100 text-orange-800"
+                                        : "bg-green-100 text-green-800"
+                                }`}
+                            >
+                                {computer.vacation_override ? "Active" : "Inactive"}
+                            </span>
+                        </p>
                     </div>
                     <div>
                         <h3 className="text-sm font-medium text-gray-500">Preference Group</h3>
@@ -331,16 +404,10 @@ export default function ComputerDetailPage() {
                         <h3 className="text-sm font-medium text-gray-500">BOINC CPID</h3>
                         <p className="mt-1 font-mono text-gray-900">{computer.cpid}</p>
                     </div>
-                    <div>
-                        <h3 className="text-sm font-medium text-gray-500">
-                            {config?.account_manager_name ?? "BoincHub"} ID
-                        </h3>
-                        <p className="mt-1 font-mono text-gray-900">{computer.id}</p>
-                    </div>
                 </div>
             </div>
 
-            {/* Attached Projects */}
+            {/* Project Attachments */}
             <div className="rounded-lg bg-white p-6 shadow">
                 <div className="mb-4 flex items-center justify-between">
                     <h2 className="text-lg font-medium text-gray-900">Attached Projects</h2>
@@ -597,7 +664,7 @@ export default function ComputerDetailPage() {
 interface ComputerDetailAttachmentTableProps {
     attachments: ProjectAttachment[];
     projectsMap: Record<string, string>;
-    handleDeleteAttachment: (attachmentId: string) => Promise<void>;
+    handleDeleteAttachment: (attachmentId: string, projectName: string) => Promise<void>;
     deleteAttachmentMutation: ReturnType<typeof useDeleteAttachmentMutation>;
 }
 
@@ -664,7 +731,7 @@ function ComputerDetailAttachmentTable({
                                     </Link>
                                     <button
                                         onClick={() => {
-                                            void handleDeleteAttachment(attachment.id);
+                                            void handleDeleteAttachment(attachment.id, projectName);
                                         }}
                                         className="cursor-pointer text-red-600 transition-colors hover:text-red-900 disabled:cursor-not-allowed disabled:opacity-50"
                                         disabled={deleteAttachmentMutation.isPending}

@@ -58,7 +58,7 @@ def get_computer(
         current_user (User): The current authenticated user.
 
     Returns:
-        ComputerResponse: The requested computer data.
+        ComputerPublic: The requested computer data.
 
     Raises:
         HTTPException: If the computer does not exist or the user does not have access.
@@ -88,6 +88,7 @@ def update_computer(
         computer_id (UUID): The ID of the computer to update.
         computer_data (ComputerUpdate): The data to update the computer with.
         computer_service (ComputerService): The service for computer operations.
+        preference_group_service (PreferenceGroupService): The service for preference group operations.
         current_user (User): The current authenticated user.
 
     Returns:
@@ -128,7 +129,7 @@ def get_project_attachments(
     """Get all project attachments for a computer.
 
     Args:
-        computer_id (int): The ID of the computer.
+        computer_id (UUID): The ID of the computer.
         computer_service (ComputerService): The service for computer operations.
         project_attachment_service (ProjectAttachmentService): The service for project attachment operations.
         current_user (User): The current authenticated user.

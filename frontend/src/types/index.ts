@@ -1,3 +1,21 @@
+// Common types
+export class ApiError extends Error {
+    public status: number;
+    public detail?: string;
+
+    constructor(status: number, message: string, detail?: string) {
+        super(message);
+        this.name = "ApiError";
+        this.status = status;
+        this.detail = detail;
+    }
+}
+
+export interface Message {
+    text: string;
+    type: "success" | "error";
+}
+
 // User related types
 export interface User {
     id: string;
@@ -5,6 +23,8 @@ export interface User {
     email: string;
     role: "user" | "admin" | "super_admin";
     is_active: boolean;
+    created_at: string;
+    updated_at: string;
 }
 
 export interface UserCredentials {
@@ -49,6 +69,7 @@ export interface Computer {
     hostname: string;
     user_id: string;
     preference_group_id: string;
+    vacation_override: boolean;
     created_at: string;
     updated_at: string;
     last_connected_at: string | null;
@@ -56,6 +77,7 @@ export interface Computer {
 
 export interface ComputerUpdate {
     preference_group_id?: string;
+    vacation_override?: boolean;
 }
 
 // Invite code related types
@@ -183,18 +205,6 @@ export interface TokenResponse {
 
 export interface ErrorResponse {
     detail: string;
-}
-
-export class ApiError extends Error {
-    public status: number;
-    public detail?: string;
-
-    constructor(status: number, message: string, detail?: string) {
-        super(message);
-        this.name = "ApiError";
-        this.status = status;
-        this.detail = detail;
-    }
 }
 
 // Preference Group related types

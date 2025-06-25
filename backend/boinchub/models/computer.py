@@ -31,6 +31,9 @@ class ComputerBase(SQLModel):
         default=None, foreign_key="preference_groups.id", ondelete="SET NULL", index=True
     )
 
+    # Vacation override
+    vacation_override: bool = Field(default=False)
+
 
 class Computer(ComputerBase, Timestamps, table=True):
     """Computer model."""
@@ -71,3 +74,4 @@ class ComputerUpdate(SQLModel):
     """Model for updating a computer."""
 
     preference_group_id: UUID | None = None
+    vacation_override: bool | None = None

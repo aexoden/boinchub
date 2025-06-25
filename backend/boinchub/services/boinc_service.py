@@ -101,12 +101,20 @@ class BoincService:
         # Get the computer's preference group and build global preferences
         global_preferences = build_global_preferences(computer.preference_group)
 
+        # Add vacation override message if active
+        messages = []
+        if computer.vacation_override:
+            messages.append(
+                "Vacation override is active. All projects have been temporarily set to not request new work."
+            )
+
         # Return successful response with placeholder data
         return AccountManagerReply(
             repeat_sec=3600,
             global_preferences=global_preferences,
             accounts=accounts,
             uuid=computer.id,
+            messages=messages,
         )
 
     def _process_projects(self, user: User, computer: Computer, request: AccountManagerRequest) -> list[Account]:  # noqa: C901, PLR0912, PLR0914, PLR0915
@@ -119,7 +127,7 @@ class BoincService:
         Args:
             user (User): The user associated with the request.
             computer (Computer): The computer making the request.
-            request (AccountManagerRequest): The request data from the BOINC client.)
+            request (AccountManagerRequest): The request data from the BOINC client.
 
         Returns:
             list[Account]: A list of account configurations to send to the client.
@@ -149,13 +157,16 @@ class BoincService:
 
         accounts = []
 
-        # Iterate through client-reported projects and detach any that no longer have attachments.
+        # Iterate through client-reported projects and detach any that no longer have attachments
         for xml_project in request.projects:
             if xml_project.url not in attachment_map:
                 project = project_service.get_by_url(xml_project.url)
 
                 if project:
                     account = create_detach_account(project)
+
+                    if account:
+                        accounts.append(account)
 
         for attachment in current_attachments:
             # Check if project was disabled or deleted, and handle accordingly
@@ -190,12 +201,18 @@ class BoincService:
                     attachment_service.delete(attachment.id)
                     logger.info("Deleted attachment %s for user %s (detach_when_done)", attachment.id, user.username)
                 else:
-                    account = create_attach_account(project, key, attachment, client_version)
+                    account = create_attach_account(
+                        project, key, attachment, client_version, vacation_override=computer.vacation_override
+                    )
 
                     if account:
                         accounts.append(account)
-            elif attachment_settings_changed(key, attachment, client_project):
-                account = create_attach_account(project, key, attachment, client_version)
+            elif attachment_settings_changed(
+                key, attachment, client_project, vacation_override=computer.vacation_override
+            ):
+                account = create_attach_account(
+                    project, key, attachment, client_version, vacation_override=computer.vacation_override
+                )
 
                 if account:
                     # The account key can be empty if no changes are required
@@ -207,7 +224,9 @@ class BoincService:
                 # It's possible that we can skip sending the account if nothing has changed. However, there are
                 # additional cases that we don't currently handle, such as the user changing their resource settings.
                 # For now, we'll just unconditionally send the accounts.
-                account = create_attach_account(project, key, attachment, client_version)
+                account = create_attach_account(
+                    project, key, attachment, client_version, vacation_override=computer.vacation_override
+                )
 
                 if account:
                     if account.authenticator == client_project.account_key:
@@ -218,12 +237,16 @@ class BoincService:
         return accounts
 
 
-def attachment_settings_changed(key: UserProjectKey, attachment: ProjectAttachment, client_project: XmlProject) -> bool:
+def attachment_settings_changed(
+    key: UserProjectKey, attachment: ProjectAttachment, client_project: XmlProject, *, vacation_override: bool
+) -> bool:
     """Check if attachment settings have changed.
 
     Args:
+        key (UserProjectKey): The user's project key.
         attachment (ProjectAttachment): The current attachment settings.
         client_project (XmlProject): The project settings reported by the client.
+        vacation_override (bool): Whether the vacation override is active.
 
     Returns:
         bool: True if settings have changed, False otherwise.
@@ -238,7 +261,8 @@ def attachment_settings_changed(key: UserProjectKey, attachment: ProjectAttachme
     if attachment.suspended != client_project.suspended_via_gui:
         return True
 
-    if attachment.dont_request_more_work != client_project.dont_request_more_work:
+    effective_dont_request_more_work = attachment.dont_request_more_work or vacation_override
+    if effective_dont_request_more_work != client_project.dont_request_more_work:
         return True
 
     return attachment.detach_when_done != client_project.detach_when_done
@@ -268,7 +292,12 @@ def build_global_preferences(preference_group: PreferenceGroup) -> GlobalPrefere
 
 
 def create_attach_account(  # noqa: C901
-    project: Project, user_key: UserProjectKey, attachment: ProjectAttachment, client_version: version.Version | None
+    project: Project,
+    user_key: UserProjectKey,
+    attachment: ProjectAttachment,
+    client_version: version.Version | None,
+    *,
+    vacation_override: bool,
 ) -> Account | None:
     """Create an account configuration for attaching (or remaining attached) to a project.
 
@@ -277,12 +306,15 @@ def create_attach_account(  # noqa: C901
         user_key (UserProjectKey): The user's account key for the project.
         attachment (ProjectAttachment): The project attachment details.
         client_version (version.Version | None): The version of the BOINC client.
+        vacation_override (bool): Whether the vacation override is active.
 
     Returns:
         Account | None: The account configuration, or None if the client is too old for weak account keys and the user
                         has a weak account key configured.
 
     """
+    # Check for a weak account key. Weak account keys have an underscore, and are considered weak because they change
+    # if a user changes their project password. They are preferred because they can be revoked (by changing password).
     account_key = user_key.account_key
     is_weak_account_key = "_" in account_key
 
@@ -323,7 +355,7 @@ def create_attach_account(  # noqa: C901
 
     # Set other flags
     account.suspend = attachment.suspended
-    account.dont_request_more_work = attachment.dont_request_more_work
+    account.dont_request_more_work = attachment.dont_request_more_work or vacation_override
     account.detach_when_done = attachment.detach_when_done
 
     return account
@@ -333,7 +365,7 @@ def create_detach_account(project: Project) -> Account | None:
     """Create an account configuration for detaching from a project.
 
     Args:
-        project (Project): The project to detach from
+        project (Project): The project to detach from.
 
     Returns:
         Account | None: The account configuration for detaching, or None if the project is not attachable.

@@ -5,7 +5,7 @@
 
 import datetime
 
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import Depends
 from sqlmodel import Session, select
@@ -21,6 +21,21 @@ class ComputerService(BaseService[Computer, ComputerCreate, ComputerUpdate]):
     """Service for computer-related operations."""
 
     model = Computer
+
+    def get_all(self, offset: int = 0, limit: int = 100, order_by: str | None = None, **filters: Any) -> list[Computer]:  # noqa: ANN401
+        """Get a list of computers.
+
+        Args:
+            offset (int): The number of computers to skip.
+            limit (int): The maximum number of computers to return.
+            order_by (str | None): The field to order the computers by. Defaults to "hostname".
+            **filters: Additional filters to apply to the query.
+
+        Returns:
+            list[Computer]: A list of computer objects.
+
+        """
+        return super().get_all(offset=offset, limit=limit, order_by=order_by or "hostname", **filters)
 
     def get_by_cpid(self, cpid: str) -> Computer | None:
         """Get a computer by its BOINC CPID.

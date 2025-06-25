@@ -3,6 +3,7 @@ import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
+import { useAuth } from "../../contexts/AuthContext";
 import {
     useCreatePreferenceGroupMutation,
     usePreferenceGroupQuery,
@@ -128,6 +129,7 @@ function InfoTooltip({ text }: { text: string }) {
 const DEFAULT_PREFERENCE_GROUP: PreferenceGroupCreate = {
     name: "",
     description: "",
+    user_id: null,
     is_default: false,
 
     // Battery settings
@@ -189,6 +191,7 @@ const DEFAULT_PREFERENCE_GROUP: PreferenceGroupCreate = {
 export default function PreferenceGroupEditPage({ isNew = false }: { isNew?: boolean }) {
     const { groupId } = useParams<{ groupId: string }>();
     const navigate = useNavigate();
+    const { user, isAdmin } = useAuth();
 
     // Queries and mutations
     const {
@@ -205,6 +208,9 @@ export default function PreferenceGroupEditPage({ isNew = false }: { isNew?: boo
     // Form state
     const [formData, setFormData] = useState(DEFAULT_PREFERENCE_GROUP);
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    // Admin scope selection
+    const [groupScope, setGroupScope] = useState<"global" | "personal">("global");
 
     // Set page title
     usePageTitle(isNew ? "Create Preference Group" : `Edit ${preferenceGroup?.name ?? "Preference Group"}`);
@@ -230,6 +236,11 @@ export default function PreferenceGroupEditPage({ isNew = false }: { isNew?: boo
         if (errors[name]) {
             setErrors({ ...errors, [name]: "" });
         }
+    };
+
+    // Handle scope change for admin users
+    const handleScopeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setGroupScope(e.target.value as "global" | "personal");
     };
 
     // Validate form
@@ -276,7 +287,17 @@ export default function PreferenceGroupEditPage({ isNew = false }: { isNew?: boo
 
         try {
             if (isNew) {
-                await createMutation.mutateAsync(formData);
+                const submissionData = { ...formData } as PreferenceGroupCreate;
+
+                if (isAdmin()) {
+                    // Admin can choose scope
+                    submissionData.user_id = groupScope === "global" ? null : (user?.id ?? null);
+                } else {
+                    // Regular users can only create personal groups (the backend will enforce this, but we set
+                    // it here for clarity)
+                    submissionData.user_id = user?.id ?? null;
+                }
+                await createMutation.mutateAsync(submissionData);
             } else if (groupId) {
                 await updateMutation.mutateAsync({
                     preferenceGroupId: groupId,
@@ -375,6 +396,63 @@ export default function PreferenceGroupEditPage({ isNew = false }: { isNew?: boo
                                 placeholder="Optional description of this preference group"
                             />
                         </div>
+
+                        {/* Admin Scope Selection */}
+                        {isNew && isAdmin() && (
+                            <div>
+                                <label className="mb-3 block text-sm font-medium text-gray-700">
+                                    Group Scope <span className="text-red-500">*</span>
+                                    <InfoTooltip text="Global groups are available to all users, personal groups are only available to you" />
+                                </label>
+                                <div className="space-y-3">
+                                    <div className="flex items-start">
+                                        <input
+                                            type="radio"
+                                            id="scope_global"
+                                            name="groupScope"
+                                            value="global"
+                                            checked={groupScope === "global"}
+                                            onChange={handleScopeChange}
+                                            className="mt-0.5 h-4 w-4 cursor-pointer border-gray-300 text-primary-600 focus:ring-primary-500"
+                                        />
+                                        <div className="ml-3">
+                                            <label
+                                                htmlFor="scope_global"
+                                                className="cursor-pointer text-sm font-medium text-gray-700"
+                                            >
+                                                Global Preference Group
+                                            </label>
+                                            <p className="text-sm text-gray-500">
+                                                Available to all users in the system. Can be set as the default for new
+                                                computers.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start">
+                                        <input
+                                            type="radio"
+                                            id="scope_user"
+                                            name="groupScope"
+                                            value="personal"
+                                            checked={groupScope === "personal"}
+                                            onChange={handleScopeChange}
+                                            className="mt-0.5 h-4 w-4 cursor-pointer border-gray-300 text-primary-600 focus:ring-primary-500"
+                                        />
+                                        <div className="ml-3">
+                                            <label
+                                                htmlFor="scope_user"
+                                                className="cursor-pointer text-sm font-medium text-gray-700"
+                                            >
+                                                Personal Preference Group
+                                            </label>
+                                            <p className="text-sm text-gray-500">
+                                                Only available to your account. Can be used for your personal computers.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="flex items-center">
                             <input

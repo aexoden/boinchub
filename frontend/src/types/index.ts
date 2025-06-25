@@ -274,6 +274,7 @@ export interface PreferenceGroup {
 }
 export interface PreferenceGroupCreate {
     name: string;
+    user_id: string | null;
     description: string;
     is_default: boolean;
 

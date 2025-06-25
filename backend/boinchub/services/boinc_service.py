@@ -147,7 +147,7 @@ class BoincService:
 
         # Get current attachments for this computer
         current_attachments = attachment_service.get_by_computer(computer.id)
-        attachment_map = {a.project_id: a for a in current_attachments}
+        attachment_map = {enabled_project_map[a.project_id].url: a for a in current_attachments}
 
         # Create a map of client-reported projects
         client_projects = {p.url: p for p in request.projects}

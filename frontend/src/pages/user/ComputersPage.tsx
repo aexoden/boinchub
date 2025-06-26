@@ -227,6 +227,12 @@ function ComputerCard({
         return acc;
     }, {});
 
+    const sortedAttachments = [...attachments].sort((a, b) => {
+        const projectNameA = projectsMap[a.project_id] ?? "Unknown Project";
+        const projectNameB = projectsMap[b.project_id] ?? "Unknown Project";
+        return projectNameA.localeCompare(projectNameB);
+    });
+
     const activeAttachments = attachments.filter((a) => !a.suspended && !a.dont_request_more_work).length;
     const totalAttachments = attachments.length;
 
@@ -368,7 +374,7 @@ function ComputerCard({
                         </div>
                     ) : (
                         <div className="bg-white">
-                            {attachments.map((attachment) => (
+                            {sortedAttachments.map((attachment) => (
                                 <AttachmentRow
                                     key={attachment.id}
                                     attachment={attachment}

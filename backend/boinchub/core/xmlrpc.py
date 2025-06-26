@@ -140,7 +140,7 @@ class Project(BaseXmlModel, tag="project", search_mode="unordered"):
     resource_share: Decimal = element()
     disk_usage: Decimal = element()
     disk_share: Decimal = element()
-    account_key: str = element()
+    account_key: str | None = element(default=None)
 
 
 class NetStats(BaseXmlModel, tag="net_stats", search_mode="unordered"):

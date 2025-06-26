@@ -12,8 +12,6 @@ import ProjectsPage from "./pages/admin/ProjectsPage";
 import UsersPage from "./pages/admin/UsersPage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
-import AttachmentDetailPage from "./pages/user/AttachmentDetailPage";
-import ComputerDetailPage from "./pages/user/ComputerDetailPage";
 import ComputersPage from "./pages/user/ComputersPage";
 import DashboardPage from "./pages/user/DashboardPage";
 import PreferenceGroupEditPage from "./pages/user/PreferenceGroupEditPage";
@@ -96,11 +94,6 @@ function AppRoutes() {
                 <Route index element={<Navigate to="/dashboard" replace />} />
                 <Route path="dashboard" element={<ProtectedRoute element={<DashboardPage />} />} />
                 <Route path="computers" element={<ProtectedRoute element={<ComputersPage />} />} />
-                <Route path="computers/:computerId" element={<ProtectedRoute element={<ComputerDetailPage />} />} />
-                <Route
-                    path="attachments/:attachmentId"
-                    element={<ProtectedRoute element={<AttachmentDetailPage />} />}
-                />
                 <Route path="preference-groups" element={<ProtectedRoute element={<PreferenceGroupsPage />} />} />
                 <Route
                     path="preference-groups/:groupId/edit"

@@ -167,6 +167,15 @@ class BoincService:
 
                     if account:
                         accounts.append(account)
+                elif xml_project.attached_via_acct_mgr:
+                    logger.info(
+                        "Client reports attachment to unknown project %s (attached via account manager), "
+                        "sending detach instruction for user %s",
+                        xml_project.url,
+                        user.username,
+                    )
+                    account = create_detach_account_for_unknown(xml_project.url)
+                    accounts.append(account)
 
         for attachment in current_attachments:
             # Check if project was disabled or deleted, and handle accordingly
@@ -374,6 +383,27 @@ def create_detach_account(project: Project) -> Account | None:
     return Account(
         url=project.url,
         url_signature=project.signed_url,
+        authenticator="",
+        detach=True,
+    )
+
+
+def create_detach_account_for_unknown(url: str) -> Account:
+    """Create an account configuration for detaching from an unknown project.
+
+    This is used when a client reports being attached to a project that doens't exist
+    in our database (e.g., if the project URL was changed in the database).
+
+    Args:
+        url (str): The URL of the project to detach from.
+
+    Returns:
+        Account: The account configuration for detaching from the unknown project.
+
+    """
+    return Account(
+        url=url,
+        url_signature="",
         authenticator="",
         detach=True,
     )

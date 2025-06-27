@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useLogoutAllOtherSessionsMutation, useRevokeSessionMutation, useUserSessionsQuery } from "../../hooks/queries";
 import { UserSession } from "../../types";
 import { formatDate } from "../../util/date";
+import { getApiErrorMessage } from "../../util/error";
 
 export default function SessionManagement() {
     const { data: sessions = [], isLoading: loading, error } = useUserSessionsQuery();
@@ -59,7 +60,7 @@ export default function SessionManagement() {
             await revokeSessionMutation.mutateAsync(sessionId);
             setMessage({ text: "Session revoked successfully", type: "success" });
         } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : "Failed to revoke session";
+            const errorMessage = getApiErrorMessage(err, "revoke session");
             setMessage({ text: errorMessage, type: "error" });
         }
     };
@@ -84,7 +85,7 @@ export default function SessionManagement() {
             await logoutAllMutation.mutateAsync();
             setMessage({ text: "All other sessions logged out successfully", type: "success" });
         } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : "Failed to logout other sessions";
+            const errorMessage = getApiErrorMessage(err, "logout other sessions");
             setMessage({ text: errorMessage, type: "error" });
         }
     };

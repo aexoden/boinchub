@@ -8,6 +8,7 @@ import {
     useProjectsQuery,
 } from "../../hooks/queries";
 import { UserProjectKeyRequest } from "../../types";
+import { getApiErrorMessage } from "../../util/error";
 
 export default function ProjectKeysManagement() {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -71,16 +72,7 @@ export default function ProjectKeysManagement() {
             await createOrUpdateMutation.mutateAsync(keyData);
             setIsModalOpen(false);
         } catch (err: unknown) {
-            let errorMessage = "Failed to save account key";
-
-            if (err instanceof Error) {
-                errorMessage = err.message;
-            } else if (typeof err === "string") {
-                errorMessage = err;
-            } else if (err && typeof err === "object" && "detail" in err) {
-                errorMessage = String(err.detail);
-            }
-
+            const errorMessage = getApiErrorMessage(err, "save account key");
             setModalError(errorMessage);
         }
     };

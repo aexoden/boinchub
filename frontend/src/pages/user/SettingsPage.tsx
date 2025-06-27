@@ -7,6 +7,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useConfig } from "../../contexts/ConfigContext";
 import { useUpdateCurrentUserMutation } from "../../hooks/queries";
 import { usePageTitle } from "../../hooks/usePageTitle";
+import { getApiErrorMessage } from "../../util/error";
 
 export default function SettingsPage() {
     const { config } = useConfig();
@@ -74,7 +75,7 @@ export default function SettingsPage() {
                 });
             }
         } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : "Failed to update profile";
+            const errorMessage = getApiErrorMessage(err, "update profile");
             setMessage({ text: errorMessage, type: "error" });
         }
     };
@@ -108,7 +109,7 @@ export default function SettingsPage() {
             setConfirmPassword("");
             setMessage({ text: "Password changed successfully", type: "success" });
         } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : "Failed to change password";
+            const errorMessage = getApiErrorMessage(err, "change password");
             setMessage({ text: errorMessage, type: "error" });
         }
     };
@@ -145,7 +146,7 @@ export default function SettingsPage() {
             setNewBoincPassword("");
             setConfirmBoincPassword("");
         } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : "Failed to change BOINC password";
+            const errorMessage = getApiErrorMessage(err, "change BOINC password");
             setMessage({ text: errorMessage, type: "error" });
         }
     };
@@ -170,7 +171,7 @@ export default function SettingsPage() {
             setNewBoincPassword("");
             setConfirmBoincPassword("");
         } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : "Failed to reset BOINC password";
+            const errorMessage = getApiErrorMessage(err, "reset BOINC password");
             setMessage({ text: errorMessage, type: "error" });
         }
     };

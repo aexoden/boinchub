@@ -9,6 +9,7 @@ import {
 } from "../../hooks/queries";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { Project, ProjectCreate, ProjectUpdate } from "../../types";
+import { getApiErrorMessage } from "../../util/error";
 
 export default function ProjectsPage() {
     const { data: projects = [], isLoading: loading, error } = useProjectsQuery();
@@ -97,16 +98,7 @@ export default function ProjectsPage() {
 
             setIsModalOpen(false);
         } catch (err: unknown) {
-            let errorMessage = "An unexpected error occurred";
-
-            if (err instanceof Error) {
-                errorMessage = err.message;
-            } else if (typeof err === "string") {
-                errorMessage = err;
-            } else if (err && typeof err === "object" && "detail" in err) {
-                errorMessage = (err as { detail: string }).detail || "An unexpected error occurred";
-            }
-
+            const errorMessage = getApiErrorMessage(err, editingProject ? "update project" : "create project");
             setModalError(errorMessage);
         }
     };

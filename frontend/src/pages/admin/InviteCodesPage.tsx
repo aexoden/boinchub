@@ -10,6 +10,7 @@ import {
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { InviteCode, InviteCodeCreate } from "../../types";
 import { formatDate } from "../../util/date";
+import { getApiErrorMessage } from "../../util/error";
 
 export default function InviteCodesPage() {
     const { data: inviteCodes = [], isLoading: loading, error } = useInviteCodesQuery();
@@ -45,16 +46,7 @@ export default function InviteCodesPage() {
             await createInviteCodeMutation.mutateAsync(codeData);
             setIsModalOpen(false);
         } catch (err: unknown) {
-            let errorMessage = "An unexpected error occurred";
-
-            if (err instanceof Error) {
-                errorMessage = err.message;
-            } else if (typeof err === "string") {
-                errorMessage = err;
-            } else if (err && typeof err === "object" && "detail" in err) {
-                errorMessage = (err as { detail: string }).detail || "An unexpected error occurred";
-            }
-
+            const errorMessage = getApiErrorMessage(err, "create invite code");
             setModalError(errorMessage);
         }
     };

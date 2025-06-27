@@ -6,6 +6,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useDeletePreferenceGroupMutation, usePreferenceGroupsQuery } from "../../hooks/queries";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { PreferenceGroup } from "../../types";
+import { getApiErrorMessage } from "../../util/error";
 
 export default function PreferenceGroupsPage() {
     const { user, isAdmin } = useAuth();
@@ -43,16 +44,7 @@ export default function PreferenceGroupsPage() {
         try {
             await deletePreferenceGroupMutation.mutateAsync(group.id);
         } catch (err: unknown) {
-            let errorMessage = "Failed to delete preference group";
-
-            if (err instanceof Error) {
-                errorMessage = err.message;
-            } else if (typeof err === "string") {
-                errorMessage = err;
-            } else if (err && typeof err === "object" && "detail" in err) {
-                errorMessage = (err as { detail: string }).detail || "An unexpected error occurred";
-            }
-
+            const errorMessage = getApiErrorMessage(err, "delete preference group");
             alert(errorMessage);
         }
     };

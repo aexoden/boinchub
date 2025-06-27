@@ -2,6 +2,7 @@ import { useCallback } from "react";
 
 import { UseAuthReturn } from "../contexts/AuthContext";
 import { UserCredentials, UserRegister } from "../types";
+import { getAuthErrorMessage } from "../util/error";
 import { isAdmin as checkIsAdmin, isSuperAdmin as checkIsSuperAdmin } from "../util/user";
 
 import {
@@ -27,7 +28,10 @@ export const useAuthImpl = (): UseAuthReturn => {
 
     // Get error state
     const error =
-        loginMutation.error?.message ?? registerMutation.error?.message ?? logoutMutation.error?.message ?? null;
+        getAuthErrorMessage(loginMutation.error) ||
+        getAuthErrorMessage(registerMutation.error) ||
+        getAuthErrorMessage(logoutMutation.error) ||
+        null;
 
     const login = useCallback(
         async (credentials: UserCredentials): Promise<void> => {

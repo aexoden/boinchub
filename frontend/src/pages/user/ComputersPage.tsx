@@ -32,6 +32,7 @@ import {
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { Computer, ProjectAttachment, ProjectAttachmentCreate, ProjectAttachmentUpdate } from "../../types";
 import { formatDate, getRelativeTime } from "../../util/date";
+import { getApiErrorMessage } from "../../util/error";
 
 interface ResourceBadgeProps {
     type: string;
@@ -516,14 +517,7 @@ function AttachmentModal({ isOpen, onClose, computer, attachment, mode }: Attach
 
             onClose();
         } catch (err: unknown) {
-            let errorMessage = "An unexpected error occurred";
-            if (err instanceof Error) {
-                errorMessage = err.message;
-            } else if (typeof err === "string") {
-                errorMessage = err;
-            } else if (err && typeof err === "object" && "detail" in err) {
-                errorMessage = String(err.detail);
-            }
+            const errorMessage = getApiErrorMessage(err, isEditing ? "update attachment" : "create attachment");
             setError(errorMessage);
         }
     };
@@ -809,14 +803,7 @@ function ComputerSettingsModal({ isOpen, onClose, computer }: ComputerSettingsMo
 
             onClose();
         } catch (err: unknown) {
-            let errorMessage = "An unexpected error occurred";
-            if (err instanceof Error) {
-                errorMessage = err.message;
-            } else if (typeof err === "string") {
-                errorMessage = err;
-            } else if (err && typeof err === "object" && "detail" in err) {
-                errorMessage = String(err.detail);
-            }
+            const errorMessage = getApiErrorMessage(err, "update computer settings");
             setError(errorMessage);
         }
     };

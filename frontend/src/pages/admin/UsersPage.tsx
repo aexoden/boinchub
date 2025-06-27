@@ -5,6 +5,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useDeleteUserMutation, useUpdateUserMutation, useUsersQuery } from "../../hooks/queries";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { User, UserUpdate } from "../../types";
+import { getApiErrorMessage } from "../../util/error";
 import { canChangeRoles, getRoleColor, getRoleDisplayName, isSuperAdmin } from "../../util/user";
 
 export default function UsersPage() {
@@ -93,16 +94,7 @@ export default function UsersPage() {
             await updateUserMutation.mutateAsync({ userId: editingUser.id, userData: payload });
             setIsModalOpen(false);
         } catch (err: unknown) {
-            let errorMessage = "An unexpected error occurred";
-
-            if (err instanceof Error) {
-                errorMessage = err.message;
-            } else if (typeof err === "string") {
-                errorMessage = err;
-            } else if (err && typeof err === "object" && "detail" in err) {
-                errorMessage = String(err.detail);
-            }
-
+            const errorMessage = getApiErrorMessage(err, "update user");
             setModalError(errorMessage);
         }
     };
@@ -121,12 +113,7 @@ export default function UsersPage() {
         try {
             await deleteUserMutation.mutateAsync(userId);
         } catch (err: unknown) {
-            let errorMessage = "Failed to delete user";
-
-            if (err instanceof Error) {
-                errorMessage = err.message;
-            }
-
+            const errorMessage = getApiErrorMessage(err, "delete user");
             alert(errorMessage);
         }
     };

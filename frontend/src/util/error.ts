@@ -4,7 +4,11 @@ import { AxiosError } from "axios";
 import { ApiError } from "../types";
 
 export function getErrorMessage(error: unknown, fallback = "An unexpected error occurred"): string {
-    console.log(error);
+    // Check if this is a RefreshError
+    if (error instanceof Error && error.name === "RefreshError") {
+        return "Please log in to continue";
+    }
+
     // If the error is an instance of ApiError, return its message
     if (error instanceof ApiError && error.detail) {
         return error.detail;

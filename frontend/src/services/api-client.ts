@@ -19,6 +19,14 @@ function isErrorResponse(data: unknown): data is ErrorResponse {
     return typeof data === "object" && data !== null && "detail" in data;
 }
 
+// Custom error class for refresh failures
+class RefreshError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "RefreshError";
+    }
+}
+
 let isRefreshing = false;
 let failedQueue: {
     resolve: (value: string) => void;
@@ -59,6 +67,18 @@ apiClient.interceptors.response.use(
 
         // Handle 401 Unauthorized - try to refresh token
         if (error.response?.status === 401 && !originalRequest._retry) {
+            // Don't attempt refresh for auth endpoints
+            if (
+                originalRequest.url?.includes("/auth/login") ||
+                originalRequest.url?.includes("/auth/refresh") ||
+                originalRequest.url?.includes("/users/register")
+            ) {
+                const errorData = error.response.data;
+                const detail = isErrorResponse(errorData) ? errorData.detail : undefined;
+                const apiError = new ApiError(error.response.status, error.message, detail);
+                return Promise.reject(apiError);
+            }
+
             if (isRefreshing) {
                 // If already refreshing, add to the queue
                 return new Promise((resolve, reject) => {
@@ -118,8 +138,8 @@ apiClient.interceptors.response.use(
                     window.location.href = "/login";
                 }
 
-                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                return await Promise.reject(refreshError);
+                const refreshApiError = new RefreshError("Authentication required");
+                return await Promise.reject(refreshApiError);
             } finally {
                 isRefreshing = false;
             }

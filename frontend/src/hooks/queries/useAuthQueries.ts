@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "react-router";
 
 import { authService } from "../../services/api-client";
 import { userService } from "../../services/user-service";
@@ -7,10 +8,15 @@ import { UserCredentials, UserRegister } from "../../types";
 import { queryKeys } from "./queryKeys";
 
 export function useCurrentUserQuery() {
+    const location = useLocation();
+
+    // Don't fetch current user on auth pages to avoid unnecessary requests
+    const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
+
     return useQuery({
         queryKey: queryKeys.auth.currentUser(),
         queryFn: userService.getCurrentUser,
-        enabled: true,
+        enabled: !isAuthPage,
         retry: (failureCount, error) => {
             if (error instanceof Error && "status" in error) {
                 const status = error.status;

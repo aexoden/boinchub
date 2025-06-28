@@ -27,11 +27,11 @@ export const useAuthImpl = (): UseAuthReturn => {
         currentUserQuery.isLoading || loginMutation.isPending || registerMutation.isPending || logoutMutation.isPending;
 
     // Get error state
-    const error =
-        getAuthErrorMessage(loginMutation.error) ||
-        getAuthErrorMessage(registerMutation.error) ||
-        getAuthErrorMessage(logoutMutation.error) ||
-        null;
+    const loginError = loginMutation.error ? getAuthErrorMessage(loginMutation.error) : null;
+    const registerError = registerMutation.error ? getAuthErrorMessage(registerMutation.error) : null;
+    const logoutError = logoutMutation.error ? getAuthErrorMessage(logoutMutation.error) : null;
+
+    const error = loginError ?? registerError ?? logoutError;
 
     const login = useCallback(
         async (credentials: UserCredentials): Promise<void> => {

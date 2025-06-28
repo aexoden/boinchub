@@ -14,7 +14,7 @@ RUN pnpm build
 
 # Backend stage
 FROM python:3.13-alpine3.22@sha256:9b4929a72599b6c6389ece4ecbf415fd1355129f22bb92bb137eea098f05e975 AS backend
-COPY --from=ghcr.io/astral-sh/uv:latest@sha256:cda0fdc9b6066975ba4c791597870d18bc3a441dfc18ab24c5e888c16e15780c /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:latest@sha256:2363bcbe837b6ca8fda6512a4a68de3bc752035797c159ca0ecb68c27a0d0368 /uv /uvx /bin/
 
 # Install system dependencies
 RUN apk add --no-cache \

@@ -33,7 +33,7 @@ export function getRelativeTime(dateString: string) {
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
 
-    if (seconds < 60) return seconds === 1 ? "1 seconds ago" : `${seconds.toString()} seconds ago`;
+    if (seconds < 60) return seconds === 1 ? "1 second ago" : `${seconds.toString()} seconds ago`;
     if (minutes < 60) return minutes === 1 ? "1 minute ago" : `${minutes.toString()} minutes ago`;
     if (hours < 24) return hours === 1 ? "1 hour ago" : `${hours.toString()} hours ago`;
     if (days < 7) return days === 1 ? "1 day ago" : `${days.toString()} days ago`;

@@ -4,7 +4,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useConfig } from "../../contexts/ConfigContext";
 import { useCurrentUserComputersQuery } from "../../hooks/queries";
 import { usePageTitle } from "../../hooks/usePageTitle";
-import { formatDate } from "../../util/date";
+import { formatDate, getRelativeTime } from "../../util/date";
 
 export default function DashboardPage() {
     const { user } = useAuth();
@@ -69,9 +69,17 @@ export default function DashboardPage() {
                                                 {computer.cpid.substring(0, 8)}...
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                {computer.last_connected_at
-                                                    ? formatDate(computer.last_connected_at)
-                                                    : "Never"}
+                                                <span
+                                                    title={
+                                                        computer.last_connected_at
+                                                            ? formatDate(computer.last_connected_at)
+                                                            : "Never"
+                                                    }
+                                                >
+                                                    {computer.last_connected_at
+                                                        ? getRelativeTime(computer.last_connected_at)
+                                                        : "Never"}
+                                                </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <Link

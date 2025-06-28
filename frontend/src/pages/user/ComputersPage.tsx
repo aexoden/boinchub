@@ -872,11 +872,21 @@ function ComputerSettingsModal({ isOpen, onClose, computer }: ComputerSettingsMo
                                 <div>
                                     CPID: <code className="text-xs">{computer?.cpid}</code>
                                 </div>
-                                <div>
+                                <div
+                                    title={
+                                        computer?.last_connected_at
+                                            ? formatDate(computer.last_connected_at)
+                                            : formatDate(computer?.created_at ?? "")
+                                    }
+                                >
                                     Last seen:{" "}
-                                    {computer && formatDate(computer.last_connected_at ?? computer.created_at)}
+                                    {computer?.last_connected_at
+                                        ? getRelativeTime(computer.last_connected_at)
+                                        : getRelativeTime(computer?.created_at ?? "")}
                                 </div>
-                                <div>Added: {computer && formatDate(computer.created_at)}</div>
+                                <div title={computer ? formatDate(computer.created_at) : ""}>
+                                    Added: {computer ? getRelativeTime(computer.created_at) : ""}
+                                </div>
                             </div>
                         </div>
                     </div>

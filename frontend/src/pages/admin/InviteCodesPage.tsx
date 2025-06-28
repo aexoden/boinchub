@@ -9,7 +9,7 @@ import {
 } from "../../hooks/queries/useInviteCodeQueries";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { InviteCode, InviteCodeCreate } from "../../types";
-import { formatDate } from "../../util/date";
+import { formatDate, getRelativeTime } from "../../util/date";
 import { getApiErrorMessage } from "../../util/error";
 
 export default function InviteCodesPage() {
@@ -166,7 +166,7 @@ export default function InviteCodesPage() {
                                     Used By
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                    Created At
+                                    Created
                                 </th>
                                 <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-500 uppercase">
                                     Actions
@@ -215,13 +215,21 @@ export default function InviteCodesPage() {
                                             {inviteCode.used_by_username ?? "—"}
                                         </div>
                                         {inviteCode.used_at && (
-                                            <div className="text-xs text-gray-500">
-                                                {formatDate(inviteCode.used_at)}
+                                            <div
+                                                className="text-xs text-gray-500"
+                                                title={formatDate(inviteCode.used_at)}
+                                            >
+                                                {getRelativeTime(inviteCode.used_at)}
                                             </div>
                                         )}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{formatDate(inviteCode.created_at)}</div>
+                                        <div
+                                            className="text-sm text-gray-900"
+                                            title={formatDate(inviteCode.created_at)}
+                                        >
+                                            {getRelativeTime(inviteCode.created_at)}
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
                                         {!inviteCode.used_by_user_id && (

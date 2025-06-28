@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { useLogoutAllOtherSessionsMutation, useRevokeSessionMutation, useUserSessionsQuery } from "../../hooks/queries";
 import { UserSession } from "../../types";
-import { formatDate } from "../../util/date";
+import { formatDate, getRelativeTime } from "../../util/date";
 import { getApiErrorMessage } from "../../util/error";
 
 export default function SessionManagement() {
@@ -205,11 +205,17 @@ export default function SessionManagement() {
                                                     <GlobeAltIcon className="h-4 w-4" />
                                                     <span>{locationInfo}</span>
                                                 </div>
-                                                <p className="text-sm text-gray-500">
-                                                    Last active: {formatDate(session.last_accessed_at)}
+                                                <p
+                                                    className="text-sm text-gray-500"
+                                                    title={formatDate(session.last_accessed_at)}
+                                                >
+                                                    Last active: {getRelativeTime(session.last_accessed_at)}
                                                 </p>
-                                                <p className="text-sm text-gray-500">
-                                                    Created: {formatDate(session.created_at)}
+                                                <p
+                                                    className="text-sm text-gray-500"
+                                                    title={formatDate(session.created_at)}
+                                                >
+                                                    Created: {getRelativeTime(session.created_at)}
                                                 </p>
                                             </div>
                                         </div>

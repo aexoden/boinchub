@@ -120,7 +120,7 @@ class HostInfo(BaseXmlModel, tag="host_info", search_mode="unordered"):
     os_name: str = element()
     os_version: str = element()
     n_usable_coprocs: int = element()
-    wsl_available: BoolAsInt = element()
+    wsl_available: BoolAsInt | None = element(default=None)
     virtualbox_version: str | None = element(default=None)
 
 

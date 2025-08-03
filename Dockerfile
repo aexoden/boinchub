@@ -13,7 +13,7 @@ ENV NODE_ENV=production
 RUN pnpm build
 
 # Backend stage
-FROM python:3.13-alpine3.22@sha256:9b4929a72599b6c6389ece4ecbf415fd1355129f22bb92bb137eea098f05e975 AS backend
+FROM python:3.13-alpine3.22@sha256:37b14db89f587f9eaa890e4a442a3fe55db452b69cca1403cc730bd0fbdc8aaf AS backend
 COPY --from=ghcr.io/astral-sh/uv:latest@sha256:2363bcbe837b6ca8fda6512a4a68de3bc752035797c159ca0ecb68c27a0d0368 /uv /uvx /bin/
 
 # Install system dependencies

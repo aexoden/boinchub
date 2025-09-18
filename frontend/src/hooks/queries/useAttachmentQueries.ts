@@ -84,7 +84,7 @@ export function useDeleteAttachmentMutation() {
             queryClient.removeQueries({ queryKey: queryKeys.attachments.detail(attachmentId) });
 
             // Invalidate related queries if we have the previous attachment data
-            if (context.previousAttachment) {
+            if (context?.previousAttachment) {
                 const attachment = context.previousAttachment;
                 await Promise.all([
                     queryClient.invalidateQueries({

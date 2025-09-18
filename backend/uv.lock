@@ -127,7 +127,7 @@ dev = [
 requires-dist = [
     { name = "alembic", specifier = ">=1.16.5" },
     { name = "argon2-cffi", specifier = ">=25.1.0" },
-    { name = "cryptography", specifier = ">=45.0.7" },
+    { name = "cryptography", specifier = ">=46.0.1" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.116.2" },
     { name = "lxml", specifier = ">=6.0.1" },
     { name = "packaging", specifier = ">=25.0" },

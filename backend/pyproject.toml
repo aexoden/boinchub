@@ -35,7 +35,7 @@ build-backend = "hatchling.build"
 path = "boinchub/__about__.py"
 
 [dependency-groups]
-dev = ["ruff>=0.12.7"]
+dev = ["ruff>=0.13.0"]
 
 [tool.ruff]
 exclude = ["alembic"]

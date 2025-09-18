@@ -729,7 +729,7 @@ export default function PreferenceGroupEditPage({ isNew = false }: { isNew?: boo
                                         />
                                         <span className="text-sm text-gray-500">(24-hour format)</span>
                                     </div>
-                                    {Number(formData.start_hour) === 0 && Number(formData.end_hour) === 0 && (
+                                    {formData.start_hour === 0 && formData.end_hour === 0 && (
                                         <p className="mt-1 text-xs text-blue-600">
                                             No time restrictions (compute anytime)
                                         </p>
@@ -768,7 +768,7 @@ export default function PreferenceGroupEditPage({ isNew = false }: { isNew?: boo
                                         />
                                         <span className="text-sm text-gray-500">(24-hour format)</span>
                                     </div>
-                                    {Number(formData.net_start_hour) === 0 && Number(formData.net_end_hour) === 0 && (
+                                    {formData.net_start_hour === 0 && formData.net_end_hour === 0 && (
                                         <p className="mt-1 text-xs text-blue-600">
                                             No time restrictions (transfer anytime)
                                         </p>

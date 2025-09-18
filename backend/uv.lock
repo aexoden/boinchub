@@ -1,6 +1,6 @@
 version = 1
 revision = 3
-requires-python = ">=3.13.5"
+requires-python = ">=3.13.7"
 resolution-markers = [
     "python_full_version >= '3.14'",
     "python_full_version < '3.14'",
@@ -125,24 +125,24 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "alembic", specifier = ">=1.16.4" },
+    { name = "alembic", specifier = ">=1.16.5" },
     { name = "argon2-cffi", specifier = ">=25.1.0" },
-    { name = "cryptography", specifier = ">=45.0.5" },
-    { name = "fastapi", extras = ["standard"], specifier = ">=0.116.1" },
-    { name = "lxml", specifier = ">=6.0.0" },
+    { name = "cryptography", specifier = ">=45.0.7" },
+    { name = "fastapi", extras = ["standard"], specifier = ">=0.116.2" },
+    { name = "lxml", specifier = ">=6.0.1" },
     { name = "packaging", specifier = ">=25.0" },
     { name = "psycopg2", specifier = ">=2.9.10" },
-    { name = "pydantic", specifier = ">=2.11.7" },
+    { name = "pydantic", specifier = ">=2.11.9" },
     { name = "pydantic-settings", specifier = ">=2.10.1" },
     { name = "pydantic-xml", specifier = ">=2.17.3" },
     { name = "python-jose", extras = ["cryptography"], specifier = ">=3.5.0" },
-    { name = "sqlmodel", specifier = ">=0.0.24" },
-    { name = "types-lxml", specifier = ">=2025.3.30" },
+    { name = "sqlmodel", specifier = ">=0.0.25" },
+    { name = "types-lxml", specifier = ">=2025.8.25" },
     { name = "user-agents", specifier = ">=2.2.0" },
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "ruff", specifier = ">=0.12.7" }]
+dev = [{ name = "ruff", specifier = ">=0.13.0" }]
 
 [[package]]
 name = "certifi"

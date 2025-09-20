@@ -9,7 +9,7 @@
                 "description": "Verifying the FastAPI backend is running",
                 "path": "/api/v1/health",
                 "attempts": 3,
-                "delay": 5,
+                "delay": 10,
                 "content": "true"
             },
             {
@@ -18,7 +18,7 @@
                 "description": "Verifying the database backend is ready",
                 "path": "/api/v1/health/ready",
                 "attempts": 3,
-                "delay": 5,
+                "delay": 10,
                 "content": "true"
             },
             {
@@ -28,7 +28,7 @@
                 "path": "/",
                 "attempts": 3,
                 "content": "<html",
-                "initialDelay": 2
+                "initialDelay": 10
             }
         ]
     }

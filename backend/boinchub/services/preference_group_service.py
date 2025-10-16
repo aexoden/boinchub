@@ -47,7 +47,6 @@ class PreferenceGroupService(BaseService[PreferenceGroup, PreferenceGroupCreate,
             user_id (UUID | None): The ID of the user to filter preference groups for.
             offset (int): The number of preference groups to skip.
             limit (int): The maximum number of preference groups to return.
-            **filters (Any): Additional filters to apply.
 
         Returns:
             list[PreferenceGroup]: A list of preference groups available for the user.
@@ -141,7 +140,6 @@ class PreferenceGroupService(BaseService[PreferenceGroup, PreferenceGroupCreate,
         Args:
             object_id (UUID): The ID of the preference group to update.
             object_data (PreferenceGroupUpdate): The data to update the preference group with.
-            current_user (User): The current authenticated user.
 
         Returns:
             PreferenceGroup | None: The updated preference group, or None if not found.

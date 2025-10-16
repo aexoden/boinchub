@@ -34,7 +34,6 @@ class SessionService(BaseService[UserSession, UserSessionCreate, UserSessionUpda
 
         Args:
             user_id (UUID): The ID of the user.
-            refresh_token (str): The refresh token for the session.
             device_name (str): The name of the device.
             device_fingerprint (str): A unique fingerprint for the device.
             user_agent (str): The user agent string of the client.

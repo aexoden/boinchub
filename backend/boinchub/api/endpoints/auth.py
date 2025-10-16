@@ -303,7 +303,6 @@ async def get_user_sessions(
 
     Args:
         current_user (User): The currently authenticated user.
-        session_service (SessionService): The session service for managing user sessions.
         authorization (str | None): The Authorization header containing the access token.
 
     Returns:

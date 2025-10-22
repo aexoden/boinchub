@@ -37,8 +37,8 @@ class Project(ProjectBase, Timestamps, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
     # Relationships
-    attachments: list["ProjectAttachment"] = Relationship(back_populates="project", cascade_delete=True)
-    user_keys: list["UserProjectKey"] = Relationship(back_populates="project", cascade_delete=True)
+    attachments: list[ProjectAttachment] = Relationship(back_populates="project", cascade_delete=True)
+    user_keys: list[UserProjectKey] = Relationship(back_populates="project", cascade_delete=True)
 
 
 class ProjectPublic(ProjectBase, Timestamps):

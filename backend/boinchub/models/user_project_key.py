@@ -79,8 +79,8 @@ class UserProjectKey(UserProjectKeyBase, Timestamps, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
     # Relationships
-    user: "User" = Relationship(back_populates="project_keys")
-    project: "Project" = Relationship(back_populates="user_keys")
+    user: User = Relationship(back_populates="project_keys")
+    project: Project = Relationship(back_populates="user_keys")
 
 
 class UserProjectKeyPublic(UserProjectKeyBase, Timestamps):

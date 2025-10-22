@@ -119,16 +119,16 @@ class User(UserBase, Timestamps, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
     # Relationships
-    computers: list["Computer"] = Relationship(back_populates="user", cascade_delete=True)
-    preference_groups: list["PreferenceGroup"] = Relationship(back_populates="user", cascade_delete=True)
-    project_keys: list["UserProjectKey"] = Relationship(back_populates="user", cascade_delete=True)
-    sessions: list["UserSession"] = Relationship(back_populates="user", cascade_delete=True)
+    computers: list[Computer] = Relationship(back_populates="user", cascade_delete=True)
+    preference_groups: list[PreferenceGroup] = Relationship(back_populates="user", cascade_delete=True)
+    project_keys: list[UserProjectKey] = Relationship(back_populates="user", cascade_delete=True)
+    sessions: list[UserSession] = Relationship(back_populates="user", cascade_delete=True)
 
     # User properties
     password_hash: str
     boinc_password_hash: str
 
-    def can_modify_user(self, target_user: "User") -> bool:
+    def can_modify_user(self, target_user: User) -> bool:
         """Check if this user can modify another user.
 
         Args:
@@ -149,7 +149,7 @@ class User(UserBase, Timestamps, table=True):
         # Regular users can only modify themselves
         return self.id == target_user.id
 
-    def can_change_role(self, target_user: "User") -> bool:
+    def can_change_role(self, target_user: User) -> bool:
         """Check if this user can change another user's role.
 
         Args:

@@ -28,6 +28,7 @@ export default defineConfig(
                     },
                 },
             },
+            reactHooks.configs.flat.recommended,
             importPlugin.flatConfigs.recommended,
             importPlugin.flatConfigs.typescript,
             prettier,
@@ -39,11 +40,9 @@ export default defineConfig(
         },
         plugins: {
             "@stylistic": stylistic,
-            "react-hooks": reactHooks,
             "react-refresh": reactRefresh,
         },
         rules: {
-            ...reactHooks.configs.recommended.rules,
             "@stylistic/arrow-parens": ["error", "always"],
             "@stylistic/linebreak-style": ["error", "unix"],
             "@stylistic/no-extra-parens": "error",

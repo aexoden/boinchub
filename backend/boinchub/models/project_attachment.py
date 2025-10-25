@@ -47,8 +47,8 @@ class ProjectAttachment(ProjectAttachmentBase, Timestamps, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
     # Relationships
-    computer: Computer = Relationship(back_populates="project_attachments")
-    project: Project = Relationship(back_populates="attachments")
+    computer: "Computer" = Relationship(back_populates="project_attachments")
+    project: "Project" = Relationship(back_populates="attachments")
 
 
 class ProjectAttachmentPublic(ProjectAttachmentBase, Timestamps):

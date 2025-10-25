@@ -93,7 +93,7 @@ class PreferenceGroup(PreferenceGroupBase, Timestamps, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
     # Relationships
-    computers: list[Computer] = Relationship(back_populates="preference_group")
+    computers: list["Computer"] = Relationship(back_populates="preference_group")
     user: User | None = Relationship(back_populates="preference_groups")
 
 

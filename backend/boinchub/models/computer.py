@@ -50,7 +50,7 @@ class Computer(ComputerBase, Timestamps, table=True):
 
     # Relationships
     preference_group: PreferenceGroup | None = Relationship(back_populates="computers")
-    project_attachments: list[ProjectAttachment] = Relationship(back_populates="computer", cascade_delete=True)
+    project_attachments: list["ProjectAttachment"] = Relationship(back_populates="computer", cascade_delete=True)
     user: User = Relationship(back_populates="computers")
 
 

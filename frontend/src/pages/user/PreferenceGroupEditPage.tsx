@@ -218,6 +218,7 @@ export default function PreferenceGroupEditPage({ isNew = false }: { isNew?: boo
     // Load preference group data when available
     useEffect(() => {
         if (preferenceGroup && !isNew) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setFormData(preferenceGroup);
         }
     }, [preferenceGroup, isNew]);

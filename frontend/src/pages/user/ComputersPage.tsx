@@ -437,6 +437,7 @@ function AttachmentModal({ isOpen, onClose, computer, attachment, mode }: Attach
     // Reset form when modal opens/closes or attachment changes
     useEffect(() => {
         if (isOpen && attachment) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setFormData({
                 project_id: attachment.project_id,
                 resource_share: attachment.resource_share,
@@ -781,6 +782,7 @@ function ComputerSettingsModal({ isOpen, onClose, computer }: ComputerSettingsMo
 
     useEffect(() => {
         if (isOpen && computer) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedPreferenceGroup(computer.preference_group_id);
             setVacationOverride(computer.vacation_override);
             setError(null);

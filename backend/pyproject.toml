@@ -7,10 +7,10 @@ license = "MIT"
 authors = [{ name = "Jason Lynch", email = "jason@aexoden.com" }]
 requires-python = ">=3.13.0"
 dependencies = [
-    "alembic>=1.17.0",
+    "alembic>=1.17.1",
     "argon2-cffi>=25.1.0",
     "cryptography>=46.0.3",
-    "fastapi[standard]>=0.120.0",
+    "fastapi[standard]>=0.120.4",
     "lxml>=6.0.2",
     "packaging>=25.0",
     "psycopg2>=2.9.11",
@@ -35,7 +35,7 @@ build-backend = "hatchling.build"
 path = "boinchub/__about__.py"
 
 [dependency-groups]
-dev = ["ruff>=0.14.2"]
+dev = ["ruff>=0.14.3"]
 
 [tool.ruff]
 exclude = ["alembic"]

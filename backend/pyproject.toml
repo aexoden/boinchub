@@ -7,14 +7,14 @@ license = "MIT"
 authors = [{ name = "Jason Lynch", email = "jason@aexoden.com" }]
 requires-python = ">=3.13.0"
 dependencies = [
-    "alembic>=1.17.0",
+    "alembic>=1.17.2",
     "argon2-cffi>=25.1.0",
     "cryptography>=46.0.3",
     "fastapi[standard]>=0.120.0",
     "lxml>=6.0.2",
     "packaging>=25.0",
     "psycopg2>=2.9.11",
-    "pydantic>=2.12.3",
+    "pydantic>=2.12.4",
     "pydantic-settings>=2.11.0",
     "pydantic-xml>=2.18.0",
     "python-jose[cryptography]>=3.5.0",
@@ -35,7 +35,7 @@ build-backend = "hatchling.build"
 path = "boinchub/__about__.py"
 
 [dependency-groups]
-dev = ["ruff>=0.14.2"]
+dev = ["ruff>=0.14.5"]
 
 [tool.ruff]
 exclude = ["alembic"]

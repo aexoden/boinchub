@@ -128,7 +128,7 @@ class Project(BaseXmlModel, tag="project", search_mode="unordered"):
     """Project XML model."""
 
     url: str = element()
-    project_name: str = element()
+    project_name: str | None = element(default=None)
     suspended_via_gui: BoolAsInt = element()
     hostid: int = element()
     not_started_dur: Decimal = element()

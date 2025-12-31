@@ -1,5 +1,5 @@
 # Frontend build stage
-FROM node:22.21.0-alpine@sha256:bd26af08779f746650d95a2e4d653b0fd3c8030c44284b6b98d701c9b5eb66b9 AS frontend-builder
+FROM node:24.12.0-alpine@sha256:c921b97d4b74f51744057454b306b418cf693865e73b8100559189605f6955b8 AS frontend-builder
 WORKDIR /app/frontend
 
 # Copy package files and install dependencies

@@ -8,7 +8,7 @@ authors = [{ name = "Jason Lynch", email = "jason@aexoden.com" }]
 dependencies = [
   "alembic>=1.17.0",
   "argon2-cffi>=25.1.0",
-  "cryptography>=46.0.3",
+  "cryptography>=46.0.5",
   "fastapi[standard]>=0.120.0",
   "lxml>=6.0.2",
   "packaging>=26.0",

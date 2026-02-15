@@ -8,7 +8,7 @@ from uuid import UUID, uuid4
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from boinchub.models import Timestamps
+from boinchub.models.util import Timestamps
 
 if TYPE_CHECKING:
     from boinchub.models.project_attachment import ProjectAttachment

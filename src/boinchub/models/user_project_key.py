@@ -12,7 +12,7 @@ from sqlalchemy.engine import Dialect
 from sqlmodel import Field, Relationship, SQLModel, UniqueConstraint
 
 from boinchub.core.encryption import decrypt_account_key, encrypt_account_key
-from boinchub.models import Timestamps
+from boinchub.models.util import Timestamps
 
 if TYPE_CHECKING:
     from boinchub.models.project import Project

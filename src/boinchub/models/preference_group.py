@@ -9,8 +9,8 @@ from uuid import UUID, uuid4
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from boinchub.models import Timestamps
 from boinchub.models.user import User
+from boinchub.models.util import Timestamps
 
 if TYPE_CHECKING:
     from boinchub.models.computer import Computer

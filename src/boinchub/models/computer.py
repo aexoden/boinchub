@@ -10,9 +10,9 @@ from uuid import UUID, uuid4
 
 from sqlmodel import DateTime, Field, Relationship, SQLModel, UniqueConstraint
 
-from boinchub.models import Timestamps
 from boinchub.models.preference_group import PreferenceGroup
 from boinchub.models.user import User
+from boinchub.models.util import Timestamps
 
 if TYPE_CHECKING:
     from boinchub.models.project_attachment import ProjectAttachment

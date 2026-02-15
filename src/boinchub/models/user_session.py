@@ -11,8 +11,8 @@ from uuid import UUID, uuid4
 from pydantic import field_validator
 from sqlmodel import DateTime, Field, Relationship, SQLModel
 
-from boinchub.models import Timestamps
 from boinchub.models.user import User
+from boinchub.models.util import Timestamps
 
 
 class UserSessionBase(SQLModel):

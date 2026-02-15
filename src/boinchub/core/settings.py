@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     """Application settings."""
 
     # Configuration
-    model_config = SettingsConfigDict(env_file="../.env", env_ignore_empty=True, env_prefix="BOINCHUB_", extra="ignore")
+    model_config = SettingsConfigDict(env_file=".env", env_ignore_empty=True, env_prefix="BOINCHUB_", extra="ignore")
 
     # Environment
     environment: str = "development"

@@ -10,7 +10,7 @@ from pydantic import field_validator
 from sqlmodel import Field, Relationship, SQLModel
 
 from boinchub.core.settings import settings
-from boinchub.models import Timestamps
+from boinchub.models.util import Timestamps
 
 if TYPE_CHECKING:
     from boinchub.models.computer import Computer

@@ -2,7 +2,7 @@
 name = "boinchub"
 description = "A BOINC account manager intended for personal use."
 readme = "README.md"
-requires-python = ">=3.13.0"
+requires-python = ">=3.13"
 license = "MIT"
 authors = [{ name = "Jason Lynch", email = "jason@aexoden.com" }]
 dependencies = [
@@ -43,6 +43,10 @@ exclude = ["/.github"]
 [tool.hatch.build.targets.wheel]
 packages = ["src/boinchub"]
 
+#
+# Ruff
+#
+
 [tool.ruff]
 exclude = ["alembic"]
 line-length = 120
@@ -53,7 +57,9 @@ line-ending = "lf"
 [tool.ruff.lint]
 preview = true
 select = ["ALL"]
-ignore = ["COM812", "D203", "D213", "ISC001", "TC001", "TC002", "TC003"]
+ignore = [
+  "COM812",  # missing-trailing-comma (conflicts with ruff's formatter)
+]
 
 [tool.ruff.lint.flake8-copyright]
 notice-rgx = "(?i)SPDX-FileCopyrightText: \\d{4}"

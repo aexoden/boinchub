@@ -37,3 +37,24 @@ jobs:
 
       - name: Type check
         run: uv run mypy .
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: frontend
+
+      - name: Check TypeScript formatting
+        run: pnpm exec prettier --check .
+        working-directory: frontend
+
+      - name: Lint TypeScript
+        run: pnpm exec eslint .
+        working-directory: frontend
+
+      - name: Type check TypeScript
+        run: pnpm exec tsc --noEmit
+        working-directory: frontend

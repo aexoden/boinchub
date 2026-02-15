@@ -41,7 +41,7 @@ repos:
         pass_filenames: false
         args: [--check]
 
-  # Type checking
+  # Python type checking
   # The official pre-commit hook does not use the uv-created environment.
   # `pass_filenames: false` is necessary because changing a file can cause an unmodified file to have new issues.
   - repo: local
@@ -50,5 +50,33 @@ repos:
         name: mypy type checker
         description: Type check Python files using mypy
         entry: uv run mypy .
+        language: system
+        pass_filenames: false
+
+  # TypeScript formatting and linting
+  - repo: local
+    hooks:
+      - id: pnpm-lock
+        name: pnpm lockfile check
+        description: Check that pnpm-lock.yaml is up to date
+        entry: bash -c "cd frontend && pnpm install --frozen-lockfile"
+        language: system
+        pass_filenames: false
+      - id: prettier
+        name: Prettier code formatter
+        description: Format TypeScript files using Prettier
+        entry: bash -c "cd frontend && pnpm exec prettier --check ."
+        language: system
+        pass_filenames: false
+      - id: eslint
+        name: ESLint linter
+        description: Lint TypeScript files using ESLint
+        entry: bash -c "cd frontend && pnpm exec eslint ."
+        language: system
+        pass_filenames: false
+      - id: tsc
+        name: TypeScript type checker
+        description: Type check TypeScript files using tsc
+        entry: bash -c "cd frontend && pnpm exec tsc --noEmit"
         language: system
         pass_filenames: false

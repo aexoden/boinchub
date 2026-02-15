@@ -34,12 +34,12 @@ ENV UV_LINK_MODE=copy
 
 # Install Python dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=backend/uv.lock,target=uv.lock \
-    --mount=type=bind,source=backend/pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --locked --no-install-project
 
 # Copy the project into the image
-ADD backend/ /app
+COPY --exclude=frontend . /app
 
 # Sync the project
 RUN --mount=type=cache,target=/root/.cache/uv \

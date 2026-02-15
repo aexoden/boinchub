@@ -1,41 +1,47 @@
 [project]
 name = "boinchub"
-dynamic = ["version"]
 description = "A BOINC account manager intended for personal use."
 readme = "README.md"
+requires-python = ">=3.13.0"
 license = "MIT"
 authors = [{ name = "Jason Lynch", email = "jason@aexoden.com" }]
-requires-python = ">=3.13.0"
 dependencies = [
-    "alembic>=1.17.0",
-    "argon2-cffi>=25.1.0",
-    "cryptography>=46.0.3",
-    "fastapi[standard]>=0.120.0",
-    "lxml>=6.0.2",
-    "packaging>=25.0",
-    "psycopg2>=2.9.11",
-    "pydantic>=2.12.3",
-    "pydantic-settings>=2.12.0",
-    "pydantic-xml>=2.18.0",
-    "python-jose[cryptography]>=3.5.0",
-    "sqlmodel>=0.0.27",
-    "types-lxml>=2025.8.25",
-    "user-agents>=2.2.0",
+  "alembic>=1.17.0",
+  "argon2-cffi>=25.1.0",
+  "cryptography>=46.0.3",
+  "fastapi[standard]>=0.120.0",
+  "lxml>=6.0.2",
+  "packaging>=25.0",
+  "psycopg2>=2.9.11",
+  "pydantic>=2.12.3",
+  "pydantic-settings>=2.12.0",
+  "pydantic-xml>=2.18.0",
+  "python-jose[cryptography]>=3.5.0",
+  "sqlmodel>=0.0.27",
+  "types-lxml>=2025.8.25",
+  "user-agents>=2.2.0",
 ]
+dynamic = ["version"]
 
 [project.scripts]
 boinchub = "boinchub:main"
 boinchub-admin = "boinchub.cli.admin:main"
+
+[dependency-groups]
+dev = ["ruff>=0.14.2"]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
-path = "boinchub/__about__.py"
+path = "src/boinchub/__about__.py"
 
-[dependency-groups]
-dev = ["ruff>=0.14.2"]
+[tool.hatch.build.targets.sdist]
+exclude = ["/.github"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/boinchub"]
 
 [tool.ruff]
 exclude = ["alembic"]
@@ -53,7 +59,10 @@ ignore = ["COM812", "D203", "D213", "ISC001", "TC001", "TC002", "TC003"]
 notice-rgx = "(?i)SPDX-FileCopyrightText: \\d{4}"
 
 [tool.ruff.lint.flake8-type-checking]
-runtime-evaluated-base-classes = ["pydantic.BaseModel", "pydantic_xml.BaseXmlModel"]
+runtime-evaluated-base-classes = [
+  "pydantic.BaseModel",
+  "pydantic_xml.BaseXmlModel"
+]
 
 [tool.ruff.lint.isort]
 lines-between-types = 1

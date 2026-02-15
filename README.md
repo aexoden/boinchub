@@ -43,8 +43,7 @@ slow or nonexistent, but I am happy to look at well-written pull requests.
 
 ## Installation & Development Setup
 
-After cloning the repository, you will find the backend and frontend in separate
-directories.
+After cloning the repository, you will find the frontend in a separate directory.
 
 ### Environment
 
@@ -54,7 +53,6 @@ create a database on your own.
 ### Backend
 
 ```bash
-cd backend
 uv run alembic upgrade head
 uv run boinchub
 ```

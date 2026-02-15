@@ -7,24 +7,18 @@
 .git
 .gitignore
 
-# Documentation
-README.md
-*.md
+# Python
+__pycache__/
+.venv/
+*.pyc
 
 # Frontend development
 frontend/node_modules
 frontend/dist
 frontend/.vite
 
-# Backend development
-backend/.venv
-backend/__pycache__
-backend/*.pyc
-backend/.pytest_cache
-
 # IDE
 .vscode
-.idea
 *.swp
 *.swo
 

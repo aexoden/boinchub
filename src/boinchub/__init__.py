@@ -132,7 +132,7 @@ def _create_app() -> FastAPI:
     app.include_router(users.router)
 
     # Serve static files in production
-    static_dir = Path(__file__).parent.parent / "static"
+    static_dir = Path("/app/static")
 
     if static_dir.exists():
         logger = logging.getLogger(__name__)

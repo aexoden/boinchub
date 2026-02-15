@@ -47,17 +47,9 @@ exclude = ["/.github"]
 [tool.hatch.build.targets.wheel]
 packages = ["src/boinchub"]
 
-#
-# mypy
-#
-
 [tool.mypy]
 exclude = ["alembic"]
 strict = true
-
-#
-# Ruff
-#
 
 [tool.ruff]
 exclude = ["alembic"]
@@ -87,3 +79,8 @@ lines-between-types = 1
 
 [tool.ruff.lint.pydocstyle]
 convention = "pep257"
+
+[tool.uv]
+exclude-dependencies = [
+  "ecdsa",  # required until https://github.com/mpdavis/python-jose/issues/390 is resolved
+]

@@ -39,14 +39,14 @@ class Computer(ComputerBase, Timestamps, table=True):
     """Computer model."""
 
     # SQLAlchemy table name and constraints
-    __tablename__: str = "computers"  # type: ignore[attr-defined]
+    __tablename__: str = "computers"  # type: ignore[misc]
     __table_args__ = (UniqueConstraint("user_id", "cpid"),)
 
     # Primary key
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
     # Computer properties
-    last_connected_at: datetime.datetime | None = Field(default=None, sa_type=DateTime(timezone=True))  # type: ignore[arg-type]
+    last_connected_at: datetime.datetime | None = Field(default=None, sa_type=DateTime(timezone=True))  # type: ignore[call-overload]
 
     # Relationships
     preference_group: PreferenceGroup | None = Relationship(back_populates="computers")

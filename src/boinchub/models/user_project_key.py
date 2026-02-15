@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from boinchub.models.user import User
 
 
-class EncryptedAccountKey(sa_types.TypeDecorator):
+class EncryptedAccountKey(sa_types.TypeDecorator):  # type: ignore[type-arg]
     """Custom SQLAlchemy type for encrypted account keys."""
 
     impl = sa_types.String
@@ -72,7 +72,7 @@ class UserProjectKey(UserProjectKeyBase, Timestamps, table=True):
     """User project key model."""
 
     # SQLAlchemy table name and constraints
-    __tablename__: str = "user_project_keys"  # type: ignore[attr-defined]
+    __tablename__: str = "user_project_keys"  # type: ignore[misc]
     __table_args__ = (UniqueConstraint("user_id", "project_id"),)
 
     # Primary key

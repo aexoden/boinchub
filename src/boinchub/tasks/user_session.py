@@ -99,7 +99,7 @@ class SessionCleanupTask:
     def __init__(self) -> None:
         """Initialize the session cleanup task."""
         self.running = False
-        self.task: asyncio.Task | None = None
+        self.task: asyncio.Task[None] | None = None
 
     async def start(self) -> None:
         """Start the background cleanup task."""

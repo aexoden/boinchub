@@ -40,7 +40,7 @@ class ProjectAttachment(ProjectAttachmentBase, Timestamps, table=True):
     """Project attachment model."""
 
     # SQLAlchemy table name and constraints
-    __tablename__: str = "project_attachments"  # type: ignore[attr-defined]
+    __tablename__: str = "project_attachments"  # type: ignore[misc]
     __table_args__ = (UniqueConstraint("computer_id", "project_id"),)
 
     # Primary key

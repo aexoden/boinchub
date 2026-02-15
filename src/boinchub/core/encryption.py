@@ -17,7 +17,7 @@ class AccountKeyEncryption:
 
     def __init__(self) -> None:
         """Initialize the encryption service."""
-        self._fernet = None
+        self._fernet: Fernet | None = None
 
     def _get_fernet(self) -> Fernet:
         """Get or create Fernet instance for encryption/decryption.

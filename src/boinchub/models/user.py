@@ -113,7 +113,7 @@ class User(UserBase, Timestamps, table=True):
     """User model."""
 
     # SQLAlchemy table name
-    __tablename__: str = "users"  # type: ignore[attr-defined]
+    __tablename__: str = "users"  # type: ignore[misc]
 
     # Primary key
     id: UUID = Field(default_factory=uuid4, primary_key=True)

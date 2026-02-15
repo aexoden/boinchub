@@ -10,7 +10,7 @@ import secrets
 from typing import Annotated, Any
 from uuid import UUID
 
-import user_agents
+import user_agents  # type: ignore[import-untyped]
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError

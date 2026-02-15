@@ -42,14 +42,14 @@ class InviteCodeBase(SQLModel):
     used_by_user_id: UUID | None = Field(default=None, foreign_key="users.id", ondelete="SET NULL")
 
     # Usage tracking
-    used_at: datetime.datetime | None = Field(default=None, sa_type=DateTime(timezone=True))  # type: ignore[arg-type]
+    used_at: datetime.datetime | None = Field(default=None, sa_type=DateTime(timezone=True))  # type: ignore[call-overload]
 
 
 class InviteCode(InviteCodeBase, Timestamps, table=True):
     """Invite code model."""
 
     # SQLAlchemy table name
-    __tablename__: str = "invite_codes"  # type: ignore[attr-defined]
+    __tablename__: str = "invite_codes"  # type: ignore[misc]
 
     # Primary key
     id: UUID = Field(default_factory=uuid4, primary_key=True)

@@ -103,20 +103,9 @@ def promote_user(username: str) -> bool:
                 print(f"User '{username}' is already a super admin.")
                 return False
 
-            temp_admin = type(
-                "TempUser",
-                (),
-                {
-                    "id": None,
-                    "role": "super_admin",
-                    "can_modify_user": lambda _self, _target: True,
-                    "can_change_role": lambda _self, _target: True,
-                },
-            )()
-
             update_data = UserUpdate(role="super_admin")
 
-            updated_user = user_service.update(user.id, update_data, temp_admin)  # type: ignore[call-arg]
+            updated_user = user_service.update(user.id, update_data)
 
             if updated_user:
                 print(f"User '{username}' promoted to super admin successfully.")

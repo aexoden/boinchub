@@ -321,13 +321,13 @@ async def get_user_sessions(
         )
 
     # Try to identify current session
-    current_session_id = None
+    current_session_id: UUID | None = None
 
     # Try to the extract the current session ID
     try:
         token = authorization.replace("Bearer ", "")
         payload = decode_token(token)
-        current_session_id: UUID | None = payload.get("session_id")
+        current_session_id = payload.get("session_id")
     except Exception:  # noqa: BLE001, S110
         pass
 

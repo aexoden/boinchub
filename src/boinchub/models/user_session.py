@@ -27,7 +27,7 @@ class UserSessionBase(SQLModel):
     # Session metadata
     is_active: bool = Field(default=True)
     last_accessed_at: datetime.datetime = Field(
-        sa_type=DateTime(timezone=True),  # type: ignore[arg-type],
+        sa_type=DateTime(timezone=True),  # type: ignore[call-overload]
         default_factory=lambda: datetime.datetime.now(datetime.UTC),
     )
 
@@ -96,7 +96,7 @@ class UserSessionBase(SQLModel):
 class UserSession(UserSessionBase, Timestamps, table=True):
     """User session model for tracking active authentication sessions."""
 
-    __tablename__: str = "user_sessions"  # type: ignore[name-defined]
+    __tablename__: str = "user_sessions"  # type: ignore[misc]
 
     # Primary key
     id: UUID = Field(default_factory=uuid4, primary_key=True)

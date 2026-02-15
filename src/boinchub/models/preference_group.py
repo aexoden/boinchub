@@ -87,7 +87,7 @@ class PreferenceGroup(PreferenceGroupBase, Timestamps, table=True):
     """Preference group model."""
 
     # SQLAlchemy table name
-    __tablename__: str = "preference_groups"  # type: ignore[attr-defined]
+    __tablename__: str = "preference_groups"  # type: ignore[misc]
 
     # Primary key
     id: UUID = Field(default_factory=uuid4, primary_key=True)

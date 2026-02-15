@@ -28,7 +28,11 @@ boinchub = "boinchub:main"
 boinchub-admin = "boinchub.cli.admin:main"
 
 [dependency-groups]
-dev = ["ruff>=0.14.2"]
+dev = [
+  "mypy>=1.19.1",
+  "ruff>=0.14.2",
+  "types-python-jose>=3.5.0.20250531",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -42,6 +46,14 @@ exclude = ["/.github"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/boinchub"]
+
+#
+# mypy
+#
+
+[tool.mypy]
+exclude = ["alembic"]
+strict = true
 
 #
 # Ruff

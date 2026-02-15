@@ -83,7 +83,7 @@ def get_invite_codes(
     if active_only:
         filters["is_active"] = True
 
-    invite_codes = invite_code_service.get_all(offset=offset, limit=limit, **filters)
+    invite_codes = invite_code_service.get_all(offset=offset, limit=limit, **filters)  # type: ignore[arg-type]
 
     return [
         InviteCodePublic(

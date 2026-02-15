@@ -1,7 +1,7 @@
 """Create initial database.
 
 Revision ID: 2d58f8ffc51a
-Revises: 
+Revises:
 Create Date: 2025-06-08 10:20:52.042061
 
 """

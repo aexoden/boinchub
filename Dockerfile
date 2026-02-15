@@ -57,6 +57,3 @@ EXPOSE 8000
 
 # Use entrypoint script to run migrations and start server
 ENTRYPOINT ["./docker-entrypoint.sh"]
-
-
-

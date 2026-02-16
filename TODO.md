@@ -1,5 +1,12 @@
 # BoincHub TODO
 
+## Immediate
+
+- Convert to DevBox
+- Finish other norms points
+- Add CHANGELOG
+- Release
+
 ## Fixes
 
 - Add toasts in appropriate spots (failed deletions and maybe more)

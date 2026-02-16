@@ -19,7 +19,7 @@ dependencies = [
   "python-jose[cryptography]>=3.5.0",
   "sqlmodel>=0.0.33",
   "types-lxml>=2026.1.1",
-  "user-agents>=2.2.0",
+  "ua-parser[regex]>=1.0.1",
 ]
 dynamic = ["version"]
 

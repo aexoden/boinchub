@@ -99,7 +99,7 @@ async def login_for_access_token(
 
     # Extract device information
     user_agent = request.headers.get("user-agent", "Unknown")
-    client_ip = request.client.host if request.client else "Unknown"
+    client_ip = get_client_ip(request)
 
     device_info = extract_device_info(user_agent, client_ip)
 

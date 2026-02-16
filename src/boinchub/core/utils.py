@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 def get_client_ip(request: Request) -> str:
     """Extract the real client IP address from the request.
 
-    When behind a proxy, the applicaiton needs to check special headers that
+    When behind a proxy, the application needs to check special headers that
     proxies set to preserve the original client IP address.
 
     Args:
@@ -35,7 +35,6 @@ def get_client_ip(request: Request) -> str:
     # Check each proxy header
     for header in proxy_headers:
         header_value = request.headers.get(header)
-
         if header_value:
             if header == "X-Forwarded-For":
                 ips = [ip.strip() for ip in header_value.split(",")]

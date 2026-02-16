@@ -9,7 +9,7 @@ import secrets
 
 from typing import TYPE_CHECKING, Annotated, Any
 
-import user_agents  # type: ignore[import-untyped]
+import ua_parser
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
@@ -247,6 +247,26 @@ def get_current_user_if_active(current_user: Annotated[User, Depends(get_current
     return current_user
 
 
+def get_version_string(major: str | None, minor: str | None, patch: str | None, patch_minor: str | None) -> str:
+    """Convert version components into a version string.
+
+    Args:
+        major (str | None): The major version.
+        minor (str | None): The minor version.
+        patch (str | None): The patch version.
+        patch_minor (str | None): The patch minor version.
+
+    Returns:
+        str: The combined version string in the format "major.minor.patch" or "major.minor.patch-patch_minor".
+
+    """
+    version_parts = [str(part) for part in [major, minor, patch] if part is not None]
+    if patch_minor and patch_minor != "0":
+        version_parts[-1] += f"-{patch_minor}"
+
+    return ".".join(version_parts) if version_parts else ""
+
+
 def extract_device_info(user_agent: str, client_ip: str) -> dict[str, str]:
     """Extract device information from request headers.
 
@@ -258,12 +278,31 @@ def extract_device_info(user_agent: str, client_ip: str) -> dict[str, str]:
         dict[str, str]: A dictionary containing device information.
 
     """
-    user_agent_parsed = user_agents.parse(user_agent)
+    result = ua_parser.parse(user_agent)
+
+    parts: list[str] = []
+
+    if result.user_agent:
+        browser = result.user_agent.family
+        version = get_version_string(
+            result.user_agent.major, result.user_agent.minor, result.user_agent.patch, result.user_agent.patch_minor
+        )
+        parts.append(f"{browser} {version}" if version else browser)
+
+    if result.os:
+        os_name = result.os.family
+        os_version = get_version_string(result.os.major, result.os.minor, result.os.patch, result.os.patch_minor)
+        parts.append(f"{os_name} {os_version}" if os_version else os_name)
+
+    if result.device:
+        parts.append(result.device.family)
+
+    device_name = " / ".join(parts) if parts else "Unknown Device"
 
     fingerprint_data = f"{user_agent}:{client_ip}"
     device_fingerprint = hashlib.sha256(fingerprint_data.encode()).hexdigest()
 
     return {
-        "device_name": str(user_agent_parsed),
+        "device_name": device_name,
         "device_fingerprint": device_fingerprint,
     }

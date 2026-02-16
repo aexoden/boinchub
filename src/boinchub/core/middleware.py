@@ -6,14 +6,18 @@
 import time
 
 from collections import defaultdict, deque
-from collections.abc import Awaitable, Callable
+from typing import TYPE_CHECKING
 
 from fastapi import Request, status
 from fastapi.responses import JSONResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.types import ASGIApp
 
 from boinchub.core.utils import get_client_ip
+
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
+
+    from starlette.types import ASGIApp
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):

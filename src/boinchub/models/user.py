@@ -128,7 +128,7 @@ class User(UserBase, Timestamps, table=True):
     password_hash: str
     boinc_password_hash: str
 
-    def can_modify_user(self, target_user: "User") -> bool:
+    def can_modify_user(self, target_user: User) -> bool:  # pyright: ignore[reportUndefinedVariable]
         """Check if this user can modify another user.
 
         Args:
@@ -149,7 +149,7 @@ class User(UserBase, Timestamps, table=True):
         # Regular users can only modify themselves
         return self.id == target_user.id
 
-    def can_change_role(self, target_user: "User") -> bool:
+    def can_change_role(self, target_user: User) -> bool:  # pyright: ignore[reportUndefinedVariable]
         """Check if this user can change another user's role.
 
         Args:

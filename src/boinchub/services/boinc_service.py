@@ -7,11 +7,10 @@ import datetime
 import logging
 
 from decimal import Decimal
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 from fastapi import Depends
 from packaging import version
-from sqlmodel import Session
 
 from boinchub.core.database import get_db
 from boinchub.core.settings import settings
@@ -26,18 +25,22 @@ from boinchub.core.xmlrpc import (
 from boinchub.core.xmlrpc import (
     Project as XmlProject,
 )
-from boinchub.models.computer import Computer
-from boinchub.models.preference_group import PreferenceGroup
-from boinchub.models.project import Project
-from boinchub.models.project_attachment import ProjectAttachment
-from boinchub.models.user import User
-from boinchub.models.user_project_key import UserProjectKey
 from boinchub.services.computer_service import ComputerService
 from boinchub.services.preference_group_service import PreferenceGroupService
 from boinchub.services.project_attachment_service import ProjectAttachmentService
 from boinchub.services.project_service import ProjectService
 from boinchub.services.user_project_key_service import UserProjectKeyService
 from boinchub.services.user_service import UserService
+
+if TYPE_CHECKING:
+    from sqlmodel import Session
+
+    from boinchub.models.computer import Computer
+    from boinchub.models.preference_group import PreferenceGroup
+    from boinchub.models.project import Project
+    from boinchub.models.project_attachment import ProjectAttachment
+    from boinchub.models.user import User
+    from boinchub.models.user_project_key import UserProjectKey
 
 logger = logging.getLogger(__name__)
 

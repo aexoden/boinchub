@@ -5,16 +5,18 @@
 
 import datetime
 
-from typing import Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import Depends
 from sqlmodel import Session, select
 
 from boinchub.core.database import get_db
-from boinchub.core.xmlrpc import AccountManagerRequest
 from boinchub.models.computer import Computer, ComputerCreate, ComputerUpdate
-from boinchub.models.user import User
 from boinchub.services.base_service import BaseService
+
+if TYPE_CHECKING:
+    from boinchub.core.xmlrpc import AccountManagerRequest
+    from boinchub.models.user import User
 
 
 class ComputerService(BaseService[Computer, ComputerCreate, ComputerUpdate]):

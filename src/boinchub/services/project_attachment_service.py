@@ -3,8 +3,7 @@
 # SPDX-License-Identifier: MIT
 """Service for project attachment-related operations."""
 
-from typing import Annotated
-from uuid import UUID
+from typing import TYPE_CHECKING, Annotated
 
 from fastapi import Depends
 from sqlmodel import Session, select
@@ -12,6 +11,9 @@ from sqlmodel import Session, select
 from boinchub.core.database import get_db
 from boinchub.models.project_attachment import ProjectAttachment, ProjectAttachmentCreate, ProjectAttachmentUpdate
 from boinchub.services.base_service import BaseService
+
+if TYPE_CHECKING:
+    from uuid import UUID
 
 
 class ProjectAttachmentService(BaseService[ProjectAttachment, ProjectAttachmentCreate, ProjectAttachmentUpdate]):

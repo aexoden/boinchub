@@ -3,8 +3,6 @@
 # SPDX-License-Identifier: MIT
 """Utility classes and functions for models."""
 
-from __future__ import annotations
-
 import datetime
 
 from sqlmodel import DateTime, Field, func

@@ -2,5 +2,3 @@
 #
 # SPDX-License-Identifier: MIT
 """Model package."""
-
-from __future__ import annotations

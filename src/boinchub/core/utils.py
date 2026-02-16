@@ -5,7 +5,10 @@
 
 import ipaddress
 
-from fastapi import Request
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from fastapi import Request
 
 
 def get_client_ip(request: Request) -> str:

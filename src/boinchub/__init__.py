@@ -2,5 +2,3 @@
 #
 # SPDX-License-Identifier: MIT
 """Public API."""
-
-from __future__ import annotations

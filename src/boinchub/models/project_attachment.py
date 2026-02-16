@@ -4,16 +4,13 @@
 """Project attachment model for BoincHub."""
 
 from decimal import Decimal
-from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from sqlmodel import Field, Relationship, SQLModel, UniqueConstraint
 
+from boinchub.models.computer import Computer
+from boinchub.models.project import Project
 from boinchub.models.util import Timestamps
-
-if TYPE_CHECKING:
-    from boinchub.models.computer import Computer
-    from boinchub.models.project import Project
 
 
 class ProjectAttachmentBase(SQLModel):
@@ -47,8 +44,8 @@ class ProjectAttachment(ProjectAttachmentBase, Timestamps, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
     # Relationships
-    computer: "Computer" = Relationship(back_populates="project_attachments")
-    project: "Project" = Relationship(back_populates="attachments")
+    computer: Computer = Relationship(back_populates="project_attachments")
+    project: Project = Relationship(back_populates="attachments")
 
 
 class ProjectAttachmentPublic(ProjectAttachmentBase, Timestamps):

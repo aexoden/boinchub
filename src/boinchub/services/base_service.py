@@ -3,10 +3,12 @@
 # SPDX-License-Identifier: MIT
 """Base service class for common CRUD operations."""
 
-from typing import Any
-from uuid import UUID
+from typing import TYPE_CHECKING, Any
 
 from sqlmodel import Session, SQLModel, select
+
+if TYPE_CHECKING:
+    from uuid import UUID
 
 
 class BaseService[ModelType: SQLModel, CreateType: SQLModel, UpdateType: SQLModel]:

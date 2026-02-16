@@ -5,10 +5,9 @@
 
 import logging
 
-from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import uvicorn
 
@@ -35,6 +34,9 @@ from boinchub.api.endpoints import (
 from boinchub.core.middleware import RateLimitMiddleware
 from boinchub.core.settings import settings
 from boinchub.tasks.user_session import SessionCleanupTask
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 # Configure logging
 logging.basicConfig(

@@ -7,8 +7,7 @@ import datetime
 import hashlib
 import secrets
 
-from typing import Annotated, Any
-from uuid import UUID
+from typing import TYPE_CHECKING, Annotated, Any
 
 import user_agents  # type: ignore[import-untyped]
 
@@ -21,7 +20,11 @@ from sqlmodel import Session, SQLModel
 
 from boinchub.core.database import get_db
 from boinchub.core.settings import settings
-from boinchub.models.user import User
+
+if TYPE_CHECKING:
+    from uuid import UUID
+
+    from boinchub.models.user import User
 
 # Configuration
 SECRET_KEY = settings.secret_key

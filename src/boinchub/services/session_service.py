@@ -5,8 +5,7 @@
 
 import datetime
 
-from typing import Annotated
-from uuid import UUID
+from typing import TYPE_CHECKING, Annotated
 
 from fastapi import Depends
 from sqlmodel import Session, col, select
@@ -15,6 +14,9 @@ from boinchub.core.database import get_db
 from boinchub.core.security import REFRESH_TOKEN_EXPIRE_DAYS, TokenPair, create_token_pair, hash_refresh_token
 from boinchub.models.user_session import UserSession, UserSessionCreate, UserSessionUpdate
 from boinchub.services.base_service import BaseService
+
+if TYPE_CHECKING:
+    from uuid import UUID
 
 
 class SessionService(BaseService[UserSession, UserSessionCreate, UserSessionUpdate]):

@@ -3,8 +3,7 @@
 # SPDX-License-Identifier: MIT
 """Service for user-related operations."""
 
-from typing import Annotated, Any
-from uuid import UUID
+from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import Depends, HTTPException, status
 from sqlmodel import Session, select
@@ -13,6 +12,9 @@ from boinchub.core.database import get_db
 from boinchub.core.security import hash_boinc_password, hash_password, verify_password
 from boinchub.models.user import User, UserCreate, UserUpdate
 from boinchub.services.base_service import BaseService
+
+if TYPE_CHECKING:
+    from uuid import UUID
 
 
 class UserService(BaseService[User, UserCreate, UserUpdate]):

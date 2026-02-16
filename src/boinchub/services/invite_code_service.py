@@ -5,16 +5,19 @@
 
 import datetime
 
-from typing import Annotated, Any
-from uuid import UUID
+from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import Depends, HTTPException, status
 from sqlmodel import Session, select
 
 from boinchub.core.database import get_db
 from boinchub.models.invite_code import InviteCode, InviteCodeCreate, InviteCodeUpdate, generate_invite_code
-from boinchub.models.user import User
 from boinchub.services.base_service import BaseService
+
+if TYPE_CHECKING:
+    from uuid import UUID
+
+    from boinchub.models.user import User
 
 
 class InviteCodeService(BaseService[InviteCode, InviteCodeCreate, InviteCodeUpdate]):

@@ -3,11 +3,14 @@
 # SPDX-License-Identifier: MIT
 """Database module for BoincHub."""
 
-from collections.abc import Generator
+from typing import TYPE_CHECKING
 
 from sqlmodel import Session, create_engine
 
 from boinchub.core.settings import settings
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 engine = create_engine(settings.database_url)
 

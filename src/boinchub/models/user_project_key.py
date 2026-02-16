@@ -8,15 +8,15 @@ from uuid import UUID, uuid4
 
 import sqlalchemy.types as sa_types
 
-from sqlalchemy.engine import Dialect
 from sqlmodel import Field, Relationship, SQLModel, UniqueConstraint
 
 from boinchub.core.encryption import decrypt_account_key, encrypt_account_key
+from boinchub.models.project import Project
+from boinchub.models.user import User
 from boinchub.models.util import Timestamps
 
 if TYPE_CHECKING:
-    from boinchub.models.project import Project
-    from boinchub.models.user import User
+    from sqlalchemy.engine import Dialect
 
 
 class EncryptedAccountKey(sa_types.TypeDecorator):  # type: ignore[type-arg]
@@ -79,8 +79,8 @@ class UserProjectKey(UserProjectKeyBase, Timestamps, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
     # Relationships
-    user: "User" = Relationship(back_populates="project_keys")
-    project: "Project" = Relationship(back_populates="user_keys")
+    user: User = Relationship(back_populates="project_keys")
+    project: Project = Relationship(back_populates="user_keys")
 
 
 class UserProjectKeyPublic(UserProjectKeyBase, Timestamps):

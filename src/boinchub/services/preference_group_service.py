@@ -3,8 +3,7 @@
 # SPDX-License-Identifier: MIT
 """Service for preference group operations."""
 
-from typing import Annotated, Any
-from uuid import UUID
+from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import Depends, HTTPException, status
 from sqlmodel import Session, or_, select
@@ -12,6 +11,9 @@ from sqlmodel import Session, or_, select
 from boinchub.core.database import get_db
 from boinchub.models.preference_group import PreferenceGroup, PreferenceGroupCreate, PreferenceGroupUpdate
 from boinchub.services.base_service import BaseService
+
+if TYPE_CHECKING:
+    from uuid import UUID
 
 
 class PreferenceGroupService(BaseService[PreferenceGroup, PreferenceGroupCreate, PreferenceGroupUpdate]):

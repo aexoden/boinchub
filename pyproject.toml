@@ -30,7 +30,7 @@ boinchub-admin = "boinchub.cli.admin:main"
 [dependency-groups]
 dev = [
   "mypy>=1.19.1",
-  "ruff>=0.15.1",
+  "ruff>=0.15.2",
   "types-python-jose>=3.5.0.20250531",
 ]
 

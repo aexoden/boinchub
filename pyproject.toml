@@ -17,7 +17,7 @@ dependencies = [
   "pydantic-settings>=2.13.1",
   "pydantic-xml>=2.19.0",
   "python-jose[cryptography]>=3.5.0",
-  "sqlmodel>=0.0.33",
+  "sqlmodel>=0.0.37",
   "types-lxml>=2026.2.16",
   "ua-parser[regex]>=1.0.1",
 ]

@@ -11,7 +11,7 @@
     "python": { "version": "3.14.3", "disable_plugin": true }
   },
   "env": {
-    "DEVBOX_COREPACK_ENABLED": "1"
+    "DEVBOX_COREPACK_ENABLED": "true"
   },
   "shell": {
     "init_hook": ["uv sync", "pre-commit install"],

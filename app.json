@@ -8,27 +8,30 @@
                 "name": "fastapi",
                 "description": "Verifying the FastAPI backend is running",
                 "path": "/api/v1/health",
-                "attempts": 3,
+                "attempts": 5,
                 "content": "true",
-                "initialDelay": 10
+                "initialDelay": 10,
+                "wait": 5
             },
             {
                 "type": "startup",
                 "name": "database",
                 "description": "Verifying the database backend is ready",
                 "path": "/api/v1/health/ready",
-                "attempts": 3,
+                "attempts": 5,
                 "content": "true",
-                "initialDelay": 10
+                "initialDelay": 10,
+                "wait": 5
             },
             {
                 "type": "startup",
                 "name": "react",
                 "description": "Verifying the frontend static files are being served",
                 "path": "/",
-                "attempts": 3,
+                "attempts": 5,
                 "content": "<html",
-                "initialDelay": 10
+                "initialDelay": 10,
+                "wait": 5
             }
         ]
     }

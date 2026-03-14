@@ -15,46 +15,35 @@ env:
   FORCE_COLOR: "1"
 
 jobs:
-  ci:
-    name: Continuous Integration on Linux
+  lint:
+    name: Lint and Type Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7
-        with:
-          version: "0.10.4"
+      - name: Install Devbox
+        uses: jetify-com/devbox-install-action@a0d2d53632934ae004f878c840055956d9f741b0 # v0.14.0
 
       - name: Set up uv
-        run: uv sync --locked
+        run: devbox run -- uv sync --locked
 
       - name: Check formatting
-        run: uv run ruff format --check
+        run: devbox run -- uv run ruff format --check
 
       - name: Lint
-        run: uv run ruff check
+        run: devbox run -- uv run ruff check
 
       - name: Type check
-        run: uv run mypy .
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
-        with:
-          package_json_file: frontend/package.json
+        run: devbox run -- uv run mypy .
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: frontend
+        run: devbox run -- bash -c "cd frontend && pnpm install --frozen-lockfile"
 
       - name: Check TypeScript formatting
-        run: pnpm exec prettier --check .
-        working-directory: frontend
+        run: devbox run -- bash -c "cd frontend && pnpm exec prettier --check ."
 
       - name: Lint TypeScript
-        run: pnpm exec eslint .
-        working-directory: frontend
+        run: devbox run -- bash -c "cd frontend && pnpm exec eslint ."
 
       - name: Type check TypeScript
-        run: pnpm exec tsc --noEmit
-        working-directory: frontend
+        run: devbox run -- bash -c "cd frontend && pnpm exec tsc --noEmit"

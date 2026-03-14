@@ -4,7 +4,7 @@ import { defineConfig } from "eslint/config";
 import importPlugin from "eslint-plugin-import";
 import prettier from "eslint-plugin-prettier/recommended";
 import reactHooks from "eslint-plugin-react-hooks";
-import reactRefresh from "eslint-plugin-react-refresh";
+import { reactRefresh } from "eslint-plugin-react-refresh";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
@@ -32,6 +32,7 @@ export default defineConfig(
             importPlugin.flatConfigs.recommended,
             importPlugin.flatConfigs.typescript,
             prettier,
+            reactRefresh.configs.recommended(),
         ],
         files: ["**/*.{js,ts,tsx}"],
         languageOptions: {
@@ -40,7 +41,6 @@ export default defineConfig(
         },
         plugins: {
             "@stylistic": stylistic,
-            "react-refresh": reactRefresh,
         },
         rules: {
             "@stylistic/arrow-parens": ["error", "always"],

@@ -75,7 +75,7 @@ repos:
       - id: eslint
         name: ESLint linter
         description: Lint TypeScript files using ESLint
-        entry: devbox run -- bash -c "cd frontend && pnpm exec eslint ."
+        entry: devbox run -- bash -c "cd frontend && pnpm exec eslint . --max-warnings 0"
         language: system
         pass_filenames: false
 

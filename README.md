@@ -28,22 +28,40 @@ slow or nonexistent, but I am happy to look at well-written pull requests.
 
 ## Architecture
 
-- **Backend**: FastAPI (Python 3.13+) with SQLModel
+- **Backend**: FastAPI (Python 3.14+) with SQLModel
 - **Frontend**: React 19 with TypeScript, TailwindCSS, and Tanstack Query
 - **Database**: PostgreSQL (recommended), but SQLite may still work (not tested)
 - **Authentication**: JWT-based with refresh tokens
 
 ## Prerequisites
 
-- Python 3.13 or higher
+- Python 3.14 or higher
 - [uv](https://github.com/astral-sh/uv)
-- Node.js with pnpm
+- Node.js 24.12+ with pnpm
 - PostgreSQL
 - BOINC crypt_prog utility (for signing key generation and signing project URLs)
 
 ## Installation & Development Setup
 
 After cloning the repository, you will find the frontend in a separate directory.
+
+### Devbox
+
+This project uses [Devbox](https://www.jetify.com/devbox) to manage the
+development environment. Devbox will provide Python, Node.js, uv, pre-commit,
+and libpq at the correct versions. To get started:
+
+```bash
+devbox shell
+```
+
+This will automatically run `uv sync` and `pre-commit install` as part of the
+shell init hook. You can also use the built-in scripts:
+
+```bash
+devbox run format  # Check formatting with ruff
+devbox run lint    # Run ruff and mypy
+```
 
 ### Environment
 

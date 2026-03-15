@@ -379,7 +379,7 @@ export default function SettingsPage() {
                     <h2 className="mb-4 text-lg font-medium text-gray-900">BOINC Password Settings</h2>
                     <div className="mb-6 rounded-md border border-blue-200 bg-blue-50 p-4">
                         <div className="flex">
-                            <div className="flex-shrink-0">
+                            <div className="shrink-0">
                                 <InformationCircleIcon className="h-5 w-5 text-blue-400" />
                             </div>
                             <div className="ml-3">

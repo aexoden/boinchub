@@ -1,4 +1,4 @@
-import { PreferenceGroup, PreferenceGroupCreate, PreferenceGroupUpdate } from "../types";
+import type { PreferenceGroup, PreferenceGroupCreate, PreferenceGroupUpdate } from "../types";
 
 import apiClient from "./api-client";
 

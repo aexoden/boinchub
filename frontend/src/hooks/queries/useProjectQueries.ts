@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { attachmentService } from "../../services/attachment-service";
 import { projectService } from "../../services/project-service";
-import { ProjectCreate, ProjectUpdate } from "../../types";
+import type { ProjectCreate, ProjectUpdate } from "../../types";
 
 import { queryKeys } from "./queryKeys";
 

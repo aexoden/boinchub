@@ -12,7 +12,7 @@ export default function Navbar() {
             <div className="mx-auto px-4">
                 <div className="flex h-16 justify-between">
                     <div className="flex items-center">
-                        <Link to="/" className="flex flex-shrink-0 items-center">
+                        <Link to="/" className="flex shrink-0 items-center">
                             <span className="text-xl font-bold">{config?.account_manager_name ?? "BoincHub"}</span>
                         </Link>
                     </div>

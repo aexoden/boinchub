@@ -2,7 +2,7 @@ import { ComputerDesktopIcon, DevicePhoneMobileIcon, GlobeAltIcon, TrashIcon } f
 import { useState } from "react";
 
 import { useLogoutAllOtherSessionsMutation, useRevokeSessionMutation, useUserSessionsQuery } from "../../hooks/queries";
-import { UserSession } from "../../types";
+import type { UserSession } from "../../types";
 import { formatDate, getRelativeTime } from "../../util/date";
 import { getApiErrorMessage } from "../../util/error";
 
@@ -184,7 +184,7 @@ export default function SessionManagement() {
                             >
                                 <div className="flex items-start justify-between">
                                     <div className="flex items-start space-x-3">
-                                        <div className="flex-shrink-0">
+                                        <div className="shrink-0">
                                             <DeviceIcon
                                                 className={`h-8 w-8 ${
                                                     session.is_current ? "text-primary-600" : "text-gray-400"

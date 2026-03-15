@@ -82,6 +82,6 @@ repos:
       - id: tsc
         name: TypeScript type checker
         description: Type check TypeScript files using tsc
-        entry: devbox run -- bash -c "cd frontend && pnpm exec tsc --noEmit"
+        entry: devbox run -- bash -c "cd frontend && pnpm exec tsc -b --noEmit"
         language: system
         pass_filenames: false

@@ -46,4 +46,4 @@ jobs:
         run: devbox run -- bash -c "cd frontend && pnpm exec eslint . --max-warnings 0"
 
       - name: Type check TypeScript
-        run: devbox run -- bash -c "cd frontend && pnpm exec tsc --noEmit"
+        run: devbox run -- bash -c "cd frontend && pnpm exec tsc -b --noEmit"

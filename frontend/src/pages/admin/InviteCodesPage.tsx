@@ -8,7 +8,7 @@ import {
     useUpdateInviteCodeMutation,
 } from "../../hooks/queries/useInviteCodeQueries";
 import { usePageTitle } from "../../hooks/usePageTitle";
-import { InviteCode, InviteCodeCreate } from "../../types";
+import type { InviteCode, InviteCodeCreate } from "../../types";
 import { formatDate, getRelativeTime } from "../../util/date";
 import { getApiErrorMessage } from "../../util/error";
 

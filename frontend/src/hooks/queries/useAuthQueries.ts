@@ -3,7 +3,7 @@ import { useLocation } from "react-router";
 
 import { authService } from "../../services/api-client";
 import { userService } from "../../services/user-service";
-import { UserCredentials, UserRegister } from "../../types";
+import type { UserCredentials, UserRegister } from "../../types";
 
 import { queryKeys } from "./queryKeys";
 

@@ -1,4 +1,4 @@
-import { UserSession } from "../types";
+import type { UserSession } from "../types";
 
 import apiClient from "./api-client";
 

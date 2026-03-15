@@ -8,7 +8,7 @@ import {
     useUpdateProjectMutation,
 } from "../../hooks/queries";
 import { usePageTitle } from "../../hooks/usePageTitle";
-import { Project, ProjectCreate, ProjectUpdate } from "../../types";
+import type { Project, ProjectCreate, ProjectUpdate } from "../../types";
 import { getApiErrorMessage } from "../../util/error";
 
 export default function ProjectsPage() {

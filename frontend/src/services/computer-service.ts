@@ -1,4 +1,4 @@
-import { Computer, ComputerUpdate } from "../types";
+import type { Computer, ComputerUpdate } from "../types";
 
 import apiClient from "./api-client";
 

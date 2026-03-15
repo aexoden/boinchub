@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useDeletePreferenceGroupMutation, usePreferenceGroupsQuery } from "../../hooks/queries";
 import { usePageTitle } from "../../hooks/usePageTitle";
-import { PreferenceGroup } from "../../types";
+import type { PreferenceGroup } from "../../types";
 import { getApiErrorMessage } from "../../util/error";
 
 export default function PreferenceGroupsPage() {

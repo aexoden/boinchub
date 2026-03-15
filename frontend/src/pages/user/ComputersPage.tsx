@@ -30,7 +30,7 @@ import {
     useUpdateComputerMutation,
 } from "../../hooks/queries";
 import { usePageTitle } from "../../hooks/usePageTitle";
-import { Computer, ProjectAttachment, ProjectAttachmentCreate, ProjectAttachmentUpdate } from "../../types";
+import type { Computer, ProjectAttachment, ProjectAttachmentCreate, ProjectAttachmentUpdate } from "../../types";
 import { formatDate, getRelativeTime } from "../../util/date";
 import { getApiErrorMessage } from "../../util/error";
 
@@ -379,7 +379,7 @@ function ComputerCard({
                                 <AttachmentRow
                                     key={attachment.id}
                                     attachment={attachment}
-                                    projectName={projectsMap[attachment.project_id] || "Unknown Project"}
+                                    projectName={projectsMap[attachment.project_id] ?? "Unknown Project"}
                                     computerName={computer.hostname}
                                     onEdit={onEditAttachment}
                                     onDelete={onDeleteAttachment}

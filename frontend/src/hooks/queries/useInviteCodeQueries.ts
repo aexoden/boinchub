@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { inviteCodeService } from "../../services/invite-code-service";
-import { InviteCodeCreate, InviteCodeUpdate } from "../../types";
+import type { InviteCodeCreate, InviteCodeUpdate } from "../../types";
 
 import { queryKeys } from "./queryKeys";
 

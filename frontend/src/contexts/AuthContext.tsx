@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 
-import { User, UserCredentials, UserRegister } from "../types";
+import type { User, UserCredentials, UserRegister } from "../types";
 
 interface AuthState {
     isAuthenticated: boolean;

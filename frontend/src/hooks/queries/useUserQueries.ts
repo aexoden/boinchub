@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { computerService } from "../../services/computer-service";
 import { userService } from "../../services/user-service";
-import { UserUpdate } from "../../types";
+import type { UserUpdate } from "../../types";
 
 import { queryKeys } from "./queryKeys";
 

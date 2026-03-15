@@ -1,4 +1,4 @@
-import { UserProjectKey, UserProjectKeyRequest, UserProjectKeyWithProject } from "../types";
+import type { UserProjectKey, UserProjectKeyRequest, UserProjectKeyWithProject } from "../types";
 
 import apiClient from "./api-client";
 

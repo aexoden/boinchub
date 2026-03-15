@@ -1,4 +1,4 @@
-import { InviteCode, InviteCodeCreate, InviteCodeUpdate } from "../types";
+import type { InviteCode, InviteCodeCreate, InviteCodeUpdate } from "../types";
 
 import apiClient from "./api-client";
 

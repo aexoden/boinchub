@@ -1,4 +1,4 @@
-import { ProjectAttachment, ProjectAttachmentCreate, ProjectAttachmentUpdate } from "../types";
+import type { ProjectAttachment, ProjectAttachmentCreate, ProjectAttachmentUpdate } from "../types";
 
 import apiClient from "./api-client";
 

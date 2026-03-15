@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { preferenceGroupService } from "../../services/preference-group-service";
-import { PreferenceGroupCreate, PreferenceGroupUpdate } from "../../types";
+import type { PreferenceGroupCreate, PreferenceGroupUpdate } from "../../types";
 
 import { queryKeys } from "./queryKeys";
 

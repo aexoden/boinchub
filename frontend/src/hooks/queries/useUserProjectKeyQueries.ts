@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { userProjectKeyService } from "../../services/user-project-key-service";
-import { UserProjectKeyRequest } from "../../types";
+import type { UserProjectKeyRequest } from "../../types";
 
 import { queryKeys } from "./queryKeys";
 

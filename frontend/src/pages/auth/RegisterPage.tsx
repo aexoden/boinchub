@@ -4,7 +4,7 @@ import { Link, Navigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useConfig } from "../../contexts/ConfigContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
-import { UserRegister } from "../../types";
+import type { UserRegister } from "../../types";
 
 export default function RegisterPage() {
     const [username, setUsername] = useState("");

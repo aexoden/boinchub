@@ -1,4 +1,4 @@
-import { User, UserRegister, UserUpdate } from "../types";
+import type { User, UserRegister, UserUpdate } from "../types";
 
 import apiClient from "./api-client";
 

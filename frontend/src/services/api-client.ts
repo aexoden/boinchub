@@ -1,6 +1,6 @@
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
+import axios, { AxiosError, type AxiosInstance, type AxiosRequestConfig } from "axios";
 
-import { ApiError, ErrorResponse, TokenResponse, User } from "../types";
+import { ApiError, type ErrorResponse, type TokenResponse, type User } from "../types";
 
 import { tokenStorage } from "./token-storage";
 

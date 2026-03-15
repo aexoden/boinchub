@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { attachmentService } from "../../services/attachment-service";
-import { ProjectAttachment, ProjectAttachmentCreate, ProjectAttachmentUpdate } from "../../types";
+import type { ProjectAttachment, ProjectAttachmentCreate, ProjectAttachmentUpdate } from "../../types";
 
 import { queryKeys } from "./queryKeys";
 

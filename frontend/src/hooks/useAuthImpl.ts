@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 
-import { UseAuthReturn } from "../contexts/AuthContext";
-import { UserCredentials, UserRegister } from "../types";
+import type { UseAuthReturn } from "../contexts/AuthContext";
+import type { UserCredentials, UserRegister } from "../types";
 import { getAuthErrorMessage } from "../util/error";
 import { isAdmin as checkIsAdmin, isSuperAdmin as checkIsSuperAdmin } from "../util/user";
 

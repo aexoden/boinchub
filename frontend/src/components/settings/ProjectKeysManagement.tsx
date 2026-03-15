@@ -7,7 +7,7 @@ import {
     useDeleteProjectKeyMutation,
     useProjectsQuery,
 } from "../../hooks/queries";
-import { UserProjectKeyRequest } from "../../types";
+import type { UserProjectKeyRequest } from "../../types";
 import { getApiErrorMessage } from "../../util/error";
 
 export default function ProjectKeysManagement() {

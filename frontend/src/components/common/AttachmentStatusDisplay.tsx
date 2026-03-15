@@ -1,4 +1,4 @@
-import { ProjectAttachment } from "../../types";
+import type { ProjectAttachment } from "../../types";
 
 interface AttachmentStatusDisplayProps {
     attachment: ProjectAttachment;

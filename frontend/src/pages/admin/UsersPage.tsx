@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useDeleteUserMutation, useUpdateUserMutation, useUsersQuery } from "../../hooks/queries";
 import { usePageTitle } from "../../hooks/usePageTitle";
-import { User, UserUpdate } from "../../types";
+import type { User, UserUpdate } from "../../types";
 import { getApiErrorMessage } from "../../util/error";
 import { canChangeRoles, getRoleColor, getRoleDisplayName, isSuperAdmin } from "../../util/user";
 

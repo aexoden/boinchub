@@ -10,7 +10,7 @@ import {
     useUpdatePreferenceGroupMutation,
 } from "../../hooks/queries/usePreferenceGroupQueries";
 import { usePageTitle } from "../../hooks/usePageTitle";
-import { PreferenceGroupCreate } from "../../types";
+import type { PreferenceGroupCreate } from "../../types";
 
 function NumericInput({
     id,

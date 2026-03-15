@@ -4,7 +4,7 @@ import { Link, Navigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useConfig } from "../../contexts/ConfigContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
-import { UserCredentials } from "../../types";
+import type { UserCredentials } from "../../types";
 
 export default function LoginPage() {
     const [username, setUsername] = useState("");

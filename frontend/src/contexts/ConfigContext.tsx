@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 
-import { AppConfig } from "../services/config-service";
+import type { AppConfig } from "../services/config-service";
 
 interface ConfigContextType {
     config: AppConfig | null;

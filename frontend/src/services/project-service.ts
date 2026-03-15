@@ -1,4 +1,4 @@
-import { Project, ProjectCreate, ProjectUpdate } from "../types";
+import type { Project, ProjectCreate, ProjectUpdate } from "../types";
 
 import apiClient from "./api-client";
 

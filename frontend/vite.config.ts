@@ -6,11 +6,16 @@ import { defineConfig } from "vite";
 export default defineConfig({
     base: process.env.NODE_ENV === "production" ? "/" : "/",
     build: {
-        rollupOptions: {
+        rolldownOptions: {
             output: {
-                manualChunks: {
-                    react: ["react", "react-dom"],
-                    router: ["react-router"],
+                codeSplitting: {
+                    groups: [
+                        {
+                            name: "react",
+                            test: /node_modules[\\/](react|react-dom)/,
+                        },
+                    ],
+                    minSize: 20000,
                 },
             },
         },

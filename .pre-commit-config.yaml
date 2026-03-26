@@ -61,7 +61,7 @@ repos:
       - id: pnpm-lock
         name: pnpm lockfile check
         description: Check that pnpm-lock.yaml is up to date
-        entry: devbox run -- bash -c "cd frontend && pnpm install --frozen-lockfile"
+        entry: devbox run -- bash -c "cd frontend && pnpm install --frozen-lockfile --strict-peer-dependencies"
         language: system
         pass_filenames: false
 

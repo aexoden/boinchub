@@ -37,7 +37,7 @@ jobs:
         run: devbox run -- uv run mypy .
 
       - name: Install dependencies
-        run: devbox run -- bash -c "cd frontend && pnpm install --frozen-lockfile"
+        run: devbox run -- bash -c "cd frontend && pnpm install --frozen-lockfile --strict-peer-dependencies"
 
       - name: Check TypeScript formatting
         run: devbox run -- bash -c "cd frontend && pnpm exec prettier --check ."

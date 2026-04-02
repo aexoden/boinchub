@@ -14,6 +14,10 @@
     {
       "groupName": "Node.js",
       "matchPackageNames": ["node", "nodejs"]
+    },
+    {
+      "groupName": "uv",
+      "matchPackageNames": ["ghcr.io/astral-sh/uv", "uv"]
     }
   ],
   "platformAutomerge": false

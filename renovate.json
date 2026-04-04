@@ -20,5 +20,6 @@
       "matchPackageNames": ["ghcr.io/astral-sh/uv", "uv"]
     }
   ],
-  "platformAutomerge": false
+  "platformAutomerge": false,
+  "rangeStrategy": "pin"
 }

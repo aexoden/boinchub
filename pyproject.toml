@@ -2,24 +2,24 @@
 name = "boinchub"
 description = "A BOINC account manager intended for personal use."
 readme = "README.md"
-requires-python = ">=3.14.3"
+requires-python = "==3.14.3"
 license = "MIT"
 authors = [{ name = "Jason Lynch", email = "jason@aexoden.com" }]
 dependencies = [
-  "alembic>=1.18.4",
-  "argon2-cffi>=25.1.0",
-  "cryptography>=46.0.5",
-  "fastapi[standard]>=0.129.2",
-  "lxml>=6.0.2",
-  "packaging>=26.0",
-  "psycopg2>=2.9.11",
-  "pydantic>=2.12.5",
-  "pydantic-settings>=2.13.1",
-  "pydantic-xml>=2.19.0",
-  "python-jose[cryptography]>=3.5.0",
-  "sqlmodel>=0.0.37",
-  "types-lxml>=2026.2.16",
-  "ua-parser[regex]>=1.0.1",
+  "alembic==1.18.4",
+  "argon2-cffi==25.1.0",
+  "cryptography==46.0.6",
+  "fastapi[standard]==0.135.2",
+  "lxml==6.0.2",
+  "packaging==26.0",
+  "psycopg2==2.9.11",
+  "pydantic==2.12.5",
+  "pydantic-settings==2.13.1",
+  "pydantic-xml==2.19.0",
+  "python-jose[cryptography]==3.5.0",
+  "sqlmodel==0.0.37",
+  "types-lxml==2026.2.16",
+  "ua-parser[regex]==1.0.1",
 ]
 dynamic = ["version"]
 
@@ -29,9 +29,9 @@ boinchub-admin = "boinchub.cli.admin:main"
 
 [dependency-groups]
 dev = [
-  "mypy>=1.19.1",
-  "ruff>=0.15.2",
-  "types-python-jose>=3.5.0.20250531",
+  "mypy==1.19.1",
+  "ruff==0.15.7",
+  "types-python-jose==3.5.0.20250531",
 ]
 
 [build-system]

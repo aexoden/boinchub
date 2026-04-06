@@ -11,7 +11,7 @@ import { getApiErrorMessage } from "../../util/error";
 export default function PreferenceGroupsPage() {
     const { user, isAdmin } = useAuth();
     const navigate = useNavigate();
-    const [scope, setScope] = useState<string>("available");
+    const [scope, setScope] = useState("available");
 
     const { data: preferenceGroups = [], isLoading: loading, error } = usePreferenceGroupsQuery(scope);
 

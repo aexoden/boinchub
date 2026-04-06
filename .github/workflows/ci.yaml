@@ -54,7 +54,7 @@ jobs:
 
           check_version "uv" \
             devbox "$(jq -r '.packages.uv' devbox.json)" \
-            docker "$(grep -oP '(?<=COPY --from=ghcr.io/astral-sh/uv:)[^ ]+' Dockerfile | head -n 1)"
+            docker "$(grep -oP '(?<=COPY --from=ghcr.io/astral-sh/uv:)[^ @]+' Dockerfile | head -n 1)"
 
   lint:
     name: Lint and Type Check

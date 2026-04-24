@@ -44,8 +44,13 @@ jobs:
               exit 1
             fi
 
-            echo "All ${name} versions are consistent: ${versions[devbox]}"
+            echo "All ${name} versions are consistent: ${versions[docker]}"
           }
+
+          check_version "Python" \
+            docker "$(grep -oP '(?<=FROM python:)[^-]+' Dockerfile)" \
+            pyproject_toml "$(grep -oP '(?<=requires-python = "==)[^"]+' pyproject.toml)" \
+            python_version_file "$(cat .python-version)"
 
           check_version "Node.js" \
             devbox "$(jq -r '.packages.nodejs' devbox.json)" \

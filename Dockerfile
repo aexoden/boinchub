@@ -4,7 +4,7 @@ WORKDIR /app/frontend
 
 # Copy package files and install dependencies
 COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./
-RUN corepack enable && pnpm install --frozen-lockfile
+RUN npm install corepack --global --force && corepack enable && pnpm install --frozen-lockfile
 
 # Copy source files and build
 COPY frontend/ ./

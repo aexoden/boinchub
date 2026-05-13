@@ -1,11 +1,11 @@
-import axios, { AxiosError, type AxiosInstance, type AxiosRequestConfig } from "axios";
+import { AxiosError, type AxiosInstance, type AxiosRequestConfig, create } from "axios";
 
 import { ApiError, type ErrorResponse, type TokenResponse, type User } from "../types";
 
 import { tokenStorage } from "./token-storage";
 
 // Create a base API client
-const apiClient: AxiosInstance = axios.create({
+const apiClient: AxiosInstance = create({
     baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8501",
     headers: {
         "Content-Type": "application/json",
@@ -102,7 +102,7 @@ apiClient.interceptors.response.use(
 
             try {
                 // Create a separate axios instance for the refresh request to avoid circular interceptor calls
-                const refreshClient = axios.create({
+                const refreshClient = create({
                     baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8501",
                     headers: {
                         "Content-Type": "application/json",

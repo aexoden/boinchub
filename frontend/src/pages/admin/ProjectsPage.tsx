@@ -45,7 +45,7 @@ export default function ProjectsPage() {
             description: "",
             admin_notes: "",
             enabled: true,
-        } as ProjectCreate);
+        });
 
         setModalError(null);
         setIsModalOpen(true);
@@ -61,7 +61,7 @@ export default function ProjectsPage() {
             description: project.description,
             admin_notes: project.admin_notes,
             enabled: project.enabled,
-        } as ProjectUpdate);
+        });
 
         setModalError(null);
         setIsModalOpen(true);

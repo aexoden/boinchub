@@ -288,7 +288,7 @@ export default function PreferenceGroupEditPage({ isNew = false }: { isNew?: boo
 
         try {
             if (isNew) {
-                const submissionData = { ...formData } as PreferenceGroupCreate;
+                const submissionData = { ...formData };
 
                 if (isAdmin()) {
                     // Admin can choose scope

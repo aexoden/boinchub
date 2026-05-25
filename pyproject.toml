@@ -10,7 +10,7 @@ dependencies = [
   "argon2-cffi==25.1.0",
   "cryptography==48.0.0",
   "fastapi[standard]==0.136.1",
-  "lxml==6.1.0",
+  "lxml==6.1.1",
   "packaging==26.2",
   "psycopg2==2.9.12",
   "pydantic==2.13.4",

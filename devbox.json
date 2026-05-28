@@ -1,17 +1,14 @@
 {
   "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.17.1/.schema/devbox.schema.json",
   "packages": {
-    "nodejs": "25.9.0",
     "pre-commit": "4.5.1",
     "uv": "0.11.14",
     "libpq": {
       "version": "18.1",
       "outputs": ["out", "dev"]
     },
+    "pnpm": "11.1.2",
     "python": { "version": "3.14.3", "disable_plugin": true }
-  },
-  "env": {
-    "DEVBOX_COREPACK_ENABLED": "true"
   },
   "shell": {
     "init_hook": ["uv sync", "pre-commit install"],

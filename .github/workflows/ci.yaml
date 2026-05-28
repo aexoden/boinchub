@@ -52,10 +52,10 @@ jobs:
             pyproject_toml "$(grep -oP '(?<=requires-python = "==)[^"]+' pyproject.toml)" \
             python_version_file "$(cat .python-version)"
 
-          check_version "Node.js" \
-            devbox "$(jq -r '.packages.nodejs' devbox.json)" \
-            docker "$(grep -oP '(?<=FROM node:)[^-]+' Dockerfile | head -n 1)" \
-            package_json "$(jq -r '.engines.node' frontend/package.json | sed 's/[>=]//g')"
+          check_version "pnpm" \
+            devbox "$(jq -r '.packages.pnpm' devbox.json)" \
+            docker "$(grep -oP '(?<=FROM ghcr.io/pnpm/pnpm:)[^ @]+' Dockerfile | head -n 1)" \
+            package_json "$(jq -r '.devEngines.packageManager.version' frontend/package.json | sed 's/[>=]//g')"
 
           check_version "uv" \
             devbox "$(jq -r '.packages.uv' devbox.json)" \

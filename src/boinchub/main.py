@@ -72,10 +72,11 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, Any]:
     session_cleanup_task = SessionCleanupTask()
     session_cleanup_task.start_background_task()
 
-    yield
-
-    logger.info("Shutting down BoincHub v%s", __version__)
-    await session_cleanup_task.stop()
+    try:
+        yield
+    finally:
+        logger.info("Shutting down BoincHub v%s", __version__)
+        await session_cleanup_task.stop()
 
 
 def _create_app() -> FastAPI:

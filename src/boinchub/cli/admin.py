@@ -13,7 +13,7 @@ from sqlmodel import Session
 
 from boinchub.core.database import engine
 from boinchub.core.settings import settings
-from boinchub.models.user import UserCreate, UserUpdate
+from boinchub.models import UserCreate, UserUpdate
 from boinchub.services.user_service import UserService
 
 
@@ -44,20 +44,20 @@ def create_admin(username: str, email: str, password: str | None = None, *, supe
     with Session(engine) as db:
         user_service = UserService(db)
 
+        existing_user = user_service.get_by_username(username)
+
+        if existing_user:
+            print(f"User '{username}' already exists.")
+            return False
+
+        role = "super_admin" if super_admin else "admin"
+
+        user_count = len(user_service.get_all())
+        if user_count == 0:
+            role = "super_admin"
+            print("Creating first user as super admin.")
+
         try:
-            existing_user = user_service.get_by_username(username)
-
-            if existing_user:
-                print(f"User '{username}' already exists.")
-                return False
-
-            role = "super_admin" if super_admin else "admin"
-
-            user_count = len(user_service.get_all())
-            if user_count == 0:
-                role = "super_admin"
-                print("Creating first user as super admin.")
-
             user_data = UserCreate(
                 username=username,
                 password=password,
@@ -65,18 +65,14 @@ def create_admin(username: str, email: str, password: str | None = None, *, supe
                 role=role,
                 invite_code=None,  # Invite code is not used in CLI
             )
-
-            user = user_service.create(user_data)
-            role_text = "Super admin" if user.role == "super_admin" else "Admin"
-            print(f"{role_text} user '{user.username}' created successfully.")
         except ValidationError as e:
             print(f"Validation error: {e}")
             return False
-        except Exception as e:  # noqa: BLE001
-            print(f"Error creating admin user: {e}")
-            return False
-        else:
-            return True
+
+        user = user_service.create(user_data)
+        role_text = "Super admin" if user.role == "super_admin" else "Admin"
+        print(f"{role_text} user '{user.username}' created successfully.")
+        return True
 
 
 def promote_user(username: str) -> bool:
@@ -92,62 +88,47 @@ def promote_user(username: str) -> bool:
     with Session(engine) as db:
         user_service = UserService(db)
 
-        try:
-            user = user_service.get_by_username(username)
+        user = user_service.get_by_username(username)
 
-            if not user:
-                print(f"User '{username}' not found.")
-                return False
+        if not user:
+            print(f"User '{username}' not found.")
+            return False
 
-            if user.role == "super_admin":
-                print(f"User '{username}' is already a super admin.")
-                return False
+        if user.role == "super_admin":
+            print(f"User '{username}' is already a super admin.")
+            return False
 
-            update_data = UserUpdate(role="super_admin")
+        update_data = UserUpdate(role="super_admin")
 
-            updated_user = user_service.update(user.id, update_data)
+        updated_user = user_service.update(user.id, update_data)
 
-            if updated_user:
-                print(f"User '{username}' promoted to super admin successfully.")
-                return True
+        if updated_user:
+            print(f"User '{username}' promoted to super admin successfully.")
+            return True
 
-            print(f"Failed to promote user '{username}'.")
-        except Exception as e:  # noqa: BLE001
-            print(f"Error promoting user: {e}")
-
+        print(f"Failed to promote user '{username}'.")
         return False
 
 
-def list_users() -> bool:
-    """List all users with their roles.
-
-    Returns:
-        bool: True if successful, False otherwise.
-
-    """
+def list_users() -> None:
+    """List all users with their roles."""
     with Session(engine) as db:
         user_service = UserService(db)
 
-        try:
-            users = user_service.get_all()
+        users = user_service.get_all()
 
-            if not users:
-                print("No users found.")
-                return True
+        if not users:
+            print("No users found.")
+            return
 
-            print("\nUsers:")
-            print("-" * 60)
-            print(f"{'Username':<20} {'Email':<30} {'Role':<12} {'Active'}")
-            print("-" * 60)
+        print("\nUsers:")
+        print("-" * 60)
+        print(f"{'Username':<20} {'Email':<30} {'Role':<12} {'Active'}")
+        print("-" * 60)
 
-            for user in users:
-                active_status = "Yes" if user.is_active else "No"
-                print(f"{user.username:<20} {user.email:<30} {user.role:<12} {active_status}")
-        except Exception as e:  # noqa: BLE001
-            print(f"Error listing users: {e}")
-            return False
-        else:
-            return True
+        for user in users:
+            active_status = "Yes" if user.is_active else "No"
+            print(f"{user.username:<20} {user.email:<30} {user.role:<12} {active_status}")
 
 
 def main() -> None:
@@ -184,9 +165,7 @@ def main() -> None:
         if not success:
             sys.exit(1)
     elif args.command == "list-users":
-        success = list_users()
-        if not success:
-            sys.exit(1)
+        list_users()
     else:
         parser.print_help()
 

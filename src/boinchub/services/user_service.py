@@ -174,7 +174,9 @@ class UserService(BaseService[User, UserCreate, UserUpdate]):
                 raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username is already taken")
 
         update_data = object_data.model_dump(exclude_none=True)
-        update_data.pop("current_password")
+
+        if "current_password" in update_data:
+            update_data.pop("current_password")
 
         # Handle username changes
         username_changed = False

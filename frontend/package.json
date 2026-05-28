@@ -4,8 +4,17 @@
   "version": "0.1.0",
   "type": "module",
   "license": "MIT",
-  "engines": {
-    "node": "25.9.0"
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "25.9.0",
+      "onFail": "download"
+    },
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.1.2",
+      "onFail": "download"
+    }
   },
   "scripts": {
     "dev": "vite",
@@ -15,7 +24,6 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
-  "packageManager": "pnpm@11.2.2",
   "dependencies": {
     "@headlessui/react": "2.2.10",
     "@heroicons/react": "2.2.0",

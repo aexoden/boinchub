@@ -12,7 +12,7 @@
     },
     "packageManager": {
       "name": "pnpm",
-      "version": "11.1.2",
+      "version": "11.9.0",
       "onFail": "download"
     }
   },

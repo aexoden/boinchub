@@ -7,7 +7,7 @@
       "version": "18.1",
       "outputs": ["out", "dev"]
     },
-    "pnpm": "11.11.0",
+    "pnpm": "11.13.1",
     "python": { "version": "3.14.4", "disable_plugin": true }
   },
   "shell": {

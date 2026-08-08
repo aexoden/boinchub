@@ -47,7 +47,7 @@ def cleanup_old_sessions_by_user_limit() -> None:
     with Session(engine) as db:
         subquery = (
             select(UserSession.user_id, func.count(col(UserSession.id)).label("session_count"))
-            .where(UserSession.is_active == True)  # noqa: E712
+            .where(UserSession.is_active == True)  # ruff: ignore[true-false-comparison]
             .group_by(col(UserSession.user_id))
             .having(func.count(col(UserSession.id)) > settings.max_sessions_per_user)
         ).subquery()
@@ -60,7 +60,7 @@ def cleanup_old_sessions_by_user_limit() -> None:
             user_sessions = list(
                 db.exec(
                     select(UserSession)
-                    .where(UserSession.user_id == user_id, UserSession.is_active == True)  # noqa: E712
+                    .where(UserSession.user_id == user_id, UserSession.is_active == True)  # ruff: ignore[true-false-comparison]
                     .order_by(col(UserSession.last_accessed_at).asc())
                 ).all()
             )

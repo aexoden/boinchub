@@ -18,7 +18,7 @@ class ProjectService(BaseService[Project, ProjectCreate, ProjectUpdate]):
 
     model = Project
 
-    def get_all(self, offset: int = 0, limit: int = 100, order_by: str | None = None, **filters: Any) -> list[Project]:  # noqa: ANN401
+    def get_all(self, offset: int = 0, limit: int = 100, order_by: str | None = None, **filters: Any) -> list[Project]:  # ruff: ignore[any-type]
         """Get a list of projects.
 
         Args:

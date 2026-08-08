@@ -20,7 +20,7 @@ router = APIRouter(prefix="/api/v1/project_attachments", tags=["project_attachme
 
 
 @router.post("")
-def create_project_attachment(  # noqa: PLR0913
+def create_project_attachment(  # ruff: ignore[too-many-arguments]
     *,
     project_attachment_data: ProjectAttachmentCreate,
     computer_service: Annotated[ComputerService, Depends(get_computer_service)],
@@ -65,7 +65,10 @@ def create_project_attachment(  # noqa: PLR0913
     if not user_project_key or not user_project_key.account_key:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="You must set up an account key for this project. Please go to your account settings to add the account key.",  # noqa: E501
+            detail=(
+                "You must set up an account key for this project."
+                " Please go to your account settings to add the account key."
+            ),
         )
 
     project_attachment = project_attachment_service.create(project_attachment_data)

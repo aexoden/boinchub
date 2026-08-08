@@ -24,7 +24,7 @@ class ComputerService(BaseService[Computer, ComputerCreate, ComputerUpdate]):
 
     model = Computer
 
-    def get_all(self, offset: int = 0, limit: int = 100, order_by: str | None = None, **filters: Any) -> list[Computer]:  # noqa: ANN401
+    def get_all(self, offset: int = 0, limit: int = 100, order_by: str | None = None, **filters: Any) -> list[Computer]:  # ruff: ignore[any-type]
         """Get a list of computers.
 
         Args:

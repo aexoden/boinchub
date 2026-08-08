@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2025-present Jason Lynch <jason@aexoden.com>
 #
 # SPDX-License-Identifier: MIT
-# ruff: noqa: T201
+# ruff: file-ignore[print]
 """Command-line interface for BoincHub administration."""
 
 import argparse

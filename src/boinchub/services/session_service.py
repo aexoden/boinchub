@@ -83,7 +83,7 @@ class SessionService(BaseService[UserSession, UserSessionCreate, UserSessionUpda
         return self.db.exec(
             select(UserSession).where(
                 UserSession.refresh_token_hash == token_hash,
-                UserSession.is_active == True,  # noqa: E712
+                UserSession.is_active == True,  # ruff: ignore[true-false-comparison]
                 UserSession.refresh_token_expires_at > datetime.datetime.now(datetime.UTC),
             )
         ).first()
@@ -103,7 +103,7 @@ class SessionService(BaseService[UserSession, UserSessionCreate, UserSessionUpda
 
         if active_only:
             query = query.where(
-                UserSession.is_active == True,  # noqa: E712
+                UserSession.is_active == True,  # ruff: ignore[true-false-comparison]
                 UserSession.refresh_token_expires_at > datetime.datetime.now(datetime.UTC),
             )
 
@@ -142,7 +142,7 @@ class SessionService(BaseService[UserSession, UserSessionCreate, UserSessionUpda
         """
         query = select(UserSession).where(
             UserSession.user_id == user_id,
-            UserSession.is_active == True,  # noqa: E712
+            UserSession.is_active == True,  # ruff: ignore[true-false-comparison]
         )
 
         if except_session_id:
@@ -219,7 +219,7 @@ class SessionService(BaseService[UserSession, UserSessionCreate, UserSessionUpda
 
         sessions = list(
             self.db.exec(
-                select(UserSession).where(UserSession.is_active == False, UserSession.updated_at <= cutoff_date)  # noqa: E712
+                select(UserSession).where(UserSession.is_active == False, UserSession.updated_at <= cutoff_date)  # ruff: ignore[true-false-comparison]
             ).all()
         )
 
@@ -245,7 +245,7 @@ class SessionService(BaseService[UserSession, UserSessionCreate, UserSessionUpda
             select(UserSession).where(
                 UserSession.id == session_id,
                 UserSession.user_id == user_id,
-                UserSession.is_active == True,  # noqa: E712
+                UserSession.is_active == True,  # ruff: ignore[true-false-comparison]
             )
         ).first()
 

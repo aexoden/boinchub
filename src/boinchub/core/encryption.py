@@ -70,7 +70,7 @@ class AccountKeyEncryption:
             encrypted_bytes = base64.urlsafe_b64decode(encrypted_key.encode())
             decrypted = fernet.decrypt(encrypted_bytes)
             return decrypted.decode()
-        except Exception:  # noqa: BLE001
+        except Exception:  # ruff: ignore[blind-except]
             return ""
 
 

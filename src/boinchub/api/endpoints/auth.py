@@ -26,7 +26,7 @@ from boinchub.services.user_service import UserService, get_user_service
 router = APIRouter(prefix="/api/v1/auth", tags=["authentication"])
 
 # Cookie settings for refresh tokens
-REFRESH_TOKEN_COOKIE_NAME = "refresh_token"  # noqa: S105
+REFRESH_TOKEN_COOKIE_NAME = "refresh_token"  # ruff: ignore[hardcoded-password-string]
 REFRESH_TOKEN_COOKIE_MAX_AGE = 7 * 24 * 60 * 60
 
 
@@ -118,7 +118,7 @@ async def login_for_access_token(
     # Return only access token
     return TokenResponse(
         access_token=token_pair.access_token,
-        token_type="bearer",  # noqa: S106
+        token_type="bearer",  # ruff: ignore[hardcoded-password-func-arg]
         expires_in=token_pair.expires_in,
     )
 
@@ -184,7 +184,7 @@ async def refresh_access_token(
     # Return new access token
     return TokenResponse(
         access_token=token_pair.access_token,
-        token_type="bearer",  # noqa: S106
+        token_type="bearer",  # ruff: ignore[hardcoded-password-func-arg]
         expires_in=token_pair.expires_in,
     )
 
@@ -228,7 +228,7 @@ async def logout(
 
         if session_id:
             session_service.revoke_session(UUID(session_id))
-    except Exception:  # noqa: BLE001, S110
+    except Exception:  # ruff: ignore[blind-except, try-except-pass]
         # Even if token processing fails, we should still clear the cookie
         pass
 
@@ -286,7 +286,7 @@ async def logout_all_sessions(
         token = authorization.replace("Bearer ", "")
         payload = decode_token(token)
         current_session_id = payload.get("session_id")
-    except Exception:  # noqa: BLE001, S110
+    except Exception:  # ruff: ignore[blind-except, try-except-pass]
         pass
 
     revoked_count = session_service.revoke_all_user_sessions(current_user.id, except_session_id=current_session_id)
@@ -328,7 +328,7 @@ async def get_user_sessions(
         token = authorization.replace("Bearer ", "")
         payload = decode_token(token)
         current_session_id = payload.get("session_id")
-    except Exception:  # noqa: BLE001, S110
+    except Exception:  # ruff: ignore[blind-except, try-except-pass]
         pass
 
     session_info = []

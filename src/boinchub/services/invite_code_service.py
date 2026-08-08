@@ -30,7 +30,7 @@ class InviteCodeService(BaseService[InviteCode, InviteCodeCreate, InviteCodeUpda
         offset: int = 0,
         limit: int = 100,
         order_by: str | None = None,
-        **filters: Any,  # noqa: ANN401
+        **filters: Any,  # ruff: ignore[any-type]
     ) -> list[InviteCode]:
         """Get a list of invite codes.
 

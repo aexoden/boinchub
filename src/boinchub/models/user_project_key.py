@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 """User project key model for BoincHub."""
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 from uuid import UUID, uuid4
 
 import sqlalchemy.types as sa_types
@@ -26,7 +26,8 @@ class EncryptedAccountKey(sa_types.TypeDecorator):  # type: ignore[type-arg]
 
     cache_ok = True
 
-    def process_bind_param(self, value: str | None, dialect: Dialect) -> str:  # noqa: ARG002, PLR6301
+    @override
+    def process_bind_param(self, value: str | None, dialect: Dialect) -> str:
         """Encrypt the account key before storing it in the database.
 
         Args:
@@ -41,7 +42,8 @@ class EncryptedAccountKey(sa_types.TypeDecorator):  # type: ignore[type-arg]
             return ""
         return encrypt_account_key(value)
 
-    def process_result_value(self, value: str | None, dialect: Dialect) -> str:  # noqa: ARG002, PLR6301
+    @override
+    def process_result_value(self, value: str | None, dialect: Dialect) -> str:
         """Decrypt the account key when retrieving it from the database.
 
         Args:

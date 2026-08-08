@@ -101,7 +101,7 @@ class UserService(BaseService[User, UserCreate, UserUpdate]):
         """
         return self.db.exec(select(User).where(User.username == username)).first()
 
-    def get_all(self, offset: int = 0, limit: int = 100, order_by: str | None = None, **filters: Any) -> list[User]:  # noqa: ANN401
+    def get_all(self, offset: int = 0, limit: int = 100, order_by: str | None = None, **filters: Any) -> list[User]:  # ruff: ignore[any-type]
         """Get a list of users.
 
         Args:
@@ -116,7 +116,7 @@ class UserService(BaseService[User, UserCreate, UserUpdate]):
         """
         return super().get_all(offset=offset, limit=limit, order_by=order_by or "username", **filters)
 
-    def update(self, object_id: UUID, object_data: UserUpdate, current_user: User | None = None) -> User | None:  # noqa: C901, PLR0912
+    def update(self, object_id: UUID, object_data: UserUpdate, current_user: User | None = None) -> User | None:  # ruff: ignore[complex-structure, too-many-branches]
         """Update a user.
 
         Args:
@@ -213,7 +213,7 @@ class UserService(BaseService[User, UserCreate, UserUpdate]):
         elif username_changed and object_data.current_password:
             # Empty or not set BOINC password, but username changed
             update_data["boinc_password_hash"] = hash_boinc_password(hash_username, object_data.current_password)
-        elif boinc_password == "" and object_data.current_password:  # noqa: PLC1901
+        elif boinc_password == "" and object_data.current_password:  # ruff: ignore[compare-to-empty-string]
             # Explicit empty BOINC password, username and password unchanged
             update_data["boinc_password_hash"] = hash_boinc_password(user.username, object_data.current_password)
 

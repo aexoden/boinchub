@@ -42,7 +42,7 @@ class BaseService[ModelType: SQLModel, CreateType: SQLModel, UpdateType: SQLMode
         offset: int = 0,
         limit: int = 100,
         order_by: str | None = None,
-        **filters: Any,  # noqa: ANN401
+        **filters: Any,  # ruff: ignore[any-type]
     ) -> list[ModelType]:
         """Get all model instances with optional filters.
 

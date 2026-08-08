@@ -120,7 +120,7 @@ class BoincService:
             messages=messages,
         )
 
-    def _process_projects(self, user: User, computer: Computer, request: AccountManagerRequest) -> list[Account]:  # noqa: C901, PLR0912, PLR0914, PLR0915
+    def _process_projects(self, user: User, computer: Computer, request: AccountManagerRequest) -> list[Account]:  # ruff: ignore[complex-structure, too-many-branches, too-many-locals, too-many-statements]
         """Process project attachments for the computer.
 
         There are probably corner cases that this doesn't handle very well, especially if very old clients are used.
@@ -303,7 +303,7 @@ def build_global_preferences(preference_group: PreferenceGroup) -> GlobalPrefere
     return GlobalPreferences.model_validate(preference_group_data)
 
 
-def create_attach_account(  # noqa: C901
+def create_attach_account(  # ruff: ignore[complex-structure]
     project: Project,
     user_key: UserProjectKey,
     attachment: ProjectAttachment,
@@ -437,6 +437,6 @@ def parse_client_version(version_str: str) -> version.Version | None:
     """
     try:
         return version.parse(version_str)
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:  # ruff: ignore[blind-except]
         logger.warning("Failed to parse client version '%s': %s", version_str, e)
         return None

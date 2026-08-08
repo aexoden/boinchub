@@ -41,7 +41,7 @@ class TokenPair(SQLModel):
 
     access_token: str
     refresh_token: str
-    token_type: str = "bearer"  # noqa: S105
+    token_type: str = "bearer"  # ruff: ignore[hardcoded-password-string]
     expires_in: int = ACCESS_TOKEN_EXPIRE_MINUTES * 60
 
 
@@ -49,7 +49,7 @@ class TokenResponse(SQLModel):
     """Model for access token response."""
 
     access_token: str
-    token_type: str = "bearer"  # noqa: S105
+    token_type: str = "bearer"  # ruff: ignore[hardcoded-password-string]
     expires_in: int = ACCESS_TOKEN_EXPIRE_MINUTES * 60
 
 
@@ -77,7 +77,7 @@ def hash_boinc_password(username: str, password: str) -> str:
         The MD5 hashed password required by the BOINC protocol.
 
     """
-    return hashlib.md5(f"{password}{username.lower()}".encode()).hexdigest()  # noqa: S324
+    return hashlib.md5(f"{password}{username.lower()}".encode()).hexdigest()  # ruff: ignore[hashlib-insecure-hash-function]
 
 
 def verify_password(password: str, password_hash: str) -> bool:
@@ -197,10 +197,7 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Annotate
     Returns:
         User: The authenticated user.
 
-    Raises:
-        HTTPException: If the token is invalid or the user doesn't exist.
-
-    """  # noqa: DOC502
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -217,7 +214,7 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Annotate
         raise credentials_exception from e
 
     # Import here to avoid circular dependency
-    from boinchub.services.user_service import UserService  # noqa: PLC0415
+    from boinchub.services.user_service import UserService  # ruff: ignore[import-outside-top-level]
 
     user_service = UserService(db)
     user = user_service.get(user_id)

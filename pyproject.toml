@@ -62,7 +62,7 @@ line-ending = "lf"
 preview = true
 select = ["ALL"]
 ignore = [
-  "COM812",  # missing-trailing-comma (conflicts with ruff's formatter)
+  "missing-trailing-comma",  # conflicts with ruff's formatter
 ]
 
 [tool.ruff.lint.flake8-copyright]

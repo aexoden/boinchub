@@ -26,7 +26,7 @@ class PreferenceGroupService(BaseService[PreferenceGroup, PreferenceGroupCreate,
         offset: int = 0,
         limit: int = 100,
         order_by: str | None = None,
-        **filters: Any,  # noqa: ANN401
+        **filters: Any,  # ruff: ignore[any-type]
     ) -> list[PreferenceGroup]:
         """Get a list of preference groups.
 
@@ -54,7 +54,7 @@ class PreferenceGroupService(BaseService[PreferenceGroup, PreferenceGroupCreate,
             list[PreferenceGroup]: A list of preference groups available for the user.
 
         """
-        query = select(PreferenceGroup).where(or_(PreferenceGroup.user_id == user_id, PreferenceGroup.user_id == None))  # noqa: E711
+        query = select(PreferenceGroup).where(or_(PreferenceGroup.user_id == user_id, PreferenceGroup.user_id == None))  # ruff: ignore[none-comparison]
 
         return list(self.db.exec(query.order_by(PreferenceGroup.name).offset(offset).limit(limit)).all())
 
@@ -86,7 +86,7 @@ class PreferenceGroupService(BaseService[PreferenceGroup, PreferenceGroupCreate,
         # First, check if a default group exists for the user, if specified
         if user_id:
             default_group = self.db.exec(
-                select(PreferenceGroup).where(PreferenceGroup.is_default == True, PreferenceGroup.user_id == user_id)  # noqa: E712
+                select(PreferenceGroup).where(PreferenceGroup.is_default == True, PreferenceGroup.user_id == user_id)  # ruff: ignore[true-false-comparison]
             ).first()
 
             if default_group:
@@ -95,8 +95,8 @@ class PreferenceGroupService(BaseService[PreferenceGroup, PreferenceGroupCreate,
         # If no user default or no user specified, check for global default
         default_group = self.db.exec(
             select(PreferenceGroup).where(
-                PreferenceGroup.is_default == True,  # noqa: E712
-                PreferenceGroup.user_id == None,  # noqa: E711
+                PreferenceGroup.is_default == True,  # ruff: ignore[true-false-comparison]
+                PreferenceGroup.user_id == None,  # ruff: ignore[none-comparison]
             )
         ).first()
 
@@ -195,7 +195,7 @@ class PreferenceGroupService(BaseService[PreferenceGroup, PreferenceGroupCreate,
     def _unset_existing_default(self, user_id: UUID | None) -> None:
         """Unset any existing default preference group."""
         existing_default = self.db.exec(
-            select(PreferenceGroup).where(PreferenceGroup.is_default == True, PreferenceGroup.user_id == user_id)  # noqa: E712
+            select(PreferenceGroup).where(PreferenceGroup.is_default == True, PreferenceGroup.user_id == user_id)  # ruff: ignore[true-false-comparison]
         ).first()
 
         if existing_default:

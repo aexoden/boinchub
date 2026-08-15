@@ -15,7 +15,7 @@ dependencies = [
   "psycopg2==2.9.12",
   "pydantic==2.13.4",
   "pydantic-settings==2.15.0",
-  "pydantic-xml==2.21.0",
+  "pydantic-xml==2.21.1",
   "python-jose[cryptography]==3.5.0",
   "sqlmodel==0.0.39",
   "types-lxml==2026.2.16",

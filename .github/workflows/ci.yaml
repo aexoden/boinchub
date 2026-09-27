@@ -16,7 +16,7 @@ env:
 
 jobs:
   check-versions:
-    name: Check version sync between Devbox and Docker
+    name: Check version sync
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -53,7 +53,6 @@ jobs:
             python_version_file "$(cat .python-version)"
 
           check_version "pnpm" \
-            devbox "$(jq -r '.packages.pnpm' devbox.json)" \
             docker "$(grep -oP '(?<=FROM ghcr.io/pnpm/pnpm:)[^ @]+' Dockerfile | head -n 1)" \
             package_json "$(jq -r '.devEngines.packageManager.version' frontend/package.json | sed 's/[>=]//g')"
 

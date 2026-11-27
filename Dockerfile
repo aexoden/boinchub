@@ -1,5 +1,5 @@
 # Frontend build stage
-FROM ghcr.io/pnpm/pnpm:12.23.0@sha256:349c846c6c9dab76b2f6fbf4b2df14d5a8c9b2a0fce92fc7e5c2eec3f437e801 AS frontend-builder
+FROM ghcr.io/pnpm/pnpm:12.24.0@sha256:4f92e7dc6a1f6c3475c5fc7c4fdd22818e61adb59c75bef9e87aa0a6bf7cd61f AS frontend-builder
 WORKDIR /app/frontend
 
 # Copy package files and install dependencies
